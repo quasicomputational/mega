@@ -1,0 +1,153 @@
+name: q4c12-xml
+version: "0"
+author: quasicomputational <quasicomputational@gmail.com>
+license: BSD2
+license-file:
+  - LICENSE
+  - LICENSE.BSD2
+  - LICENSE.W3C
+extra-source-files:
+  #TODO: README.markdown should really be in extra-doc-files, but hpack doesn't know about that. I should send a patch about that. hpack bug: https://github.com/sol/hpack/issues/206
+  - README.markdown
+  - data/html.xml
+  - test/golden/**/*.in
+  - test/golden/**/*.out
+  - test/golden/**/*.errout
+  - test/golden/**/*.fails
+
+ghc-options: !include "../../ghc-options.yaml"
+default-extensions: !include "../../language.yaml"
+
+_common-dependencies:
+    # Define version ranges once and only once across components.
+  - &d-base-noprelude
+    "base-noprelude >= 4.9.1.0 && < 4.11"
+  - &d-containers
+    "containers >= 0.5.9.2 && < 0.6"
+  - &d-criterion
+    "criterion >= 1.2.2.0 && < 1.3"
+  - &d-dlist
+    "dlist >= 0.8.0.3 && < 0.9"
+  - &d-dlist-nonempty
+    "dlist-nonempty >= 0.1.1 && < 0.2"
+  - &d-filepath
+    "filepath >= 1.4.1.1 && < 1.5"
+  - &d-formatting
+    "formatting >= 6.2.4 && < 6.3"
+  - &d-q4c12-mappend
+    "q4c12-mappend >= 0 && < 0.1"
+  - &d-q4c12-position
+    "q4c12-position >= 0 && < 0.1"
+  - &d-q4c12-prelude
+    "q4c12-prelude >= 0 && < 0.1"
+  - &d-q4c12-twofinger
+    "q4c12-twofinger >= 0 && < 0.1"
+  - &d-q4c12-validate
+    "q4c12-validate >= 0 && < 0.1"
+  - &d-safe
+    "safe >= 0.3.15 && < 0.4"
+  - &d-tasty
+    "tasty >= 0.11.2.1 && < 0.13"
+  - &d-tasty-expected-failure
+    "tasty-expected-failure >= 0.11.0.4 && < 0.12"
+  - &d-tasty-golden
+    "tasty-golden >= 2.3.1.1 && < 2.4"
+  - &d-template-haskell
+    # No bounds, because you shouldn't be downloading template-haskell off hackage anyway, as opposed to using your GHC's one...
+    "template-haskell"
+  - &d-text
+    "text >= 1.2.2.2 && < 1.3"
+  - &d-text-icu
+    "text-icu >= 0.7.0.1 && < 0.8"
+  - &d-transformers
+    "transformers >= 0.5.3.0 && < 0.6"
+
+library:
+  source-dirs:
+    - src
+  # Suppress Paths_*
+  other-modules: []
+  dependencies:
+    - *d-base-noprelude
+    - *d-containers
+    - *d-dlist
+    - *d-dlist-nonempty
+    - *d-formatting
+    - *d-q4c12-twofinger
+    - *d-q4c12-mappend
+    - *d-q4c12-position
+    - *d-q4c12-prelude
+    - *d-safe
+    - *d-template-haskell
+    - *d-text
+    - *d-text-icu
+    - *d-transformers
+
+executables:
+  xhtml2html:
+    source-dirs:
+      - driver/
+    main: xhtml2html.hs
+    # Suppress Paths_*
+    other-modules: []
+    dependencies:
+      - q4c12-xml
+      - *d-q4c12-prelude
+      - *d-text
+
+  gen-entity-set-schema:
+    source-dirs:
+      - driver/
+    main: gen-entity-set-schema.hs
+    # Suppress Paths_*
+    other-modules: []
+    dependencies:
+      - q4c12-xml
+      - *d-q4c12-prelude
+      - *d-text
+
+  entity-set2dtd:
+    source-dirs:
+      - driver/
+    main: entity-set2dtd.hs
+    # Suppress Paths_*
+    other-modules: []
+    dependencies:
+      - q4c12-xml
+      - *d-q4c12-prelude
+      - *d-text
+
+tests:
+  golden-tests:
+    source-dirs:
+      - test
+    main: Test.hs
+    other-modules: []
+    #TODO: clean up these warnings
+    ghc-options:
+      - "-Wno-monomorphism-restriction"
+      - "-Wno-missing-local-signatures"
+    dependencies:
+      - q4c12-xml
+      - *d-containers
+      - *d-filepath
+      - *d-q4c12-prelude
+      - *d-tasty
+      - *d-tasty-expected-failure
+      - *d-tasty-golden
+      - *d-text
+      - *d-transformers
+
+benchmarks:
+  parse-xml:
+    source-dirs:
+      - bench
+    main: parse-xml.hs
+    other-modules: []
+    dependencies:
+      - q4c12-xml
+      - *d-criterion
+      - *d-q4c12-prelude
+      - *d-text
+
+#TODO: property-based testing. Round-trip render/parse.

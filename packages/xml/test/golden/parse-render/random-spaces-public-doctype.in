@@ -1,0 +1,5 @@
+<!DOCTYPE   scene
+            PUBLIC
+            "-//EXAMPLE//blah"
+            "example:entity-set"  >
+<scene   foo  =  "bar"   >&copy;</scene   >

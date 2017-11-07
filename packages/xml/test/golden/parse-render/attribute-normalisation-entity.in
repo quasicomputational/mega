@@ -1,0 +1,2 @@
+<!DOCTYPE foo SYSTEM "example:entity-set">
+<foo bar="ok &NewLine; gotcha"></foo>

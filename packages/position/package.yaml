@@ -1,0 +1,20 @@
+name: q4c12-position
+version: "0"
+author: quasicomputational <quasicomputational@gmail.com>
+license: BSD2
+license-file:
+  - LICENSE.BSD2
+
+ghc-options: !include "../../ghc-options.yaml"
+default-extensions: !include "../../language.yaml"
+
+library:
+  source-dirs:
+    - src
+  # Suppress Paths_*
+  other-modules: []
+  dependencies:
+    - "base-noprelude >= 4.9.1.0 && < 4.11"
+    - "formatting >= 6.2.4 && < 6.3"
+    - "q4c12-prelude >= 0 && < 0.1"
+    - "text >= 1.2.2.2 && < 1.3"

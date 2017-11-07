@@ -1,0 +1,9 @@
+- "-Weverything"
+- "-Wno-implicit-prelude"
+- "-Wno-unsafe"
+- "-Wno-safe"
+# TODO: worth trying to fix these warning disablements? I think they might need some attention from upstream, maybe...
+- "-Wno-missed-specialisations"
+- "-Wno-all-missed-specialisations"
+# TODO: file bugs on our -Wredundant-constraints problems, and re-enable it at some point. https://ghc.haskell.org/trac/ghc/ticket/14237 suggests that GHC 8.2.2 may be better.
+- "-Wno-redundant-constraints"

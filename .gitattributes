@@ -1,0 +1,5 @@
+# Ensure our tests don't get CRLF mangled.
+*.in            -text
+*.fails         -text
+*.out           -text
+*.errout        -text

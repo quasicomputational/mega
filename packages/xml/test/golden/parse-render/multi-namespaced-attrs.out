@@ -1,0 +1,1 @@
+<foo n1:eggs="eggs" xmlns:n1="A" n2:spam="spam" xmlns:n2="A" n3:ham="ham" xmlns:n3="B"></foo>

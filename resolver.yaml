@@ -1,0 +1,7 @@
+name: q4c12-resolver
+resolver: nightly-2017-11-04
+packages:
+  #TODO: remove base-prelude extra-dep once it makes it back into Stackage (which I *think* is blocked on Stack supporting Cabal 2, which is in Stack HEAD but unreleased).
+  - base-noprelude-4.10.0.0
+  #TODO: remove transformers extra-dep once GHC 8.4 is a thing.
+  - transformers-0.5.5.0

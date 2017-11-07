@@ -1,0 +1,19 @@
+name: q4c12-romnum
+version: "0"
+author: quasicomputational <quasicomputational@gmail.com>
+license: BSD2
+license-file:
+  - LICENSE.BSD2
+
+ghc-options: !include "../../ghc-options.yaml"
+default-extensions: !include "../../language.yaml"
+
+library:
+  source-dirs:
+    - src
+  # Suppress Paths_*
+  other-modules: []
+  dependencies:
+    - "q4c12-prelude >= 0 && < 0.1"
+
+#TODO: write/port over some tests

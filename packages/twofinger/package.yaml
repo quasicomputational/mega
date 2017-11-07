@@ -1,0 +1,97 @@
+name: q4c12-twofinger
+version: "0"
+synopsis: Efficient alternating finger trees
+description: |
+  This package provides efficient alternating sequences based on
+  finger trees. These can represent sequences made up of two types of
+  element, @e@ and @a@, where two of the same type of element cannot
+  follow each other directly.
+  .
+  Four different flavours are provided, isomorphic to @([(a, e)], a)@,
+  @([(e, a)], e)@, @[(a, e)]@, and @[(e, a)]@.
+  .
+  Cons and uncons-like operations are /O(1)/ amortised, and append
+  operations are /O(log(min(n, m)))/ amortised.
+  .
+  For more details, please see "Q4C12.TwoFinger".
+author: quasicomputational <quasicomputational@gmail.com>
+maintainer: quasicomputational <quasicomputational@gmail.com>
+license: BSD2
+license-file:
+  - LICENSE.BSD2
+category: Data Structures
+extra-source-files:
+  #TODO: should be under extra-doc-files
+  - README.markdown
+
+ghc-options: !include "../../ghc-options.yaml"
+default-extensions: !include "../../language.yaml"
+
+_common-dependencies:
+  # Define version ranges once and only once across components.
+  - &d-base
+    "base >= 4.9.1.0 && < 4.11"
+  - &d-cabal-doctest
+    "cabal-doctest >= 1.0.3 && < 1.1"
+  - &d-deepseq
+    "deepseq >= 1.4.3.0 && < 1.5"
+  - &d-dlist
+    "dlist >= 0.8.0.3 && < 0.9"
+  - &d-doctest
+    "doctest >= 0.11.4 && < 0.14"
+  - &d-microlens
+    "microlens >= 0.4.8.1 && < 0.5"
+  - &d-semigroupoids
+    "semigroupoids >= 5.2.1 && < 5.3"
+  - &d-tasty
+    "tasty >= 0.11.2.1 && < 0.13"
+  - &d-tasty-quickcheck
+    "tasty-quickcheck >= 0.9.1 && < 0.10"
+
+custom-setup:
+  dependencies:
+    #TODO: remove Cabal dep once https://github.com/haskell/cabal/issues/4288 is fixed
+    - "Cabal"
+    - *d-base
+    - *d-cabal-doctest
+
+library:
+  source-dirs:
+    - src
+  # Suppress Paths_*
+  other-modules: []
+  dependencies:
+    - *d-base
+    - *d-deepseq
+    - *d-semigroupoids
+
+tests:
+  quickcheck:
+    source-dirs:
+      - test
+    main: TestQuickCheck.hs
+    other-modules: []
+    dependencies:
+      - q4c12-twofinger
+      - *d-base
+      - *d-dlist
+      - *d-microlens
+      - *d-tasty
+      - *d-tasty-quickcheck
+  doctests:
+    source-dirs:
+      - test
+    main: Doctest.hs
+    other-modules:
+      - Build_doctests
+    ghc-options:
+      #TODO: this is needed because cabal-doctest generates a module that triggers this warning. Sigh. Should file a bug about that...
+      - "-Wno-missing-import-lists"
+    dependencies:
+      #https://github.com/phadej/cabal-doctest/issues/19
+      - q4c12-twofinger
+      - *d-base
+      - *d-doctest
+      - *d-microlens
+
+#TODO: Benchmarks!

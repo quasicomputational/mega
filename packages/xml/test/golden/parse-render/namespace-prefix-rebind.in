@@ -1,0 +1,1 @@
+<foo xmlns:a="example:x"><a:bar xmlns:a="example:b" /></foo>

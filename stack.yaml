@@ -1,0 +1,15 @@
+#TODO: wouldn't it be nice to be able to specify the resolver inline as an object? Stack issue: https://github.com/commercialhaskell/stack/issues/3561
+resolver: resolver.yaml
+ghc-options:
+  $locals: -O0
+packages:
+  - location: ./packages/xml
+  - location: ./packages/mappend
+  - location: ./packages/twofinger
+  - location: ./packages/prelude
+  - location: ./packages/romnum
+  - location: ./packages/foldable-utils
+  - location: ./packages/hlist
+  - location: ./packages/optic
+  - location: ./packages/validate
+  - location: ./packages/position

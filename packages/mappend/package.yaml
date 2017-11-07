@@ -1,0 +1,18 @@
+name: q4c12-mappend
+version: "0"
+author: quasicomputational <quasicomputational@gmail.com>
+license: BSD2
+license-file:
+  - LICENSE.BSD2
+
+ghc-options: !include "../../ghc-options.yaml"
+default-extensions: !include "../../language.yaml"
+
+library:
+  source-dirs:
+    - src
+  # Suppress Paths_*
+  other-modules: []
+  dependencies:
+    - "containers >= 0.5.9.2 && < 0.6"
+    - "q4c12-prelude >= 0 && < 0.1"

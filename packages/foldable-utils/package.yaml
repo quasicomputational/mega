@@ -1,0 +1,52 @@
+name: q4c12-foldable-utils
+version: "0"
+author: quasicomputational <quasicomputational@gmail.com>
+license: BSD2
+license-file:
+  - LICENSE.BSD2
+
+ghc-options: !include "../../ghc-options.yaml"
+default-extensions: !include "../../language.yaml"
+
+_common-dependencies:
+  # Define version ranges once and only once across components.
+  - &d-base
+    "base >= 4.9.1.0 && < 4.11"
+  - &d-cabal-doctest
+    "cabal-doctest >= 1.0.3 && < 1.1"
+  - &d-doctest
+    "doctest >= 0.11.4 && < 0.14"
+  - &d-transformers
+    "transformers >= 0.5.5.0 && < 0.6"
+
+custom-setup:
+  dependencies:
+    #TODO: remove Cabal dep once https://github.com/haskell/cabal/issues/4288 is fixed
+    - "Cabal"
+    - *d-base
+    - *d-cabal-doctest
+
+library:
+  source-dirs:
+    - src
+  # Suppress Paths_*
+  other-modules: []
+  dependencies:
+    - *d-base
+    - *d-transformers
+
+tests:
+  doctests:
+    source-dirs:
+      - test
+    main: Doctest.hs
+    other-modules:
+      - Build_doctests
+    ghc-options:
+      #TODO: this is needed because cabal-doctest generates a module that triggers this warning. Sigh. Should file a bug about that...
+      - "-Wno-missing-import-lists"
+    dependencies:
+      #https://github.com/phadej/cabal-doctest/issues/19
+      - q4c12-foldable-utils
+      - *d-base
+      - *d-doctest

@@ -1,0 +1,6 @@
+<entity-set>
+  <entity name="foo">&amp;hello!</entity>
+  <entity name="bar">&lt;markup</entity>
+  <entity name="baz">newline&#xA;separated</entity>
+  <entity name="qux">&#x2012;</entity>
+</entity-set>

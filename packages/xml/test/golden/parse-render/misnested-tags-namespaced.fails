@@ -1,0 +1,5 @@
+<a:bar xmlns:a="example:spam">
+  <b:foo xmlns:b="example:eggs">
+  Hello.
+  </a:baz>
+</a:bar>

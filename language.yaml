@@ -1,0 +1,10 @@
+- DataKinds
+- DeriveGeneric
+- DeriveLift
+- DeriveTraversable
+- EmptyCase
+- LambdaCase
+- KindSignatures
+- OverloadedStrings
+- StandaloneDeriving
+- TypeOperators

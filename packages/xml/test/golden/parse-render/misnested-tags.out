@@ -1,0 +1,1 @@
+Error: Misnested tags: Open tag is 'foo' at (2, 3), but close tag is 'baz' at (4, 5).
