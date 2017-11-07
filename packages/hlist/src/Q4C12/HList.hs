@@ -18,6 +18,8 @@ import Data.Bifunctor (bimap)
 import Lens.Micro (over)
 import Q4C12.Optic (Iso, Iso', AnIso, withIso, iso, Prism, prism)
 
+--TODO: consider replacing this module with generics-sop or similar.
+
 --TODO: think about syntactic sugar for these, esp. low-order ones.
 data HSum :: [*] -> * where
   HSumHere :: a -> HSum (a ': as)
