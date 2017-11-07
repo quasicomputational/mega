@@ -5,7 +5,7 @@
 {-# LANGUAGE UndecidableSuperClasses #-}
 module Q4C12.XML.Desc.RApplicative
   ( RFunctor (rfmap)
-  , RPlus (rempty, rplus), rchoice
+  , RPlus (rempty, rplus)
   , RPlusApplyR (ActionR, rconsR), rright
   , RAlternative (rnil, rmany, rsome), rcons
   , roptional

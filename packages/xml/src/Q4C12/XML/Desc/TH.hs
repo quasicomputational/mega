@@ -77,7 +77,6 @@ imposs f = do
   ((p, e), _) <- lift $ withVars f
   Writer.tell $ DList.singleton $ Left $ CaseImposs p e
 
---TODO: exporting this from here feels kind of weird; move to Util.hs?
 fromPatToExp :: Pat -> Q Exp
 fromPatToExp (TH.LitP lit) = TH.litE lit
 fromPatToExp (TH.VarP name) = TH.varE name
