@@ -30,7 +30,7 @@ data PositionRange = PositionRange
   { posRangeStart :: Position
   , posRangeEnd :: Position
   }
-  deriving (Show, Generic)
+  deriving (Show, Eq, Ord, Generic)
 
 instance NFData PositionRange
 
