@@ -20,6 +20,7 @@ import Q4C12.XML.Desc
   )
 import Q4C12.XML.Desc.Parse (parse)
 
+--TODO: this ought to be in an Internal module
 entitySetSchema :: (Desc tag) => El tag [(SText, LText)]
 entitySetSchema = elementMixed (uname "entity-set") $ flowEvenPreWS $
   rmany $ flowWSE $ rfmap (from doubleProd) $ elementMixed (uname "entity")
