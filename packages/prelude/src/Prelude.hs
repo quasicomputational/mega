@@ -6,6 +6,7 @@ module Prelude
   , hush
   , (<&>)
   , (<>~)
+  , FilePathComponent
   )
   where
 
@@ -18,7 +19,7 @@ import Control.Category as Export
 import Control.Exception as Export
   (Exception)
 import Control.Monad as Export
-  (Monad, (=<<), (>>=), when, unless, ap, (<=<), void)
+  (Monad, (=<<), (>>=), when, unless, ap, (<=<), void, guard)
 import Control.Monad.Fail as Export
   (fail)
 import Control.Monad.IO.Class as Export
@@ -61,7 +62,7 @@ import Data.Int as Export
 import Data.List as Export
   (iterate)
 import Data.List.NonEmpty as Export
-  (NonEmpty ((:|)))
+  (NonEmpty ((:|)), unzip)
 import Data.Maybe as Export
   (Maybe (Just, Nothing), maybe, fromMaybe, mapMaybe, catMaybes, isNothing)
 import Data.Monoid as Export
@@ -70,7 +71,7 @@ import Data.Ord as Export
   (Ord, (>=), (<=), min, max)
 --TODO: get rid of Option once Maybe's Monoid instance changes
 import Data.Semigroup as Export
-  ( Semigroup ((<>)), All (All), Any (Any), Option (Option), option
+  ( Semigroup ((<>)), All (All), getAll, Any (Any), getAny, Option (Option), option
   , First (First), getFirst, Last (Last), getLast
   )
 import Data.Traversable as Export
@@ -99,7 +100,7 @@ import Numeric.Natural as Export
 import System.Exit as Export
   (exitFailure)
 import System.IO as Export
-  (IO, FilePath, stdin, stdout, stderr)
+  (IO, FilePath, stdin, stdout, stderr, withFile, IOMode (ReadMode, WriteMode, AppendMode, ReadWriteMode))
 import Text.Show as Export
   (Show, show)
 
@@ -110,7 +111,7 @@ import Control.DeepSeq as Export
 -- filepath imports for re-export
 --TODO: consider dropping the String-based ones?
 import System.FilePath.Posix as Export
-  (addExtension, dropExtension)
+  (addExtension, dropExtension, (</>))
 
 -- transformers imports for re-export
 import Control.Monad.Trans.Accum as Export
@@ -184,6 +185,7 @@ import Q4C12.Validate as Export
 
 --Imports for local use.
 import Data.Semigroup (mtimesDefault)
+import Data.String (String)
 import qualified Data.Text as ST
 import qualified Data.Text.Lazy as LT
 import qualified Data.Text.Lazy.Builder as LTB
@@ -209,3 +211,5 @@ infixl 1 <&>
 --TODO: get this operator into microlens
 (<>~) :: (Semigroup a) => Lens' s a -> a -> s -> s
 l <>~ a = over l (<> a)
+
+type FilePathComponent = String
