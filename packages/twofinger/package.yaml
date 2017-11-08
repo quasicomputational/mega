@@ -33,6 +33,8 @@ _common-dependencies:
   # Define version ranges once and only once across components.
   - &d-base
     "base >= 4.9.1.0 && < 4.11"
+  - &d-bifunctors
+    "bifunctors >= 5.4.2 && < 5.5"
   - &d-cabal-doctest
     "cabal-doctest >= 1.0.3 && < 1.1"
   - &d-deepseq
@@ -66,7 +68,10 @@ library:
     - *d-base
     - *d-deepseq
     - *d-semigroupoids
-
+  when:
+    - condition: impl(ghc < 8.2)
+      dependencies:
+        - *d-bifunctors
 tests:
   quickcheck:
     source-dirs:

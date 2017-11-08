@@ -14,6 +14,8 @@ _common-dependencies:
   # Define version ranges once and only once across components.
   - &d-base
     "base >= 4.9.1.0 && < 4.11"
+  - &d-bifunctors
+    "bifunctors >= 5.4.2 && < 5.5"
   - &d-cabal-doctest
     "cabal-doctest >= 1.0.3 && < 1.1"
   - &d-doctest
@@ -36,6 +38,10 @@ library:
   dependencies:
     - *d-base
     - *d-transformers
+  when:
+    - condition: impl(ghc < 8.2)
+      dependencies:
+        - *d-bifunctors
 
 tests:
   doctests:
