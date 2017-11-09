@@ -7,7 +7,7 @@ module Q4C12.XML.Desc
 import Q4C12.TwoFinger (unconsOddA, consOddA, singletonOddA)
 
 import Q4C12.XML.Desc.Class as Export
-  ( Desc, Pos, El, OddFlow, EvenFlow
+  ( Desc, Pos, El, OddFlow, EvenFlow, DT
   , evenUp, attrF, oddWS, oddTx, oddTxPos, nonTerminalEven, nonTerminalOdd
   , datatypeDT, tokenDT, nonTerminalE
   , uattrF
