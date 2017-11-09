@@ -68,7 +68,7 @@ import Data.Maybe as Export
 import Data.Monoid as Export
   (Monoid (mempty, mappend), Endo (Endo), appEndo, Dual (Dual), getDual)
 import Data.Ord as Export
-  (Ord, (>=), (<=), min, max)
+  (Ord, (>=), (<=), (>), (<), min, max)
 --TODO: get rid of Option once Maybe's Monoid instance changes
 import Data.Semigroup as Export
   ( Semigroup ((<>)), All (All), getAll, Any (Any), getAny, Option (Option), option
