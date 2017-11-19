@@ -16,6 +16,8 @@ extra-source-files:
 ghc-options: !include "../../ghc-options.yaml"
 default-extensions: !include "../../language.yaml"
 
+#TODO: https://github.com/commercialhaskell/stack/issues/2583 means we can't get away with putting the QuickCheck stuff into another package.
+
 _common-dependencies:
   # Define version ranges once and only once across components.
   - &d-base
@@ -26,18 +28,14 @@ _common-dependencies:
     "cabal-doctest >= 1.0.3 && < 1.1"
   - &d-deepseq
     "deepseq >= 1.4.3.0 && < 1.5"
-  - &d-dlist
-    "dlist >= 0.8.0.3 && < 0.9"
   - &d-doctest
     "doctest >= 0.11.4 && < 0.14"
   - &d-microlens
     "microlens >= 0.4.8.1 && < 0.5"
+  - &d-QuickCheck
+    "QuickCheck >= 2.10.1 && < 2.11"
   - &d-semigroupoids
     "semigroupoids >= 5.2.1 && < 5.3"
-  - &d-tasty
-    "tasty >= 0.11.2.1 && < 0.13"
-  - &d-tasty-quickcheck
-    "tasty-quickcheck >= 0.9.1 && < 0.10"
 
 custom-setup:
   dependencies:
@@ -54,24 +52,13 @@ library:
   dependencies:
     - *d-base
     - *d-deepseq
+    - *d-QuickCheck
     - *d-semigroupoids
   when:
     - condition: impl(ghc < 8.2)
       dependencies:
         - *d-bifunctors
 tests:
-  quickcheck:
-    source-dirs:
-      - test
-    main: TestQuickCheck.hs
-    other-modules: []
-    dependencies:
-      - q4c12-twofinger
-      - *d-base
-      - *d-dlist
-      - *d-microlens
-      - *d-tasty
-      - *d-tasty-quickcheck
   doctests:
     source-dirs:
       - test
@@ -87,5 +74,8 @@ tests:
       - *d-base
       - *d-doctest
       - *d-microlens
+      #cabal-doctest related hacks
+      - *d-QuickCheck
+      - "template-haskell"
 
 #TODO: Benchmarks!
