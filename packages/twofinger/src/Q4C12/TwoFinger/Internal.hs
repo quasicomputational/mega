@@ -1,3 +1,4 @@
+{-# LANGUAGE ViewPatterns #-}
 -- |
 -- Stability: unstable
 --
@@ -177,8 +178,7 @@ instance (NFData e, NFData a) => NFData (TwoFingerOddA e a)
 -- 3
 firstOddA
   :: (Functor f) => (a -> f a) -> TwoFingerOddA e a -> f (TwoFingerOddA e a)
-firstOddA f tree = case halfunconsOddA tree of
-  (a, tree') -> flip halfconsEvenE tree' <$> f a
+firstOddA f (halfunconsOddA -> (a, tree)) = flip halfconsEvenE tree <$> f a
 
 -- | Access the last @a@ of a @'TwoFingerOddA' e a@. /O(1)/. This type
 -- is @Lens' ('TwoFingerOddA' e a) a@ in disguise.
@@ -187,8 +187,7 @@ firstOddA f tree = case halfunconsOddA tree of
 -- consOddA 3 True (singletonOddA 20)
 lastOddA
   :: (Functor f) => (a -> f a) -> TwoFingerOddA e a -> f (TwoFingerOddA e a)
-lastOddA f tree = case halfunsnocOddA tree of
-  (tree', a) -> halfsnocEvenA tree' <$> f a
+lastOddA f (halfunsnocOddA -> (tree, a)) = halfsnocEvenA tree <$> f a
 
 instance Functor (TwoFingerOddA e) where
   fmap = fmapDefault
@@ -698,14 +697,14 @@ appendOddA0
   => TwoFingerOddA e a
   -> TwoFingerOddA e a
   -> TwoFingerOddA e a
-appendOddA0 (EmptyOddA a) m = case halfunconsOddA m of
-  (a', m') -> halfconsEvenE (a <> a') m'
-appendOddA0 (SingleOddA a1 e1 a) m = case halfunconsOddA m of
-  (a', m') -> consOddA a1 e1 $ halfconsEvenE (a <> a') m'
-appendOddA0 m (EmptyOddA a') = case halfunsnocOddA m of
-  (m', a) -> halfsnocEvenA m' (a <> a')
-appendOddA0 m (SingleOddA a' a1 e1) = case halfunsnocOddA m of
-  (m', a) -> snocOddA (halfsnocEvenA m' (a <> a')) a1 e1
+appendOddA0 (EmptyOddA a) (halfunconsOddA -> (a', m)) =
+  halfconsEvenE (a <> a') m
+appendOddA0 (SingleOddA a1 e1 a) (halfunconsOddA -> (a', m)) =
+  consOddA a1 e1 $ halfconsEvenE (a <> a') m
+appendOddA0 (halfunsnocOddA -> (m, a)) (EmptyOddA a') =
+  halfsnocEvenA m (a <> a')
+appendOddA0 (halfunsnocOddA -> (m, a)) (SingleOddA a' a1 e1) =
+  snocOddA (halfsnocEvenA m (a <> a')) a1 e1
 appendOddA0 (DeepOddA aa1 pr1 m1 sf1 az1) (DeepOddA aa2 pr2 m2 sf2 az2) =
   DeepOddA aa1 pr1 (addDigits0 m1 sf1 (az1 <> aa2) pr2 m2) sf2 az2
 
