@@ -94,8 +94,6 @@ module Q4C12.TwoFinger
   )
   where
 
-import Data.Semigroup ((<>))
-
 import Q4C12.TwoFinger.Internal
   (
     TwoFingerOddA,
@@ -118,9 +116,11 @@ import Q4C12.TwoFinger.Internal
     appendOddAOddE, appendOddEOddA,
     alignLeftOddAOddA, alignLeftOddAEvenA,
     alignLeftOddEOddE, alignLeftOddEEvenE,
-    --Not for exported use (doctests only)
-    AnyOddA (AnyOddA), AnyOddE (AnyOddE), AnyEvenA (AnyEvenA), AnyEvenE (AnyEvenE),
   )
+
+-- $setup
+-- >>> import Q4C12.TwoFinger.Internal (AnyOddA (AnyOddA), AnyOddE (AnyOddE), AnyEvenA (AnyEvenA), AnyEvenE (AnyEvenE))
+-- >>> import Data.Semigroup ((<>))
 
 -- $monoid_action_properties
 -- prop> \(AnyOddA a) (AnyOddA b) (AnyEvenE c) -> appendOddAEvenE (a <> b) c == a <> appendOddAEvenE b c

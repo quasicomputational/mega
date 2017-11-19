@@ -164,6 +164,7 @@ instance Eq2 TwoFingerOddA where
     (aligned, rest) ->
       biall (uncurry f) (uncurry g) aligned && noMore rest
     where
+      noMore :: Either (TwoFingerEvenE a b) (TwoFingerEvenE c d) -> Bool
       noMore = either (isNothing . unconsEvenE) (isNothing . unconsEvenE)
 
 instance (Eq e) => Eq1 (TwoFingerOddA e) where
@@ -263,6 +264,7 @@ instance Eq2 TwoFingerOddE where
   liftEq2 f g as bs = case alignLeftOddEOddE as bs of
     (aligned, rest) -> biall (uncurry f) (uncurry g) aligned && noMore rest
     where
+      noMore :: Either (TwoFingerEvenA a b) (TwoFingerEvenA c d) -> Bool
       noMore = either (isNothing . unconsEvenA) (isNothing . unconsEvenA)
 
 instance (Eq e) => Eq1 (TwoFingerOddE e) where
@@ -323,6 +325,7 @@ instance Eq2 TwoFingerEvenE where
   liftEq2 f g as bs = case alignLeftEvenEEvenE as bs of
     (aligned, rest) -> biall (uncurry f) (uncurry g) aligned && noMore rest
     where
+      noMore :: Either (TwoFingerEvenE a b) (TwoFingerEvenE c d) -> Bool
       noMore = either (isNothing . unconsEvenE) (isNothing . unconsEvenE)
 
 instance (Eq e) => Eq1 (TwoFingerEvenE e) where
@@ -385,6 +388,7 @@ instance Eq2 TwoFingerEvenA where
   liftEq2 f g as bs = case alignLeftEvenAEvenA as bs of
     (aligned, rest) -> biall (uncurry f) (uncurry g) aligned && noMore rest
     where
+      noMore :: Either (TwoFingerEvenA a b) (TwoFingerEvenA c d) -> Bool
       noMore = either (isNothing . unconsEvenA) (isNothing . unconsEvenA)
 
 instance (Eq e) => Eq1 (TwoFingerEvenA e) where
