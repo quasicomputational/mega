@@ -320,11 +320,10 @@ instance (Show e, Show a) => Show (TwoFingerEvenE e a) where
   showsPrec = showsPrec2
 
 instance Eq2 TwoFingerEvenE where
-  liftEq2 f g as bs = case (unconsEvenE as, unconsEvenE bs) of
-    (Nothing, Nothing) -> True
-    (Just (x, a, as'), Just (y, b, bs')) ->
-      f x y && g a b && liftEq2 f g as' bs'
-    _ -> False
+  liftEq2 f g as bs = case alignLeftEvenEEvenE as bs of
+    (aligned, rest) -> biall (uncurry f) (uncurry g) aligned && noMore rest
+    where
+      noMore = either (isNothing . unconsEvenE) (isNothing . unconsEvenE)
 
 instance (Eq e) => Eq1 (TwoFingerEvenE e) where
   liftEq = liftEq2 (==)
@@ -383,11 +382,10 @@ instance (Show e, Show a) => Show (TwoFingerEvenA e a) where
   showsPrec = showsPrec2
 
 instance Eq2 TwoFingerEvenA where
-  liftEq2 f g as bs = case (unconsEvenA as, unconsEvenA bs) of
-    (Nothing, Nothing) -> True
-    (Just (a, x, as'), Just (b, y, bs')) ->
-      f x y && g a b && liftEq2 f g as' bs'
-    _ -> False
+  liftEq2 f g as bs = case alignLeftEvenAEvenA as bs of
+    (aligned, rest) -> biall (uncurry f) (uncurry g) aligned && noMore rest
+    where
+      noMore = either (isNothing . unconsEvenA) (isNothing . unconsEvenA)
 
 instance (Eq e) => Eq1 (TwoFingerEvenA e) where
   liftEq = liftEq2 (==)
@@ -1300,6 +1298,13 @@ alignLeftOddAEvenA as bs = case (unconsOddA as, unconsEvenA bs) of
   (_, Nothing) -> Left (mempty, as)
   (Left a, Just (a', e', bs')) -> Right (singletonOddA (a, a'), halfconsEvenA e' bs')
 
+alignLeftEvenAEvenA :: TwoFingerEvenA e a -> TwoFingerEvenA e' a' -> (TwoFingerEvenA (e, e') (a, a'), Either (TwoFingerEvenA e a) (TwoFingerEvenA e' a'))
+alignLeftEvenAEvenA as bs = case (unconsEvenA as, unconsEvenA bs) of
+  (Just (a, e, as'), Just (a', e', bs')) -> case alignLeftEvenAEvenA as' bs' of
+    (aligned, rest) -> (consEvenA (a, a') (e, e') aligned, rest)
+  (_, Nothing) -> (mempty, Left as)
+  (Nothing, _) -> (mempty, Right bs)
+
 -- |
 -- >>> alignLeftOddEOddE (consOddE 'a' 1 $ consOddE 'b' 2 $ singletonOddE 'c') (consOddE "foo" 10 $ singletonOddE "bar")
 -- (consOddE ('a',"foo") (1,10) (singletonOddE ('b',"bar")),Left (consEvenA 2 'c' mempty))
@@ -1317,8 +1322,15 @@ alignLeftOddEOddE as (halfunsnocOddE -> (bs, e')) = case alignLeftOddEEvenE as b
 -- prop> \(AnyOddE as) (AnyEvenE bs) -> let { (as', bs') = case alignLeftOddEEvenE as bs of { Left (aligned, rest) -> (appendEvenEOddE (bimap fst fst aligned) rest, bimap snd snd aligned) ; Right (aligned, rest) -> (bimap fst fst aligned, appendOddEOddA (bimap snd snd aligned) rest) } } in as == as' && bs == bs'
 alignLeftOddEEvenE :: TwoFingerOddE e a -> TwoFingerEvenE e' a' -> Either (TwoFingerEvenE (e, e') (a, a'), TwoFingerOddE e a) (TwoFingerOddE (e, e') (a, a'), TwoFingerOddA e' a')
 alignLeftOddEEvenE as bs = case (unconsOddE as, unconsEvenE bs) of
-  (Right (a, e, as'), Just (a', e', bs')) -> case alignLeftOddEEvenE as' bs' of
-    Left (aligned, rest) -> Left (consEvenE (a, a') (e, e') aligned, rest)
-    Right (aligned, rest) -> Right (consOddE (a, a') (e, e') aligned, rest)
+  (Right (e, a, as'), Just (e', a', bs')) -> case alignLeftOddEEvenE as' bs' of
+    Left (aligned, rest) -> Left (consEvenE (e, e') (a, a') aligned, rest)
+    Right (aligned, rest) -> Right (consOddE (e, e') (a, a') aligned, rest)
   (_, Nothing) -> Left (mempty, as)
-  (Left a, Just (a', e', bs')) -> Right (singletonOddE (a, a'), halfconsEvenE e' bs')
+  (Left e, Just (e', a', bs')) -> Right (singletonOddE (e, e'), halfconsEvenE a' bs')
+
+alignLeftEvenEEvenE :: TwoFingerEvenE e a -> TwoFingerEvenE e' a' -> (TwoFingerEvenE (e, e') (a, a'), Either (TwoFingerEvenE e a) (TwoFingerEvenE e' a'))
+alignLeftEvenEEvenE as bs = case (unconsEvenE as, unconsEvenE bs) of
+  (Just (e, a, as'), Just (e', a', bs')) -> case alignLeftEvenEEvenE as' bs' of
+    (aligned, rest) -> (consEvenE (e, e') (a, a') aligned, rest)
+  (_, Nothing) -> (mempty, Left as)
+  (Nothing, _) -> (mempty, Right bs)
