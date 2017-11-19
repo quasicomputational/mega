@@ -13,6 +13,7 @@
 module Q4C12.TwoFinger.Internal where
 
 import Control.DeepSeq (NFData)
+import Control.Monad (ap)
 import Data.Bifunctor (Bifunctor (bimap), first, second)
 import Data.Bifoldable (Bifoldable (bifoldMap), biall)
 import Data.Bitraversable
@@ -21,6 +22,7 @@ import Data.Functor.Alt (Alt ((<!>)))
 import Data.Functor.Apply
   ( Apply, (<.>), MaybeApply (MaybeApply)
   , WrappedApplicative (WrapApplicative), unwrapApplicative )
+import Data.Functor.Bind (Bind ((>>-)))
 import Data.Functor.Classes
   ( Eq2 (liftEq2), Eq1 (liftEq), eq2, Show2 (liftShowsPrec2)
   , Show1 (liftShowsPrec), showsPrec2
@@ -50,7 +52,7 @@ import qualified Test.QuickCheck as QC
 --TODO: Flipped TwoFingerEvenA has a sensible Alt/Plus instance. So,
 --maybe offer a wholly flipped set of flavours?
 
---TODO: Apply? Applicative? Bind? Monad?
+--TODO: Alternative zippy Applicatives instances. Maybe just Apply, to dodge the infinity problem?
 
 --TODO: send this upstream to semigroupoids? Opened issue: https://github.com/ekmett/semigroupoids/issues/66
 (<.*>) :: (Apply f) => f (a -> b) -> MaybeApply f a -> f b
@@ -688,6 +690,31 @@ halfunsnocEvenA (SingleEvenA a e) = Just (EmptyOddA a, e)
 halfunsnocEvenA (DeepEvenA a1 pr m sf) = case digitUnsnoc sf of
   (Nothing, e) -> Just (halfconsEvenE a1 (rotr pr m), e)
   (Just (sf', a2), e) -> Just (DeepOddA a1 pr m sf' a2, e)
+
+-- * Monad and Applicative instances, and related operations
+joinOddA :: TwoFingerOddA (TwoFingerOddE e a) (TwoFingerOddA e a) -> TwoFingerOddA e a
+joinOddA (halfunconsOddA -> (a, tree)) = appendOddAEvenE a (goEvenE tree)
+  where
+    goEvenE :: TwoFingerEvenE (TwoFingerOddE e a) (TwoFingerOddA e a) -> TwoFingerEvenE e a
+    goEvenE tree' = case halfunconsEvenE tree' of
+      Nothing -> mempty
+      Just (e, tree'') -> appendOddEOddA e (joinOddA tree'')
+
+instance Monad (TwoFingerOddA e) where
+  tree >>= f = joinOddA $ bimap singletonOddE f tree
+
+instance Bind (TwoFingerOddA e) where
+  (>>-) = (>>=)
+
+-- | A \'producty\' instance:
+-- >>> (,) <$> (consOddA 1 "one" $ consOddA 2 "two" $ singletonOddA 3) <*> (consOddA 'a' "foo" $ singletonOddA 'b')
+-- consOddA (1,'a') "foo" (consOddA (1,'b') "one" (consOddA (2,'a') "foo" (consOddA (2,'b') "two" (consOddA (3,'a') "foo" (singletonOddA (3,'b'))))))
+instance Applicative (TwoFingerOddA e) where
+  pure = singletonOddA
+  (<*>) = ap
+
+instance Apply (TwoFingerOddA e) where
+  (<.>) = (<*>)
 
 -- * Construction and deconstruction of TwoFingerOddA.
 singletonOddA :: a -> TwoFingerOddA e a
