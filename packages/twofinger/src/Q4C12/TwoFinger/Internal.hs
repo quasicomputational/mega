@@ -264,6 +264,12 @@ instance Eq2 TwoFingerOddE where
       f x y && g a b && liftEq2 f g as' bs'
     _ -> False
 
+instance (Eq e) => Eq1 (TwoFingerOddE e) where
+  liftEq = liftEq2 (==)
+
+instance (Eq e, Eq a) => Eq (TwoFingerOddE e a) where
+  (==) = eq2
+
 instance Functor (TwoFingerOddE e) where
   fmap = bimap id
 
