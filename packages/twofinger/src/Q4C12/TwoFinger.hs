@@ -51,7 +51,7 @@
 -- This package's alternating finger trees are not annotated with
 -- sizes as described in section 4 of the paper.
 module Q4C12.TwoFinger
-  ( -- * 'TwoFingerOddA': @a (e a)*@
+  ( -- * TwoFingerOddA
     TwoFingerOddA,
     -- ** Construction and analysis
     singletonOddA, unitOddA, onlyOddA, interleavingOddA,
@@ -61,7 +61,7 @@ module Q4C12.TwoFinger
     halfconsOddA, halfunconsOddA, halfsnocOddA, halfunsnocOddA,
     -- ** Lenses
     firstOddA, lastOddA,
-    -- * 'TwoFingerOddE': @e (a e)*@
+    -- * TwoFingerOddE
     TwoFingerOddE,
     -- ** Construction
     singletonOddE,
@@ -69,13 +69,13 @@ module Q4C12.TwoFinger
     consOddE, snocOddE, unconsOddE, unsnocOddE,
     -- ** Half conses
     halfconsOddE, halfsnocOddE, halfunconsOddE, halfunsnocOddE,
-    -- * 'TwoFingerEvenA': @(a e)*@
+    -- * TwoFingerEvenA
     TwoFingerEvenA,
     -- ** Full conses
     consEvenA, unconsEvenA, snocEvenA, unsnocEvenA,
     -- ** Half conses
     halfconsEvenA, halfsnocEvenA, halfunconsEvenA, halfunsnocEvenA,
-    -- * 'TwoFingerEvenE': @(e a)*@
+    -- * TwoFingerEvenE
     TwoFingerEvenE,
     -- ** Full conses
     consEvenE, unconsEvenE, snocEvenE, unsnocEvenE,

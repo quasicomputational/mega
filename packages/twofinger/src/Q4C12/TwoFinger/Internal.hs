@@ -135,7 +135,7 @@ instance Bitraversable1 Node where
   bitraverse1 f g (Node3 e1 a1 e2 a2 e3) =
     Node3 <$> f e1 <.> g a1 <.> f e2 <.> g a2 <.> f e3
 
--- ** @a, (e, a)*@
+-- | Isomorphic to @a, (e, a)*@
 data TwoFingerOddA e a
   = EmptyOddA a
   | SingleOddA a e a
@@ -236,7 +236,7 @@ instance Bitraversable1 TwoFingerOddA where
     <.> bitraverse1 f g sf
     <.> g a1
 
--- ** @e, (a, e)*@
+-- | Isomorphic to @e, (a, e)*@
 data TwoFingerOddE e a
   = SingleOddE e
   | DeepOddE !(Digit e a) (TwoFingerOddA (Node e a) a) !(Digit e a)
@@ -293,7 +293,7 @@ instance Bitraversable TwoFingerOddE where
 instance (NFData e, NFData a) => NFData (TwoFingerOddE e a)
 
 --TODO: cleaner to offer TwoFingerEvenE1, without EmptyL?
--- ** @(e, a)*@
+-- | Isomorphic to @(e, a)*@
 data TwoFingerEvenE e a
   = EmptyEvenE
   | SingleEvenE e a
@@ -358,7 +358,7 @@ instance Bitraversable TwoFingerEvenE where
     <*> bitraverse f g sf
     <*> g a
 
--- ** @(a, e)*@
+-- | Isomorphic to @(a, e)*@
 data TwoFingerEvenA e a
   = EmptyEvenA
   | SingleEvenA a e
