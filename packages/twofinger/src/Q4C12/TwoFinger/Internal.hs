@@ -726,7 +726,7 @@ instance Applicative (TwoFingerOddA e) where
 instance Apply (TwoFingerOddA e) where
   (<.>) = (<*>)
 
---TODO: Polarity considerations demonstrate that Monad/Bind can't work for OddE/EvenA/EvenE, and we can't have Applicative. Can we have Apply, though?
+--TODO: Polarity considerations demonstrate that Monad/Bind can't work for EvenA/EvenE, and we can't have Applicative because we can't invent an e out of thin air (well, we could with Monoid e). Can we have Apply, though? OddE could have Bind with a Semigroup e constraint.
 
 -- * Construction and deconstruction of TwoFingerOddA.
 singletonOddA :: a -> TwoFingerOddA e a
