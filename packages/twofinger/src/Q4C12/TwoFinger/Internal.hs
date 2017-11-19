@@ -264,6 +264,25 @@ instance Eq2 TwoFingerOddE where
       f x y && g a b && liftEq2 f g as' bs'
     _ -> False
 
+instance Functor (TwoFingerOddE e) where
+  fmap = bimap id
+
+instance Foldable (TwoFingerOddE e) where
+  foldMap = bifoldMap mempty
+
+instance Traversable (TwoFingerOddE e) where
+  traverse = bitraverse pure
+
+instance Bifunctor TwoFingerOddE where
+  bimap = bimapDefault
+
+instance Bifoldable TwoFingerOddE where
+  bifoldMap = bifoldMapDefault
+
+instance Bitraversable TwoFingerOddE where
+  bitraverse f _ (SingleOddE e) = SingleOddE <$> f e
+  bitraverse f g (DeepOddE pr m sf) = DeepOddE <$> bitraverse f g pr <*> bitraverse (bitraverse f g) g m <*> bitraverse f g sf
+
 instance (NFData e, NFData a) => NFData (TwoFingerOddE e a)
 
 --TODO: cleaner to offer TwoFingerEvenE1, without EmptyL?
