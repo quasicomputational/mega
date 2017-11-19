@@ -1,6 +1,5 @@
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE PatternGuards #-}
-module Q4C12.XML.Internal where
 -- |
 -- Stability: unstable
 --
@@ -11,6 +10,7 @@ module Q4C12.XML.Internal where
 -- __exact__ version of this package. (If you do need them, please
 -- file a bug so that, hopefully, your use-case can be accomplished
 -- through the public interface.)
+module Q4C12.XML.Internal where
 
 import Control.Monad.Trans.Except (throwE)
 import Control.Monad.Trans.State (get, gets, put, modify)
