@@ -111,6 +111,7 @@ stringTokenDT = datatypeDT $ Datatype Right id "" "token"
 --TODO: consider making the DT bits return strict texts?
 --TODO: implement a fourth instance, a linter. Preliminary lints to find: overlapping patterns (ambiguity). Hmm, but maybe that should be part of the RELAX instance, because that's got its own AST?
 --TODO: position information in datatype thingies.
+--TODO: offer RApplicative-ish regexes as datatypes.
 class (RAlternative (EvenFlow tag), RPlus (El tag), RAlternative (DT tag),
        RPlusApplyR (OddFlow tag), ActionR (OddFlow tag) ~ EvenFlow tag)
    => Desc tag where

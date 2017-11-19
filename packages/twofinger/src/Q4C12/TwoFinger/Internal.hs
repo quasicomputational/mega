@@ -692,6 +692,8 @@ halfunsnocEvenA (DeepEvenA a1 pr m sf) = case digitUnsnoc sf of
   (Just (sf', a2), e) -> Just (DeepOddA a1 pr m sf' a2, e)
 
 -- * Monad and Applicative instances, and related operations
+
+--TODO: should be able to write some property tests for this.
 joinOddA :: TwoFingerOddA (TwoFingerOddE e a) (TwoFingerOddA e a) -> TwoFingerOddA e a
 joinOddA (halfunconsOddA -> (a, tree)) = appendOddAEvenE a (joinEvenE tree)
 
