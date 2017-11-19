@@ -19,11 +19,13 @@ import Test.Tasty.QuickCheck
 import Q4C12.TwoFinger
   ( TwoFingerOddA, singletonOddA, firstOddA, lastOddA, halfsnocEvenA
   , halfconsEvenE, halfconsOddE, halfsnocOddE, halfconsOddA, halfunconsEvenE
-  , halfconsEvenA, halfunconsOddE, unconsEvenA
+  , halfconsEvenA, halfunconsOddE, unconsEvenA, halfunsnocEvenE, halfunconsEvenA
   , halfunsnocOddA, halfsnocOddA, halfunsnocEvenA
+  , appendEvenAOddA, appendOddEEvenA, appendOddAOddE
   )
 import Q4C12.TwoFinger.Internal
   ( TwoFingerOddA (EmptyOddA, SingleOddA, DeepOddA), Node (Node2, Node3)
+  , TwoFingerOddE (SingleOddE, DeepOddE)
   , Digit (One, Two, Three, Four), digitToTree
   , TwoFingerEvenA (EmptyEvenA, SingleEvenA, DeepEvenA)
   )
@@ -78,6 +80,25 @@ shrinkOddA = \case
     , (\m' -> DeepOddA a0 pr m' sf a1) <$> shrinkOddA m
     ]
 
+newtype OE = OE { getOE :: TwoFingerOddE Int (DList Int) }
+  deriving (Show)
+
+instance Arbitrary OE where
+  arbitrary = fmap OE $ oneof
+    [ SingleOddE <$> e
+    , DeepOddE <$> genDigit e a <*> (genOddA (genNode e a) a =<< choose (0, 10)) <*> genDigit e a
+    ]
+    where
+      e :: Gen Int
+      e = arbitrary
+      a :: Gen (DList Int)
+      a = DList.singleton <$> arbitrary
+  shrink = fmap OE . shrinkOE . getOE
+
+shrinkOE :: TwoFingerOddE e a -> [TwoFingerOddE e a]
+shrinkOE (SingleOddE _) = []
+shrinkOE (DeepOddE pr m sf) = (\m' -> DeepOddE pr m' sf) <$> shrinkOddA m
+
 newtype EA = EA { getEA :: TwoFingerEvenA Int (DList Int) }
   deriving (Show)
 
@@ -123,6 +144,18 @@ main =  defaultMain $ testGroup "twofinger property tests"
     , testProperty "monoid right" $ \(EA a) ->
         eqT a (a <> mempty)
     ]
+  , testGroup "semigroup actions"
+    [ testProperty "appendOddAOddE association left" $ \(EA a) (OA b) (OE c) ->
+        eqT (appendOddAOddE (appendEvenAOddA a b) c) (a <> (appendOddAOddE b c))
+    , testProperty "appendOddEEvenA association" $ \(OE a) (EA b) (EA c) ->
+        eqT (appendOddEEvenA a (b <> c)) (appendOddEEvenA (appendOddEEvenA a b) c)
+    , testProperty "appendOddEEvenA monoid" $ \(OE a) ->
+        eqT a (appendOddEEvenA a mempty)
+    , testProperty "appendEvenAOddA association" $ \(EA a) (EA b) (OA c) ->
+        eqT (appendEvenAOddA (a <> b) c) (appendEvenAOddA a (appendEvenAOddA b c))
+    , testProperty "appendEvenAOddA monoid" $ \(OA a) ->
+        eqT a (appendEvenAOddA mempty a)
+    ]
   , testGroup "halfcons/snoc inverses"
     [ testProperty "consOddA" $ \e (OA xs) ->
         let xs' = toList <$> xs
@@ -130,6 +163,12 @@ main =  defaultMain $ testGroup "twofinger property tests"
     , testProperty "snocOddA" $ \e (OA xs) ->
         let xs' = toList <$> xs
         in Just (xs', e) == halfunsnocEvenA (halfsnocOddA xs' e)
+    , testProperty "consOddE" $ \e (OE xs) ->
+        let xs' = toList <$> xs
+        in Just (e, xs') == halfunconsEvenA (halfconsOddE e xs')
+    , testProperty "snocOddE" $ \e (OE xs) ->
+        let xs' = toList <$> xs
+        in Just (xs', e) == halfunsnocEvenE (halfsnocOddE xs' e)
     , testProperty "consEvenA" $ \e (EA xs) ->
         let xs' = toList <$> xs
         in (e, xs') == halfunconsOddE (halfconsEvenA e xs')
