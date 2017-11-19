@@ -1265,7 +1265,8 @@ instance QC.Arbitrary AnyEvenE where
     , DeepEvenE <$> genDigit QC.arbitrary QC.arbitrary <*> (genOddA (genNode QC.arbitrary QC.arbitrary) QC.arbitrary =<< QC.choose (0, 10)) <*> genDigit QC.arbitrary QC.arbitrary <*> QC.arbitrary
     ]
   shrink = fmap AnyEvenE . shrinkEvenE . getAnyEvenE
--- Aligning/zipping.
+
+-- * Aligning/zipping.
 
 -- | Align two 'TwoFingerOddA' sequences elementwise, and return the excess remainder.
 --
