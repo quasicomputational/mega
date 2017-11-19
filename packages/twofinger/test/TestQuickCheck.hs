@@ -30,6 +30,9 @@ import Q4C12.TwoFinger.Internal
   , TwoFingerEvenA (EmptyEvenA, SingleEvenA, DeepEvenA)
   )
 
+--TODO: Export the instance generators for external consumption (e.g., in q4c12-xml).
+--TODO: Move the various property checks into the documentation, and run through doctest?
+
 genOddA :: Gen e -> Gen a -> Int -> Gen (TwoFingerOddA e a)
 genOddA _ a 0 = EmptyOddA <$> a
 genOddA e a 1 = SingleOddA <$> a <*> e <*> a
