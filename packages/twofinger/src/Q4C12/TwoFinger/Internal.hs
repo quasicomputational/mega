@@ -14,7 +14,7 @@ module Q4C12.TwoFinger.Internal where
 
 import Control.DeepSeq (NFData)
 import Data.Bifunctor (Bifunctor (bimap), first, second)
-import Data.Bifoldable (Bifoldable (bifoldMap))
+import Data.Bifoldable (Bifoldable (bifoldMap), biall)
 import Data.Bitraversable
   (Bitraversable (bitraverse), bifoldMapDefault, bimapDefault)
 import Data.Functor.Alt (Alt ((<!>)))
@@ -28,6 +28,7 @@ import Data.Functor.Classes
 import Data.Functor.Plus (Plus (zero))
 import Data.List (foldl')
 import Data.List.NonEmpty (NonEmpty ((:|)))
+import Data.Maybe (isNothing)
 import Data.Semigroup (Semigroup ((<>)))
 import Data.Semigroup.Bifoldable (Bifoldable1 (bifoldMap1))
 import Data.Semigroup.Bitraversable
@@ -159,11 +160,11 @@ instance (Show e, Show a) => Show (TwoFingerOddA e a) where
   showsPrec = showsPrec2
 
 instance Eq2 TwoFingerOddA where
-  liftEq2 f g as bs = case (unconsOddA as, unconsOddA bs) of
-    (Left x, Left y) -> g x y
-    (Right (a, x, as'), Right (b, y, bs')) ->
-      g a b && f x y && liftEq2 f g as' bs'
-    _ -> False
+  liftEq2 f g as bs = case alignLeftOddAOddA as bs of
+    (aligned, rest) ->
+      biall (uncurry f) (uncurry g) aligned && noMore rest
+    where
+      noMore = either (isNothing . unconsEvenE) (isNothing . unconsEvenE)
 
 instance (Eq e) => Eq1 (TwoFingerOddA e) where
   liftEq = liftEq2 (==)
@@ -259,11 +260,10 @@ instance (Show e, Show a) => Show (TwoFingerOddE e a) where
   showsPrec = showsPrec2
 
 instance Eq2 TwoFingerOddE where
-  liftEq2 f g as bs = case (unconsOddE as, unconsOddE bs) of
-    (Left x, Left y) -> f x y
-    (Right (x, a, as'), Right (y, b, bs')) ->
-      f x y && g a b && liftEq2 f g as' bs'
-    _ -> False
+  liftEq2 f g as bs = case alignLeftOddEOddE as bs of
+    (aligned, rest) -> biall (uncurry f) (uncurry g) aligned && noMore rest
+    where
+      noMore = either (isNothing . unconsEvenA) (isNothing . unconsEvenA)
 
 instance (Eq e) => Eq1 (TwoFingerOddE e) where
   liftEq = liftEq2 (==)
@@ -1265,3 +1265,59 @@ instance QC.Arbitrary AnyEvenE where
     , DeepEvenE <$> genDigit QC.arbitrary QC.arbitrary <*> (genOddA (genNode QC.arbitrary QC.arbitrary) QC.arbitrary =<< QC.choose (0, 10)) <*> genDigit QC.arbitrary QC.arbitrary <*> QC.arbitrary
     ]
   shrink = fmap AnyEvenE . shrinkEvenE . getAnyEvenE
+-- Aligning/zipping.
+
+-- | Align two 'TwoFingerOddA' sequences elementwise, and return the excess remainder.
+--
+-- >>> alignLeftOddAOddA (consOddA 'a' 1 $ consOddA 'b' 2 $ singletonOddA 'c') (consOddA "foo" 10 $ singletonOddA "bar")
+-- (consOddA ('a',"foo") (1,10) (singletonOddA ('b',"bar")),Left (consEvenE 2 'c' mempty))
+--
+-- >>> alignLeftOddAOddA (consOddA 'a' 1 $ singletonOddA 'b') (consOddA "foo" 10 $ consOddA "bar" 20 $ singletonOddA "baz")
+-- (consOddA ('a',"foo") (1,10) (singletonOddA ('b',"bar")),Right (consEvenE 20 "baz" mempty))
+--
+-- prop> \(AnyOddA as) (AnyOddA bs) -> let { (aligned, rest) = alignLeftOddAOddA as bs ; as' = appendOddAEvenE (bimap fst fst aligned) (either id (const mempty) rest) ; bs' = appendOddAEvenE (bimap snd snd aligned) (either (const mempty) id rest) } in as == as' && bs == bs'
+alignLeftOddAOddA :: TwoFingerOddA e a -> TwoFingerOddA e' a' -> (TwoFingerOddA (e, e') (a, a'), Either (TwoFingerEvenE e a) (TwoFingerEvenE e' a'))
+alignLeftOddAOddA as (halfunsnocOddA -> (bs, a')) = case alignLeftOddAEvenA as bs of
+  Left (aligned, halfunconsOddA -> (a, rest)) ->
+    (halfsnocEvenA aligned (a, a'), Left rest)
+  Right (aligned, rest) -> (aligned, Right $ halfsnocOddE rest a')
+
+--TODO: if we had TwoFingerEvenE1, we could avoid the arbitrary Left/Right selection in the Left/Nothing case.
+-- |
+-- >>> alignLeftOddAEvenA (consOddA 'a' 1 $ consOddA 'b' 2 $ singletonOddA 'c') (consEvenA "foo" 10 mempty)
+-- Left (consEvenA ('a',"foo") (1,10) mempty,consOddA 'b' 2 (singletonOddA 'c'))
+--
+-- >>> alignLeftOddAEvenA (consOddA 'a' 1 $ singletonOddA 'b') (consEvenA "foo" 10 $ consEvenA "bar" 20 $ consEvenA "baz" 30 mempty)
+-- Right (consOddA ('a',"foo") (1,10) (singletonOddA ('b',"bar")),consOddE 20 "baz" (singletonOddE 30))
+--
+-- prop> \(AnyOddA as) (AnyEvenA bs) -> let { (as', bs') = case alignLeftOddAEvenA as bs of { Left (aligned, rest) -> (appendEvenAOddA (bimap fst fst aligned) rest, bimap snd snd aligned) ; Right (aligned, rest) -> (bimap fst fst aligned, appendOddAOddE (bimap snd snd aligned) rest) } } in as == as' && bs == bs'
+alignLeftOddAEvenA :: TwoFingerOddA e a -> TwoFingerEvenA e' a' -> Either (TwoFingerEvenA (e, e') (a, a'), TwoFingerOddA e a) (TwoFingerOddA (e, e') (a, a'), TwoFingerOddE e' a')
+alignLeftOddAEvenA as bs = case (unconsOddA as, unconsEvenA bs) of
+  (Right (a, e, as'), Just (a', e', bs')) -> case alignLeftOddAEvenA as' bs' of
+    Left (aligned, rest) -> Left (consEvenA (a, a') (e, e') aligned, rest)
+    Right (aligned, rest) -> Right (consOddA (a, a') (e, e') aligned, rest)
+  (_, Nothing) -> Left (mempty, as)
+  (Left a, Just (a', e', bs')) -> Right (singletonOddA (a, a'), halfconsEvenA e' bs')
+
+-- |
+-- >>> alignLeftOddEOddE (consOddE 'a' 1 $ consOddE 'b' 2 $ singletonOddE 'c') (consOddE "foo" 10 $ singletonOddE "bar")
+-- (consOddE ('a',"foo") (1,10) (singletonOddE ('b',"bar")),Left (consEvenA 2 'c' mempty))
+--
+-- >>> alignLeftOddEOddE (consOddE 'a' 1 $ singletonOddE 'b') (consOddE "foo" 10 $ consOddE "bar" 20 $ singletonOddE "baz")
+-- (consOddE ('a',"foo") (1,10) (singletonOddE ('b',"bar")),Right (consEvenA 20 "baz" mempty))
+--
+-- prop> \(AnyOddE as) (AnyOddE bs) -> let { (aligned, rest) = alignLeftOddEOddE as bs ; as' = appendOddEEvenA (bimap fst fst aligned) (either id (const mempty) rest) ; bs' = appendOddEEvenA (bimap snd snd aligned) (either (const mempty) id rest) } in as == as' && bs == bs'
+alignLeftOddEOddE :: TwoFingerOddE e a -> TwoFingerOddE e' a' -> (TwoFingerOddE (e, e') (a, a'), Either (TwoFingerEvenA e a) (TwoFingerEvenA e' a'))
+alignLeftOddEOddE as (halfunsnocOddE -> (bs, e')) = case alignLeftOddEEvenE as bs of
+  Left (aligned, halfunconsOddE -> (e, rest)) -> (halfsnocEvenE aligned (e, e'), Left rest)
+  Right (aligned, rest) -> (aligned, Right $ halfsnocOddA rest e')
+
+-- |
+-- prop> \(AnyOddE as) (AnyEvenE bs) -> let { (as', bs') = case alignLeftOddEEvenE as bs of { Left (aligned, rest) -> (appendEvenEOddE (bimap fst fst aligned) rest, bimap snd snd aligned) ; Right (aligned, rest) -> (bimap fst fst aligned, appendOddEOddA (bimap snd snd aligned) rest) } } in as == as' && bs == bs'
+alignLeftOddEEvenE :: TwoFingerOddE e a -> TwoFingerEvenE e' a' -> Either (TwoFingerEvenE (e, e') (a, a'), TwoFingerOddE e a) (TwoFingerOddE (e, e') (a, a'), TwoFingerOddA e' a')
+alignLeftOddEEvenE as bs = case (unconsOddE as, unconsEvenE bs) of
+  (Right (a, e, as'), Just (a', e', bs')) -> case alignLeftOddEEvenE as' bs' of
+    Left (aligned, rest) -> Left (consEvenE (a, a') (e, e') aligned, rest)
+    Right (aligned, rest) -> Right (consOddE (a, a') (e, e') aligned, rest)
+  (_, Nothing) -> Left (mempty, as)
+  (Left a, Just (a', e', bs')) -> Right (singletonOddE (a, a'), halfconsEvenE e' bs')

@@ -88,32 +88,38 @@ module Q4C12.TwoFinger
     appendOddAEvenE, appendEvenEOddE,
     -- ** Two odds make an even
     appendOddAOddE, appendOddEOddA,
+    -- * Aligning (zipping)
+    alignLeftOddAOddA, alignLeftOddAEvenA,
+    alignLeftOddEOddE, alignLeftOddEEvenE,
   )
   where
 
 import Data.Semigroup ((<>))
 
 import Q4C12.TwoFinger.Internal
-  ( TwoFingerOddA
-  , singletonOddA, unitOddA, onlyOddA, interleavingOddA
-  , consOddA, unconsOddA, snocOddA, unsnocOddA
-  , halfconsOddA, halfunconsOddA, halfsnocOddA, halfunsnocOddA
-  , firstOddA, lastOddA
-  , TwoFingerOddE
-  , singletonOddE
-  , appendOddAOddE, appendOddEOddA
-  , consOddE, snocOddE, unconsOddE, unsnocOddE
-  , halfconsOddE, halfsnocOddE, halfunconsOddE, halfunsnocOddE
-  , TwoFingerEvenE
-  , appendOddAEvenE, appendEvenEOddE
-  , consEvenE, unconsEvenE, snocEvenE, unsnocEvenE
-  , halfconsEvenE, halfsnocEvenE, halfunconsEvenE, halfunsnocEvenE
-  , TwoFingerEvenA
-  , appendEvenAOddA, appendOddEEvenA
-  , consEvenA, unconsEvenA, snocEvenA, unsnocEvenA
-  , halfconsEvenA, halfsnocEvenA, halfunconsEvenA, halfunsnocEvenA
-  --Not for exported use (doctests only)
-  , AnyOddA (AnyOddA), AnyOddE (AnyOddE), AnyEvenA (AnyEvenA), AnyEvenE (AnyEvenE)
+  (
+    TwoFingerOddA,
+    singletonOddA, unitOddA, onlyOddA, interleavingOddA,
+    consOddA, unconsOddA, snocOddA, unsnocOddA,
+    halfconsOddA, halfunconsOddA, halfsnocOddA, halfunsnocOddA,
+    firstOddA, lastOddA,
+    TwoFingerOddE,
+    singletonOddE,
+    consOddE, snocOddE, unconsOddE, unsnocOddE,
+    halfconsOddE, halfsnocOddE, halfunconsOddE, halfunsnocOddE,
+    TwoFingerEvenA,
+    consEvenA, unconsEvenA, snocEvenA, unsnocEvenA,
+    halfconsEvenA, halfsnocEvenA, halfunconsEvenA, halfunsnocEvenA,
+    TwoFingerEvenE,
+    consEvenE, unconsEvenE, snocEvenE, unsnocEvenE,
+    halfconsEvenE, halfsnocEvenE, halfunconsEvenE, halfunsnocEvenE,
+    appendEvenAOddA, appendOddEEvenA,
+    appendOddAEvenE, appendEvenEOddE,
+    appendOddAOddE, appendOddEOddA,
+    alignLeftOddAOddA, alignLeftOddAEvenA,
+    alignLeftOddEOddE, alignLeftOddEEvenE,
+    --Not for exported use (doctests only)
+    AnyOddA (AnyOddA), AnyOddE (AnyOddE), AnyEvenA (AnyEvenA), AnyEvenE (AnyEvenE),
   )
 
 -- $monoid_action_properties
