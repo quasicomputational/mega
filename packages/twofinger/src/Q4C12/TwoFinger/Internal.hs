@@ -693,12 +693,20 @@ halfunsnocEvenA (DeepEvenA a1 pr m sf) = case digitUnsnoc sf of
 
 -- * Monad and Applicative instances, and related operations
 joinOddA :: TwoFingerOddA (TwoFingerOddE e a) (TwoFingerOddA e a) -> TwoFingerOddA e a
-joinOddA (halfunconsOddA -> (a, tree)) = appendOddAEvenE a (goEvenE tree)
-  where
-    goEvenE :: TwoFingerEvenE (TwoFingerOddE e a) (TwoFingerOddA e a) -> TwoFingerEvenE e a
-    goEvenE tree' = case halfunconsEvenE tree' of
-      Nothing -> mempty
-      Just (e, tree'') -> appendOddEOddA e (joinOddA tree'')
+joinOddA (halfunconsOddA -> (a, tree)) = appendOddAEvenE a (joinEvenE tree)
+
+joinOddE :: TwoFingerOddE (TwoFingerOddE e a) (TwoFingerOddA e a) -> TwoFingerOddE e a
+joinOddE (halfunconsOddE -> (e, tree)) = appendOddEEvenA e (joinEvenA tree)
+
+joinEvenA :: TwoFingerEvenA (TwoFingerOddE e a) (TwoFingerOddA e a) -> TwoFingerEvenA e a
+joinEvenA tree = case halfunconsEvenA tree of
+  Nothing -> mempty
+  Just (a, tree') -> appendOddAOddE a (joinOddE tree')
+
+joinEvenE :: TwoFingerEvenE (TwoFingerOddE e a) (TwoFingerOddA e a) -> TwoFingerEvenE e a
+joinEvenE tree = case halfunconsEvenE tree of
+  Nothing -> mempty
+  Just (e, tree') -> appendOddEOddA e (joinOddA tree')
 
 instance Monad (TwoFingerOddA e) where
   tree >>= f = joinOddA $ bimap singletonOddE f tree
