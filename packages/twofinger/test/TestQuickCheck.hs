@@ -151,8 +151,10 @@ main =  defaultMain $ testGroup "twofinger property tests"
         eqT (appendOddEEvenA a (b <> c)) (appendOddEEvenA (appendOddEEvenA a b) c)
     , testProperty "appendOddEEvenA monoid" $ \(OE a) ->
         eqT a (appendOddEEvenA a mempty)
-    , testProperty "appendEvenAOddA association" $ \(EA a) (EA b) (OA c) ->
+    , testProperty "appendEvenAOddA association left" $ \(EA a) (EA b) (OA c) ->
         eqT (appendEvenAOddA (a <> b) c) (appendEvenAOddA a (appendEvenAOddA b c))
+    , testProperty "appendEvenAOddA association right" $ \(EA a) (OA b) (OA c) ->
+        eqT (appendEvenAOddA a (b <> c)) (appendEvenAOddA a b <> c)
     , testProperty "appendEvenAOddA monoid" $ \(OA a) ->
         eqT a (appendEvenAOddA mempty a)
     ]
