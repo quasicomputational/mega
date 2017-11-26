@@ -23,8 +23,8 @@ instance (Semigroup v, Ord k) => Monoid (MapPend k v) where
 _MapPend :: Iso (MapPend k v) (MapPend k' v') (Map k v) (Map k' v')
 _MapPend = iso getMapPend MapPend
 
-empty :: (Ord k) => MapPend k v
-empty = MapPend mempty
+empty :: MapPend k v
+empty = MapPend Map.empty
 
 singleton :: k -> v -> MapPend k v
 singleton k = MapPend . Map.singleton k
