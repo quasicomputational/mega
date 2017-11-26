@@ -7,6 +7,7 @@ module Prelude
   , (<&>)
   , (<>~)
   , FilePathComponent
+  , validationToExcept, exceptToValidation, failure
   )
   where
 
@@ -117,7 +118,7 @@ import System.FilePath.Posix as Export
 import Control.Monad.Trans.Accum as Export
   (runAccum, runAccumT, evalAccum, evalAccumT, AccumT, Accum)
 import Control.Monad.Trans.Except as Export
-  (withExceptT, runExceptT, runExcept, except, Except, ExceptT (ExceptT))
+  (withExceptT, runExceptT, runExcept, except, Except, ExceptT (ExceptT), mapExceptT)
 import Control.Monad.Trans.Class as Export
   (lift)
 import Control.Monad.Trans.State as Export
@@ -167,6 +168,10 @@ import Lens.Micro.Extras as Export
 import Data.Profunctor as Export
   (Profunctor, dimap)
 
+-- either imports for re-export
+import Data.Either.Validation as Export
+  (Validation, validationToEither, eitherToValidation)
+
 -- Q4C12 packages for re-export
 import Q4C12.FoldableUtils as Export
   ( intercalate0, intercalateMap0, biintercalateMap0
@@ -180,8 +185,6 @@ import Q4C12.TwoFinger as Export
   (TwoFingerOddA, TwoFingerOddE, TwoFingerEvenA, TwoFingerEvenE)
 import Q4C12.Optic as Export
   (Iso, Iso', from, iso, Prism, Prism', APrism, APrism', preview, matching, review, withPrism)
-import Q4C12.Validate as Export
-  (Validate, validateToEither, validateToExcept, exceptToValidate, failure)
 
 --Imports for local use.
 import Data.Semigroup (mtimesDefault)
@@ -213,3 +216,12 @@ infixl 1 <&>
 l <>~ a = over l (<> a)
 
 type FilePathComponent = String
+
+validationToExcept :: (Applicative f) => Validation e a -> ExceptT e f a
+validationToExcept = mapExceptT (pure . runIdentity) . except . validationToEither
+
+exceptToValidation :: Except e a -> Validation e a
+exceptToValidation = eitherToValidation . runExcept
+
+failure :: e -> Validation e a
+failure = eitherToValidation . Left

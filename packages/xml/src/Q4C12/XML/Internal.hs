@@ -363,7 +363,7 @@ instance Monoid UContent where
   mempty = UContent mempty
   mappend = (<>)
 
-resolveContent :: (SText -> Maybe LText) -> UContent -> Validate (NonEmptyDList ResolveError) (Seq (PositionRange, LText))
+resolveContent :: (SText -> Maybe LText) -> UContent -> Validation (NonEmptyDList ResolveError) (Seq (PositionRange, LText))
 resolveContent entity (UContent parts) = bifoldMapM resolveEntity (pure . fmap (fmap LT.fromStrict)) parts
   where
     resolveEntity (pos, "amp") = pure $ Seq.singleton (pos, "&")
@@ -375,10 +375,10 @@ resolveContent entity (UContent parts) = bifoldMapM resolveEntity (pure . fmap (
       Nothing -> failure $ NEDList.singleton $ UnknownEntity pos name
       Just ent -> pure $ Seq.singleton (pos, ent)
 
-resolveElement :: (SText -> Maybe LText) -> Maybe SText -> Map SText SText -> UElement -> Validate (NonEmptyDList ResolveError) (Element PositionRange)
-resolveElement entity defaultNamespace namespaces (UElement rawName rawAttrs rawBody pos) = exceptToValidate $ do
+resolveElement :: (SText -> Maybe LText) -> Maybe SText -> Map SText SText -> UElement -> Validation (NonEmptyDList ResolveError) (Element PositionRange)
+resolveElement entity defaultNamespace namespaces (UElement rawName rawAttrs rawBody pos) = exceptToValidation $ do
   --TODO: can do more of this in parallel and report more errors at once than we currently are.
-  rawAttrs' <- validateToExcept $ for rawAttrs $ \(rawAttrName, attrPos, rawContent) ->
+  rawAttrs' <- validationToExcept $ for rawAttrs $ \(rawAttrName, attrPos, rawContent) ->
     (,,) rawAttrName attrPos <$> resolveContent entity rawContent
   let prepartitioned :: [HSum '[(PositionRange, SText), MapPend SText (NonEmpty (PositionRange, SText)), (PositionRange, RawQName, Seq (PositionRange, LText))]]
       prepartitioned = flip fmap rawAttrs' $ \(RawQName mpref local, nameRange, value) ->
@@ -388,34 +388,34 @@ resolveElement entity defaultNamespace namespaces (UElement rawName rawAttrs raw
           _ -> HSumThere $ HSumThere $ HSumHere (nameRange, RawQName mpref local, value)
   case partitionHSum prepartitioned of
     HProdListCons defaultNamespaces (HProdListCons collatedNamespaceBindings (HProdListCons otherAttrs HProdListNil)) -> do
-      defaultNamespace' <- validateToExcept $ case defaultNamespaces of
+      defaultNamespace' <- validationToExcept $ case defaultNamespaces of
         [] -> pure defaultNamespace
         (_, "") : [] -> pure Nothing
         (_, ns) : [] | isNormalized NFD ns -> pure (Just ns)
         (r0, _) : [] -> failure $ NEDList.singleton $ NonNFDNamespace r0
         (r0, _) : (r1, _) : rest -> failure $ NEDList.singleton $ DuplicateDefaultNamespaceDecls r0 (r1 :| fmap fst rest)
-      namespaceBindings <- validateToExcept $ flip Map.traverseWithKey (getMapPend $ fold collatedNamespaceBindings) $ \pref -> \case
+      namespaceBindings <- validationToExcept $ flip Map.traverseWithKey (getMapPend $ fold collatedNamespaceBindings) $ \pref -> \case
         (_, ns) :| [] | isNormalized NFD ns -> pure ns
         (r, _) :| [] -> failure $ NEDList.singleton $ NonNFDNamespace r
         (r0, _) :| ((r1, _) : rest) ->
           failure $ NEDList.singleton $ DuplicateNamespacePrefixDecls pref r0 (r1 :| fmap fst rest)
       let namespaces' = namespaceBindings <> namespaces --Note: new on the left, to take precedence.
-      qname <- validateToExcept $ case rawName of
+      qname <- validationToExcept $ case rawName of
         RawQName Nothing local -> pure $ QName defaultNamespace' local
         RawQName (Just pref) local -> case Map.lookup pref namespaces' of
           Nothing -> failure $ NEDList.singleton $ UnboundNamespace pos pref
           Just ns -> pure $ QName (Just ns) local
-      attrSets <- validateToExcept $ fmap getMapPend $
+      attrSets <- validationToExcept $ fmap getMapPend $
         flip foldMapM otherAttrs $ \(r, RawQName mpref local, value) ->
           case mpref of
             Nothing -> pure $ MapPend.singleton (QName Nothing local) $ pure (r, value)
             Just pref -> case Map.lookup pref namespaces' of
               Nothing -> failure $ NEDList.singleton $ UnboundNamespace r pref
               Just ns -> pure $ MapPend.singleton (QName (Just ns) local) $ pure (r, value)
-      attrs <- validateToExcept $ for attrSets $ \case
+      attrs <- validationToExcept $ for attrSets $ \case
         (r, value) :| [] -> pure (r, value)
         (r0, _) :| ((r1, _) : rest) -> failure $ NEDList.singleton $ DuplicateAttrs r0 (r1 :| fmap fst rest)
-      body <- validateToExcept $
+      body <- validationToExcept $
         bitraverse (resolveElement entity defaultNamespace' namespaces') (resolveContent entity) rawBody
       pure $ Element qname attrs (Markup body) pos
 
@@ -450,7 +450,7 @@ toplevel doctypeResolver = do
           SeenLTElement e -> do
             endPos <- gets snd
             finish endPos
-            lift $ withExceptT (ResolveError . toNonEmpty) $ validateToExcept $ resolveElement (const Nothing) Nothing defaultNamespaces e
+            lift $ withExceptT (ResolveError . toNonEmpty) $ validationToExcept $ resolveElement (const Nothing) Nothing defaultNamespaces e
           SeenLTComment -> toplevel doctypeResolver
           SeenLTSlash -> lift $ throwE $ PreDoctypeEndTag pos
           SeenLTDOCTYPE rootName Nothing -> seenDoctype pos rootName (const Nothing)
@@ -486,7 +486,7 @@ toplevel doctypeResolver = do
                   UElement name _ _ posRange -> unless (rootName == name) $
                     lift $ throwE $ DoctypeRootNameMismatch doctypePos posRange
                 finish pos
-                lift $ withExceptT (ResolveError . toNonEmpty) $ validateToExcept $ resolveElement entityFunc Nothing defaultNamespaces e
+                lift $ withExceptT (ResolveError . toNonEmpty) $ validationToExcept $ resolveElement entityFunc Nothing defaultNamespaces e
               SeenLTComment -> seenDoctype doctypePos rootName entityFunc
               SeenLTSlash -> lift $ throwE $ PostDoctypeEndTag pos
               SeenLTDOCTYPE _ _ -> lift $ throwE $ StrayDoctype pos)

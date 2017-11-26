@@ -30,9 +30,5 @@ else, they are:
 
   It's not very comprehensive: I'm adding things as I find I need them.
 
-* [q4c12-validate](packages/validate) is the alternative `Applicative`
-  instance for `Either`. You could get this from the `either` package
-  if you weren't annoyed by the transitive dependencies.
-
 * [q4c12-optic](packages/optic) is `Iso` and `Prism` from `lens`. Just
   use `lens`.
