@@ -26,7 +26,7 @@ _MapPend = iso getMapPend MapPend
 empty :: (Ord k) => MapPend k v
 empty = MapPend mempty
 
-singleton :: (Ord k) => k -> v -> MapPend k v
+singleton :: k -> v -> MapPend k v
 singleton k = MapPend . Map.singleton k
 
 at :: (Ord k, Functor f) => k -> (Maybe v -> f (Maybe v)) -> MapPend k v -> f (MapPend k v)
