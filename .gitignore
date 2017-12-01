@@ -4,3 +4,4 @@ dist-newstyle/
 .cabal-sandbox/
 cabal.sandbox.config
 *.cabal
+!/packages/twofinger/q4c12-twofinger.cabal
