@@ -54,6 +54,8 @@ import qualified Test.QuickCheck as QC
 
 --TODO: Alternative zippy Applicatives instances. Maybe just Apply, to dodge the infinity problem?
 
+--TODO: Consider exporting bits and pieces from, e.g., Q4C12.TwoFinger.EvenA, without the flavour-identifying suffix, to allow qualified import.
+
 --TODO: send this upstream to semigroupoids? Opened issue: https://github.com/ekmett/semigroupoids/issues/66
 (<.*>) :: (Apply f) => f (a -> b) -> MaybeApply f a -> f b
 ff <.*> MaybeApply (Left fa) = ff <.> fa
