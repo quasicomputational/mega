@@ -58,6 +58,8 @@ import qualified Test.QuickCheck as QC
 
 --TODO: The prop> lines are very long due to a doctest limiation: https://github.com/sol/doctest/issues/131. When this is fixed, I should make those reasonable.
 
+--TODO: the issue with the mathy haddocks is that double-clicking on a paragraph with one of them in them won't select the whole paragraph.
+
 --TODO: send this upstream to semigroupoids? Opened issue: https://github.com/ekmett/semigroupoids/issues/66
 (<.*>) :: (Apply f) => f (a -> b) -> MaybeApply f a -> f b
 ff <.*> MaybeApply (Left fa) = ff <.> fa
@@ -183,7 +185,7 @@ instance (NFData e, NFData a) => NFData (TwoFingerOddA e a)
 
 --TODO: If we had 'type>', we could document the lensiness directly.
 --See https://github.com/sol/doctest/issues/153
--- | Access the first @a@ of a @'TwoFingerOddA' e a@. /O(1)/. This
+-- | Access the first @a@ of a @'TwoFingerOddA' e a@. \(O(1)\). This
 -- type is @Lens' ('TwoFingerOddA' e a) a@ in disguise.
 --
 -- >>> view firstOddA (consOddA 3 True $ singletonOddA 15)
@@ -192,7 +194,7 @@ firstOddA
   :: (Functor f) => (a -> f a) -> TwoFingerOddA e a -> f (TwoFingerOddA e a)
 firstOddA f (halfunconsOddA -> (a, tree)) = flip halfconsEvenE tree <$> f a
 
--- | Access the last @a@ of a @'TwoFingerOddA' e a@. /O(1)/. This type
+-- | Access the last @a@ of a @'TwoFingerOddA' e a@. \(O(1)\). This type
 -- is @Lens' ('TwoFingerOddA' e a) a@ in disguise.
 --
 -- >>> over lastOddA (+ 5) (consOddA 3 True $ singletonOddA 15)
@@ -502,7 +504,7 @@ unsnocOddA tree = case first halfunsnocEvenA $ halfunsnocOddA tree of
   (Nothing, a) -> Left a
   (Just (tree', e), a) -> Right (tree', e, a)
 
--- | /O(log n)/ worst case. Inverse: 'halfunconsEvenE'
+-- | \(O(\log n)\) worst case. Inverse: 'halfunconsEvenE'
 --
 -- prop> \e (AnyOddA as) -> halfunconsEvenE (halfconsOddA e as) == Just (e, as)
 halfconsOddA :: e -> TwoFingerOddA e a -> TwoFingerEvenE e a
@@ -513,7 +515,7 @@ halfconsOddA e (DeepOddA a0 pr m sf a1) = case digitCons e a0 pr of
   Right pr' -> DeepEvenE pr' m sf a1
   Left (pr', a', node) -> DeepEvenE pr' (consOddA a' node m) sf a1
 
--- | /O(log n)/ worst case. Inverse: 'halfunsnocEvenA'
+-- | \(O(\log n)\) worst case. Inverse: 'halfunsnocEvenA'
 --
 -- prop> \(AnyOddA as) e -> halfunsnocEvenA (halfsnocOddA as e) == Just (as, e)
 halfsnocOddA :: TwoFingerOddA e a -> e -> TwoFingerEvenA e a
@@ -524,7 +526,7 @@ halfsnocOddA (DeepOddA a0 pr m sf a1) e = case digitSnoc sf a1 e of
   Right sf' -> DeepEvenA a0 pr m sf'
   Left (node, a', sf') -> DeepEvenA a0 pr (snocOddA m node a') sf'
 
--- | /O(1)/ worst case. Inverse: 'halfconsEvenE'
+-- | \(O(1)\) worst case. Inverse: 'halfconsEvenE'
 --
 -- prop> \(AnyOddA as) -> as == uncurry halfconsEvenE (halfunconsOddA as)
 halfunconsOddA :: TwoFingerOddA e a -> (a, TwoFingerEvenE e a)
@@ -532,7 +534,7 @@ halfunconsOddA (EmptyOddA a) = (a, EmptyEvenE)
 halfunconsOddA (SingleOddA a e1 a1) = (a, SingleEvenE e1 a1)
 halfunconsOddA (DeepOddA a0 pr m sf a1) = (a0, DeepEvenE pr m sf a1)
 
--- | /O(1)/ worst case. Inverse: 'halfsnocOddA'
+-- | \(O(1)\) worst case. Inverse: 'halfsnocOddA'
 --
 -- prop> \(AnyOddA as) -> as == uncurry halfsnocEvenA (halfunsnocOddA as)
 halfunsnocOddA :: TwoFingerOddA e a -> (TwoFingerEvenA e a, a)
@@ -557,21 +559,21 @@ unsnocOddE tree = case first halfunsnocEvenE $ halfunsnocOddE tree of
   (Nothing, e) -> Left e
   (Just (tree', a), e) -> Right (tree', a, e)
 
--- | /O(1)/ worst case. Inverse: 'halfunconsEvenA'
+-- | \(O(1)\) worst case. Inverse: 'halfunconsEvenA'
 --
 -- prop> \a (AnyOddE as) -> halfunconsEvenA (halfconsOddE a as) == Just (a, as)
 halfconsOddE :: a -> TwoFingerOddE e a -> TwoFingerEvenA e a
 halfconsOddE a (SingleOddE e) = SingleEvenA a e
 halfconsOddE a (DeepOddE pr m sf) = DeepEvenA a pr m sf
 
--- | /O(1)/ worst case. Inverse: 'halfunsnocEvenE'
+-- | \(O(1)\) worst case. Inverse: 'halfunsnocEvenE'
 --
 -- prop> \(AnyOddE as) a -> halfunsnocEvenE (halfsnocOddE as a) == Just (as, a)
 halfsnocOddE :: TwoFingerOddE e a -> a -> TwoFingerEvenE e a
 halfsnocOddE (SingleOddE e) a = SingleEvenE e a
 halfsnocOddE (DeepOddE pr m sf) a = DeepEvenE pr m sf a
 
--- | /O(log n)/ worst case. Inverse: 'halfconsEvenA'
+-- | \(O(\log n)\) worst case. Inverse: 'halfconsEvenA'
 --
 -- prop> \(AnyOddE as) -> as == uncurry halfconsEvenA (halfunconsOddE as)
 halfunconsOddE :: TwoFingerOddE e a -> (e, TwoFingerEvenA e a)
@@ -580,7 +582,7 @@ halfunconsOddE (DeepOddE pr m sf) = case digitUncons pr of
   (e, Nothing) -> (e, rotl m sf)
   (e, Just (a, pr')) -> (e, DeepEvenA a pr' m sf)
 
--- | /O(log n)/ worst case. Inverse: 'halfsnocEvenE'
+-- | \(O(\log n)\) worst case. Inverse: 'halfsnocEvenE'
 --
 -- prop> \(AnyOddE as) -> as == uncurry halfsnocEvenE (halfunsnocOddE as)
 halfunsnocOddE :: TwoFingerOddE e a -> (TwoFingerEvenE e a, e)
@@ -606,7 +608,7 @@ unsnocEvenE tree = case first halfunsnocOddE <$> halfunsnocEvenE tree of
   Nothing -> Nothing
   Just ((tree', a), e) -> Just (tree', a, e)
 
--- | /O(1)/ worst case. Inverse: 'halfunconsOddA'
+-- | \(O(1)\) worst case. Inverse: 'halfunconsOddA'
 --
 -- prop> \a (AnyEvenE as) -> halfunconsOddA (halfconsEvenE a as) == (a, as)
 halfconsEvenE :: a -> TwoFingerEvenE e a -> TwoFingerOddA e a
@@ -614,7 +616,7 @@ halfconsEvenE a EmptyEvenE = EmptyOddA a
 halfconsEvenE a0 (SingleEvenE e1 a1) = SingleOddA a0 e1 a1
 halfconsEvenE a0 (DeepEvenE pr m sf a1) = DeepOddA a0 pr m sf a1
 
--- | /O(log n)/ worst case. Inverse: 'halfunsnocOddE'.
+-- | \(O(\log n)\) worst case. Inverse: 'halfunsnocOddE'.
 --
 -- prop> \(AnyEvenE as) e -> halfunsnocOddE (halfsnocEvenE as e) == (as, e)
 halfsnocEvenE :: TwoFingerEvenE e a -> e -> TwoFingerOddE e a
@@ -625,7 +627,7 @@ halfsnocEvenE (DeepEvenE pr m sf a) e = case digitSnoc sf a e of
   Right sf' -> DeepOddE pr m sf'
   Left (node, a', sf') -> DeepOddE pr (snocOddA m node a') sf'
 
--- | /O(log n)/ worst case. Inverse: 'halfconsOddA'.
+-- | \(O(\log n)\) worst case. Inverse: 'halfconsOddA'.
 --
 -- prop> \(AnyEvenE as) -> as == maybe mempty (uncurry halfconsOddA) (halfunconsEvenE as)
 halfunconsEvenE :: TwoFingerEvenE e a -> Maybe (e, TwoFingerOddA e a)
@@ -635,7 +637,7 @@ halfunconsEvenE (DeepEvenE pr m sf a1) = Just $ case digitUncons pr of
   (e, Nothing) -> (e, halfsnocEvenA (rotl m sf) a1)
   (e, Just (a0, pr')) -> (e, DeepOddA a0 pr' m sf a1)
 
--- | /O(1)/ worst case. Inverse: 'halfsnocOddE'.
+-- | \(O(1)\) worst case. Inverse: 'halfsnocOddE'.
 --
 -- prop> \(AnyEvenE as) -> as == maybe mempty (uncurry halfsnocOddE) (halfunsnocEvenE as)
 halfunsnocEvenE :: TwoFingerEvenE e a -> Maybe (TwoFingerOddE e a, a)
@@ -660,7 +662,7 @@ unsnocEvenA tree = case first halfunsnocOddA <$> halfunsnocEvenA tree of
   Nothing -> Nothing
   Just ((tree', e), a) -> Just (tree', e, a)
 
--- | /O(log n)/ worst case. Inverse: 'halfunconsOddE'.
+-- | \(O(\log n)\) worst case. Inverse: 'halfunconsOddE'.
 --
 -- prop> \e (AnyEvenA as) -> halfunconsOddE (halfconsEvenA e as) == (e, as)
 halfconsEvenA :: e -> TwoFingerEvenA e a -> TwoFingerOddE e a
@@ -671,7 +673,7 @@ halfconsEvenA e (DeepEvenA a pr m sf) = case digitCons e a pr of
   Right pr' -> DeepOddE pr' m sf
   Left (pr', a', node) -> DeepOddE pr' (consOddA a' node m) sf
 
--- | /O(1)/ worst case. Inverse: 'halfunsnocOddA'.
+-- | \(O(1)\) worst case. Inverse: 'halfunsnocOddA'.
 --
 -- prop> \(AnyEvenA as) a -> halfunsnocOddA (halfsnocEvenA as a) == (as, a)
 halfsnocEvenA :: TwoFingerEvenA e a -> a -> TwoFingerOddA e a
@@ -679,7 +681,7 @@ halfsnocEvenA EmptyEvenA a = EmptyOddA a
 halfsnocEvenA (SingleEvenA a1 e1) a2 = SingleOddA a1 e1 a2
 halfsnocEvenA (DeepEvenA a0 pr m sf) a = DeepOddA a0 pr m sf a
 
--- | /O(1)/ worst case. Inverse: 'halfconsOddE'.
+-- | \(O(1)\) worst case. Inverse: 'halfconsOddE'.
 --
 -- prop> \(AnyEvenA as) -> as == maybe mempty (uncurry halfconsOddE) (halfunconsEvenA as)
 halfunconsEvenA :: TwoFingerEvenA e a -> Maybe (a, TwoFingerOddE e a)
@@ -687,7 +689,7 @@ halfunconsEvenA EmptyEvenA = Nothing
 halfunconsEvenA (SingleEvenA a e) = Just (a, SingleOddE e)
 halfunconsEvenA (DeepEvenA a pr m sf) = Just (a, DeepOddE pr m sf)
 
--- | /O(log n)/ worst case. Inverse: 'halfsnocOddA'.
+-- | \(O(\log n)\) worst case. Inverse: 'halfsnocOddA'.
 --
 -- prop> \(AnyEvenA as) -> as == maybe mempty (uncurry halfsnocOddA) (halfunsnocEvenA as)
 halfunsnocEvenA :: TwoFingerEvenA e a -> Maybe (TwoFingerOddA e a, e)
@@ -1236,7 +1238,7 @@ genNode e a = QC.oneof
   , Node3 <$> e <*> a <*> e <*> a <*> e
   ]
 
--- | The 'Int' parameter is expontential size: for a value /n/, the generated tree will have (slightly more than) \(2^n\) to \(3^n\) elements.
+-- | The 'Int' parameter is expontential size: for a value \(n\), the generated tree will have (slightly more than) \(2^n\) to \(3^n\) elements.
 genOddA :: Gen e -> Gen a -> Int -> Gen (TwoFingerOddA e a)
 genOddA e a 1 = SingleOddA <$> a <*> e <*> a
 genOddA _ a n | n <= 0 = EmptyOddA <$> a

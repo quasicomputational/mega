@@ -25,9 +25,9 @@
 -- the same. Half-conses and -snocs transform between these flavours,
 -- adding only half the pair. All cons-like operations have an inverse
 -- operation. Some half-conses and -snocs and their inverses are
--- /O(1)/ amortised, with /O(log n)/ worst case, while some are /O(1)/
--- always. All full conses, snocs and inverses are /O(1)/ amortised
--- and /O(log n)/ worst case.
+-- \(O(1)\) amortised, with \(O(\log n)\) worst case, while some are \(O(1)\)
+-- always. All full conses, snocs and inverses are \(O(1)\) amortised
+-- and \(O(\log n)\) worst case.
 --
 -- Note that the names of half-conses and -snocs take the flavour that
 -- they operate on, which means that, for example, 'halfconsOddA' and
@@ -38,8 +38,8 @@
 -- Appending alternating finger trees is also efficient. As well as
 -- the usual 'Monoid' and 'Semigroup' instances, the two @Even@
 -- flavours can be viewed as monoid actions of the @Odd@ flavours. All
--- append-like operations are /O(log(min(n, m)))/ amortised and
--- /O(log(max(n, m)))/ worst case.
+-- append-like operations are \(O(\log(\min(n, m)))\) amortised and
+-- \(O(\log(\max(n, m)))\) worst case.
 --
 -- For more information on finger trees, see:
 --
