@@ -56,6 +56,8 @@ import qualified Test.QuickCheck as QC
 
 --TODO: Consider exporting bits and pieces from, e.g., Q4C12.TwoFinger.EvenA, without the flavour-identifying suffix, to allow qualified import.
 
+--TODO: The prop> lines are very long due to a doctest limiation: https://github.com/sol/doctest/issues/131. When this is fixed, I should make those reasonable.
+
 --TODO: send this upstream to semigroupoids? Opened issue: https://github.com/ekmett/semigroupoids/issues/66
 (<.*>) :: (Apply f) => f (a -> b) -> MaybeApply f a -> f b
 ff <.*> MaybeApply (Left fa) = ff <.> fa
@@ -179,6 +181,8 @@ instance (Eq e, Eq a) => Eq (TwoFingerOddA e a) where
 
 instance (NFData e, NFData a) => NFData (TwoFingerOddA e a)
 
+--TODO: If we had 'type>', we could document the lensiness directly.
+--See https://github.com/sol/doctest/issues/153
 -- | Access the first @a@ of a @'TwoFingerOddA' e a@. /O(1)/. This
 -- type is @Lens' ('TwoFingerOddA' e a) a@ in disguise.
 --
