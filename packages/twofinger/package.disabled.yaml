@@ -58,6 +58,8 @@ library:
     - condition: impl(ghc < 8.2)
       dependencies:
         - *d-bifunctors
+
+#TODO: cabal-doctest (or perhaps doctest itself) doesn't play nicely with coverage reports.
 tests:
   doctests:
     source-dirs:
