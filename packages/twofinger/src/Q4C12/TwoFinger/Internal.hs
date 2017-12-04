@@ -1281,7 +1281,7 @@ newtype AnyOddE = AnyOddE { getAnyOddE :: TwoFingerOddE Int [Int] }
   deriving (Show)
 
 instance QC.Arbitrary AnyOddE where
-  arbitrary = fmap AnyOddE $ QC.oneof
+  arbitrary = AnyOddE <$> QC.oneof
     [ SingleOddE <$> QC.arbitrary
     , DeepOddE <$> genDigit QC.arbitrary QC.arbitrary <*> (genOddA (genNode QC.arbitrary QC.arbitrary) QC.arbitrary =<< QC.choose (0, 10)) <*> genDigit QC.arbitrary QC.arbitrary
     ]
@@ -1291,7 +1291,7 @@ newtype AnyEvenA = AnyEvenA { getAnyEvenA :: TwoFingerEvenA Int [Int] }
   deriving (Show)
 
 instance QC.Arbitrary AnyEvenA where
-  arbitrary = fmap AnyEvenA $ QC.oneof
+  arbitrary = AnyEvenA <$> QC.oneof
     [ pure EmptyEvenA
     , SingleEvenA <$> QC.arbitrary <*> QC.arbitrary
     , DeepEvenA <$> QC.arbitrary <*> genDigit QC.arbitrary QC.arbitrary <*> (genOddA (genNode QC.arbitrary QC.arbitrary) QC.arbitrary =<< QC.choose (0, 10)) <*> genDigit QC.arbitrary QC.arbitrary
@@ -1302,7 +1302,7 @@ newtype AnyEvenE = AnyEvenE { getAnyEvenE :: TwoFingerEvenE Int [Int] }
   deriving (Show)
 
 instance QC.Arbitrary AnyEvenE where
-  arbitrary = fmap AnyEvenE $ QC.oneof
+  arbitrary = AnyEvenE <$> QC.oneof
     [ pure EmptyEvenE
     , SingleEvenE <$> QC.arbitrary <*> QC.arbitrary
     , DeepEvenE <$> genDigit QC.arbitrary QC.arbitrary <*> (genOddA (genNode QC.arbitrary QC.arbitrary) QC.arbitrary =<< QC.choose (0, 10)) <*> genDigit QC.arbitrary QC.arbitrary <*> QC.arbitrary
