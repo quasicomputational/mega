@@ -17,4 +17,4 @@ library:
   other-modules: []
   dependencies:
     - "containers >= 0.5.9.2 && < 0.6"
-    - "q4c12-prelude >= 0 && < 0.1"
+    - "q4c12-prelude >= 0 && < 0.0.1"

@@ -16,6 +16,6 @@ library:
   # Suppress Paths_*
   other-modules: []
   dependencies:
-    - "q4c12-prelude >= 0 && < 0.1"
+    - "q4c12-prelude >= 0 && < 0.0.1"
 
 #TODO: write/port over some tests
