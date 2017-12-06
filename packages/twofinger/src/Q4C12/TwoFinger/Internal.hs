@@ -38,21 +38,27 @@ import Data.Semigroup.Bitraversable
 import Data.Semigroup.Foldable (Foldable1 (foldMap1))
 import Data.Semigroup.Traversable
   (Traversable1 (traverse1), foldMap1Default)
+import Data.Stream.Infinite
+  (Stream ((:>)))
+import qualified Data.Stream.Infinite as Stream
 import Data.Traversable (foldMapDefault, fmapDefault)
 import GHC.Generics (Generic)
 import Test.QuickCheck (Gen)
 import qualified Test.QuickCheck as QC
 
 -- $setup
+-- >>> import Data.List (unfoldr)
+-- >>> import Data.Tuple (swap)
 -- >>> import Lens.Micro (over)
 -- >>> import Lens.Micro.Extras (view)
+-- >>> let hush = either (const Nothing) Just
 
 --TODO: Fill in the gaps in the API.
 
 --TODO: Flipped TwoFingerEvenA has a sensible Alt/Plus instance. So,
 --maybe offer a wholly flipped set of flavours?
 
---TODO: Alternative zippy Applicatives instances. Maybe just Apply, to dodge the infinity problem?
+--TODO: Alternative zippy Applicatives instances.
 
 --TODO: Consider exporting bits and pieces from, e.g., Q4C12.TwoFinger.EvenA, without the flavour-identifying suffix, to allow qualified import.
 
@@ -1387,3 +1393,127 @@ alignLeftEvenEEvenE as bs = case (unconsEvenE as, unconsEvenE bs) of
     (aligned, rest) -> (consEvenE (e, e') (a, a') aligned, rest)
   (_, Nothing) -> (mempty, Left as)
   (Nothing, _) -> (mempty, Right bs)
+
+-- * Creating infinite sequences.
+
+--TODO: we can actually work with either finite or infinite sequences here, right? Oh, not quite: if both sides are finite, we'll have a parity mismatch, so that can't work even in theory. One side infinite and one side finite could be wonky: if we peer too deeply into the finite side, we'll bottom out. So maybe it makes sense for either both to be finite (with an extra a to balance), or both to be infinite; but, in the finite case, if the things are flagrantly different lengths, we'd be better off building with cons/snoc rather than structurally. On the other hand, it might be useful to be able to build a tree without committing to it being finite or infinite. The worry is the unexpected bottoming.
+
+takeNodeLeft :: (Stream a -> es -> (e, Stream a, es)) -> Stream a -> es -> (Node e a, Stream a, es)
+takeNodeLeft f as es =
+  let (x, a :> as', es') = f as es
+      (y, as'', es'') = f as' es'
+  in (Node2 x a y, as'', es'')
+
+takeNodeRight :: (es -> Stream a -> (e, es, Stream a)) -> es -> Stream a -> (Node e a, es, Stream a)
+takeNodeRight f es as =
+  let (x, es', a :> as') = f es as
+      (y, es'', as'') = f es' as'
+  in (Node2 y a x, es'', as'')
+
+infiniteOddA'
+  :: (Stream a -> Stream e -> (Node e' a, Stream a, Stream e))
+  -> (Stream e -> Stream a -> (Node e' a, Stream e, Stream a))
+  -> Stream a -> Stream e
+  -> Stream e -> Stream a
+  -> TwoFingerOddA e' a
+infiniteOddA' f g (a0 :> leftA) leftE rightE (an :> rightA) =
+  let (prNode, leftA', leftE') = f leftA leftE
+      (sfNode, rightE', rightA') = g rightE rightA
+      inner = infiniteOddA' (takeNodeLeft f) (takeNodeRight g) leftA' leftE' rightE' rightA'
+  in DeepOddA a0 (nodeToDigit prNode) inner (nodeToDigit sfNode) an
+
+-- | Infinitely repeat the given @a@ and @e@.
+--
+-- prop> \(AnyOddA as) -> as == bimap (uncurry ($)) (uncurry ($)) (fst $ alignLeftOddAOddA (repeatOddA id id) as)
+-- prop> \(AnyEvenA as) -> either ((as ==) . bimap (uncurry ($)) (uncurry ($)) . fst) (const False) (alignLeftOddAEvenA (repeatOddA id id) as)
+repeatOddA :: a -> e -> TwoFingerOddA e a
+repeatOddA a e = infiniteOddA (Stream.iterate id a) (Stream.iterate id e) (Stream.iterate id e) (Stream.iterate id a)
+
+-- | From streams of leftward @a@, leftward @e@, rightward @e@ and
+-- rightward @a@, build an infinite 'TwoFingerOddA'.
+--
+-- >>> let infinite = infiniteOddA (Stream.iterate (+ 1) 0) (Stream.iterate (+ 1) 10) (Stream.iterate (+ 1) 20) (Stream.iterate (+ 1) 30)
+-- >>> take 5 $ unfoldr (hush . unconsOddA) infinite
+-- [(0,10),(1,11),(2,12),(3,13),(4,14)]
+-- >>> take 5 $ unfoldr (fmap swap . hush . unsnocOddA) infinite
+-- [(20,30),(21,31),(22,32),(23,33),(24,34)]
+infiniteOddA :: Stream a -> Stream e -> Stream e -> Stream a -> TwoFingerOddA e a
+infiniteOddA = infiniteOddA' (takeNodeLeft (\as (e :> es) -> (e, as, es))) (takeNodeRight (\(e :> es) as -> (e, es, as)))
+
+-- | Infinitely repeat the given @a@ and @e@.
+--
+-- prop> \(AnyOddE as) -> as == bimap (uncurry ($)) (uncurry ($)) (fst $ alignLeftOddEOddE (repeatOddE id id) as)
+-- prop> \(AnyEvenE as) -> either ((==) as . bimap (uncurry ($)) (uncurry ($)) . fst) (const False) $ alignLeftOddEEvenE (repeatOddE id id) as
+repeatOddE :: e -> a -> TwoFingerOddE e a
+repeatOddE e a = infiniteOddE (Stream.iterate id e) (Stream.iterate id a) (Stream.iterate id a) (Stream.iterate id e)
+
+-- |
+--
+-- >>> let infinite = infiniteOddE (Stream.iterate (+ 1) 0) (Stream.iterate (+ 1) 10) (Stream.iterate (+ 1) 20) (Stream.iterate (+ 1) 30)
+-- >>> take 5 $ unfoldr (hush . unconsOddE) infinite
+-- [(0,10),(1,11),(2,12),(3,13),(4,14)]
+-- >>> take 5 $ unfoldr (fmap swap . hush . unsnocOddE) infinite
+-- [(20,30),(21,31),(22,32),(23,33),(24,34)]
+infiniteOddE :: Stream e -> Stream a -> Stream a -> Stream e -> TwoFingerOddE e a
+infiniteOddE leftE leftA rightA rightE =
+  DeepOddE (nodeToDigit prNode) inner (nodeToDigit sfNode)
+  where
+    f :: Stream a -> Stream e -> (Node e a, Stream a, Stream e)
+    f = takeNodeLeft (\as (e :> es) -> (e, as, es))
+    g :: Stream e -> Stream a -> (Node e a, Stream e, Stream a)
+    g = takeNodeRight (\(e :> es) as -> (e, es, as))
+    (prNode, leftE', leftA') = f leftA leftE
+    (sfNode, rightA', rightE') = g rightE rightA
+    inner = infiniteOddA' (takeNodeLeft f) (takeNodeRight g) leftE' leftA' rightA' rightE'
+
+-- | Infinitely repeat the given @a@ and @e@.
+--
+-- prop> \(AnyEvenA as) -> as == bimap (uncurry ($)) (uncurry ($)) (fst $ alignLeftEvenAEvenA (repeatEvenA id id) as)
+-- prop> \(AnyOddA as) -> either (const False) ((==) as . bimap (uncurry $ flip ($)) (uncurry $ flip ($)) . fst) $ alignLeftOddAEvenA as (repeatEvenA id id)
+repeatEvenA :: a -> e -> TwoFingerEvenA e a
+repeatEvenA a e = infiniteEvenA (Stream.iterate id a) (Stream.iterate id e) (Stream.iterate id a) (Stream.iterate id e)
+
+-- |
+--
+-- >>> let infinite = infiniteEvenA (Stream.iterate (+ 1) 0) (Stream.iterate (+ 1) 10) (Stream.iterate (+ 1) 20) (Stream.iterate (+ 1) 30)
+-- >>> take 5 $ unfoldr unconsEvenA infinite
+-- [(0,10),(1,11),(2,12),(3,13),(4,14)]
+-- >>> take 5 $ unfoldr (fmap swap . unsnocEvenA) infinite
+-- [(20,30),(21,31),(22,32),(23,33),(24,34)]
+infiniteEvenA :: Stream a -> Stream e -> Stream a -> Stream e -> TwoFingerEvenA e a
+infiniteEvenA (a :> leftA) leftE rightA rightE =
+  DeepEvenA a (nodeToDigit prNode) inner (nodeToDigit sfNode)
+  where
+    f :: Stream a -> Stream e -> (Node e a, Stream a, Stream e)
+    f = takeNodeLeft (\as (e :> es) -> (e, as, es))
+    g :: Stream e -> Stream a -> (Node e a, Stream e, Stream a)
+    g = takeNodeRight (\(e :> es) as -> (e, es, as))
+    (prNode, leftE', leftA') = f leftA leftE
+    (sfNode, rightA', rightE') = g rightE rightA
+    inner = infiniteOddA' (takeNodeLeft f) (takeNodeRight g) leftE' leftA' rightA' rightE'
+
+-- |
+--
+-- prop> \(AnyEvenE as) -> as == bimap (uncurry ($)) (uncurry ($)) (fst $ alignLeftEvenEEvenE (repeatEvenE id id) as)
+-- prop> \(AnyOddE as) -> either (const False) ((==) as . bimap (uncurry $ flip ($)) (uncurry $ flip ($)) . fst) $ alignLeftOddEEvenE as (repeatEvenE id id)
+repeatEvenE :: e -> a -> TwoFingerEvenE e a
+repeatEvenE e a = infiniteEvenE (Stream.iterate id e) (Stream.iterate id a) (Stream.iterate id e) (Stream.iterate id a)
+
+-- |
+--
+-- >>> let infinite = infiniteEvenE (Stream.iterate (+ 1) 0) (Stream.iterate (+ 1) 10) (Stream.iterate (+ 1) 20) (Stream.iterate (+ 1) 30)
+-- >>> take 5 $ unfoldr unconsEvenE infinite
+-- [(0,10),(1,11),(2,12),(3,13),(4,14)]
+-- >>> take 5 $ unfoldr (fmap swap . unsnocEvenE) infinite
+-- [(20,30),(21,31),(22,32),(23,33),(24,34)]
+infiniteEvenE :: Stream e -> Stream a -> Stream e -> Stream a -> TwoFingerEvenE e a
+infiniteEvenE leftE leftA rightE (a :> rightA) =
+  DeepEvenE (nodeToDigit prNode) inner (nodeToDigit sfNode) a
+  where
+    f :: Stream a -> Stream e -> (Node e a, Stream a, Stream e)
+    f = takeNodeLeft (\as (e :> es) -> (e, as, es))
+    g :: Stream e -> Stream a -> (Node e a, Stream e, Stream a)
+    g = takeNodeRight (\(e :> es) as -> (e, es, as))
+    (prNode, leftE', leftA') = f leftA leftE
+    (sfNode, rightA', rightE') = g rightE rightA
+    inner = infiniteOddA' (takeNodeLeft f) (takeNodeRight g) leftE' leftA' rightA' rightE'

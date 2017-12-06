@@ -37,6 +37,8 @@ _common-dependencies:
     "QuickCheck >= 2.10.1 && < 2.11"
   - &d-semigroupoids
     "semigroupoids >= 5.2.1 && < 5.3"
+  - &d-streams
+    "streams >= 3.3 && < 3.4"
 
 custom-setup:
   dependencies:
@@ -55,6 +57,7 @@ library:
     - *d-deepseq
     - *d-QuickCheck
     - *d-semigroupoids
+    - *d-streams
   when:
     - condition: impl(ghc < 8.2)
       dependencies:
@@ -77,6 +80,7 @@ tests:
       - *d-base
       - *d-doctest
       - *d-microlens
+      - *d-streams
       #cabal-doctest related hacks
       - *d-QuickCheck
       - "template-haskell"

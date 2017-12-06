@@ -91,6 +91,11 @@ module Q4C12.TwoFinger
     -- * Aligning (zipping)
     alignLeftOddAOddA, alignLeftOddAEvenA,
     alignLeftOddEOddE, alignLeftOddEEvenE,
+    -- * Infinite trees
+    repeatOddA, repeatOddE,
+    repeatEvenA, repeatEvenE,
+    infiniteOddA, infiniteOddE,
+    infiniteEvenA, infiniteEvenE
   )
   where
 
@@ -116,6 +121,10 @@ import Q4C12.TwoFinger.Internal
     appendOddAOddE, appendOddEOddA,
     alignLeftOddAOddA, alignLeftOddAEvenA,
     alignLeftOddEOddE, alignLeftOddEEvenE,
+    repeatOddA, repeatOddE,
+    repeatEvenA, repeatEvenE,
+    infiniteOddA, infiniteOddE,
+    infiniteEvenA, infiniteEvenE
   )
 
 -- $setup

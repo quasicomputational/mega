@@ -35,6 +35,7 @@ library
     , deepseq >= 1.4.3.0 && < 1.5
     , QuickCheck >= 2.10.1 && < 2.11
     , semigroupoids >= 5.2.1 && < 5.3
+    , streams >= 3.3 && < 3.4
   if impl(ghc < 8.2)
     build-depends:
         bifunctors >= 5.4.2 && < 5.5
@@ -57,6 +58,7 @@ test-suite doctests
     , microlens >= 0.4.8.1 && < 0.5
     , QuickCheck >= 2.10.1 && < 2.11
     , template-haskell
+    , streams >= 3.3 && < 3.4
   other-modules:
     Build_doctests
   autogen-modules:
