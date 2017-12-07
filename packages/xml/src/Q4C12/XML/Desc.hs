@@ -37,6 +37,4 @@ interleave el tx = rfmap (from doubleProd . iso f g) $ rconsR
     f :: ([(a, e)], a) -> TwoFingerOddA e a
     f (pairs, a) = foldr (uncurry consOddA) (singletonOddA a) pairs
     g :: TwoFingerOddA e a -> ([(a, e)], a)
-    g = unfoldr' uncons'
-    uncons' :: TwoFingerOddA e a -> Either a ((a, e), TwoFingerOddA e a)
-    uncons' tree = unconsOddA tree <&> \(a, e, tree') -> ((a, e), tree')
+    g = unfoldr' unconsOddA

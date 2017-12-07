@@ -60,6 +60,8 @@ import qualified Test.QuickCheck as QC
 
 --TODO: the issue with the mathy haddocks is that double-clicking on a paragraph with one of them in them won't select the whole paragraph.
 
+--TODO: the tuples are annoying. Consider moving to HLists.
+
 --TODO: send this upstream to semigroupoids? Opened issue: https://github.com/ekmett/semigroupoids/issues/66
 (<.*>) :: (Apply f) => f (a -> b) -> MaybeApply f a -> f b
 ff <.*> MaybeApply (Left fa) = ff <.> fa
@@ -155,7 +157,7 @@ instance Show2 TwoFingerOddA where
     where
       go paren tree = showParen paren $ case unconsOddA tree of
         Left a -> showString "singletonOddA " . g 11 a
-        Right (a, e, tree')
+        Right ((a, e), tree')
           -> showString "consOddA "
            . g 11 a . showString " "
            . f 11 e . showString " "
@@ -258,7 +260,7 @@ instance Show2 TwoFingerOddE where
     where
       go paren tree = showParen paren $ case unconsOddE tree of
         Left e -> showString "singletonOddE " . f 11 e
-        Right (e, a, tree')
+        Right ((e, a), tree')
           -> showString "consOddE "
            . f 11 e . showString " "
            . g 11 a . showString " "
@@ -317,7 +319,7 @@ instance Show2 TwoFingerEvenE where
     where
       go paren tree = case unconsEvenE tree of
         Nothing -> showString "mempty"
-        Just (e, a, tree') -> showParen paren
+        Just ((e, a), tree') -> showParen paren
           $ showString "consEvenE "
           . f 11 e
           . showString " "
@@ -382,7 +384,7 @@ instance Show2 TwoFingerEvenA where
     where
       go paren tree = case unconsEvenA tree of
         Nothing -> showString "mempty"
-        Just (a, e, tree') -> showParen paren
+        Just ((a, e), tree') -> showParen paren
           $ showString "consEvenA "
           . g 11 a . showString " "
           . f 11 e . showString " "
@@ -480,12 +482,12 @@ nodeToDigit (Node3 e1 a1 e2 a2 e3) = Three e1 a1 e2 a2 e3
 rotl :: TwoFingerOddA (Node e a) a -> Digit e a -> TwoFingerEvenA e a
 rotl m sf = case unconsOddA m of
   Left a -> halfconsOddE a $ digitToTree sf
-  Right (a, e, m') -> DeepEvenA a (nodeToDigit e) m' sf
+  Right ((a, e), m') -> DeepEvenA a (nodeToDigit e) m' sf
 
 rotr :: Digit e a -> TwoFingerOddA (Node e a) a -> TwoFingerEvenE e a
 rotr pr m = case unsnocOddA m of
   Left a -> halfsnocOddE (digitToTree pr) a
-  Right (m', e, a) -> DeepEvenE pr m' (nodeToDigit e) a
+  Right (m', (e, a)) -> DeepEvenE pr m' (nodeToDigit e) a
 
 -- * (Un)conses/snocs for TwoFingerOddA.
 consOddA :: a -> e -> TwoFingerOddA e a -> TwoFingerOddA e a
@@ -494,15 +496,15 @@ consOddA a e = halfconsEvenE a . halfconsOddA e
 snocOddA :: TwoFingerOddA e a -> e -> a -> TwoFingerOddA e a
 snocOddA tree e = halfsnocEvenA (halfsnocOddA tree e)
 
-unconsOddA :: TwoFingerOddA e a -> Either a (a, e, TwoFingerOddA e a)
+unconsOddA :: TwoFingerOddA e a -> Either a ((a, e), TwoFingerOddA e a)
 unconsOddA tree = case second halfunconsEvenE $ halfunconsOddA tree of
   (a, Nothing) -> Left a
-  (a, Just (e, tree')) -> Right (a, e, tree')
+  (a, Just (e, tree')) -> Right ((a, e), tree')
 
-unsnocOddA :: TwoFingerOddA e a -> Either a (TwoFingerOddA e a, e, a)
+unsnocOddA :: TwoFingerOddA e a -> Either a (TwoFingerOddA e a, (e, a))
 unsnocOddA tree = case first halfunsnocEvenA $ halfunsnocOddA tree of
   (Nothing, a) -> Left a
-  (Just (tree', e), a) -> Right (tree', e, a)
+  (Just (tree', e), a) -> Right (tree', (e, a))
 
 -- | \(O(\log n)\) worst case. Inverse: 'halfunconsEvenE'
 --
@@ -549,15 +551,15 @@ consOddE e a = halfconsEvenA e . halfconsOddE a
 snocOddE :: TwoFingerOddE e a -> a -> e -> TwoFingerOddE e a
 snocOddE tree e = halfsnocEvenE (halfsnocOddE tree e)
 
-unconsOddE :: TwoFingerOddE e a -> Either e (e, a, TwoFingerOddE e a)
+unconsOddE :: TwoFingerOddE e a -> Either e ((e, a), TwoFingerOddE e a)
 unconsOddE tree = case second halfunconsEvenA $ halfunconsOddE tree of
   (e, Nothing) -> Left e
-  (e, Just (a, tree')) -> Right (e, a, tree')
+  (e, Just (a, tree')) -> Right ((e, a), tree')
 
-unsnocOddE :: TwoFingerOddE e a -> Either e (TwoFingerOddE e a, a, e)
+unsnocOddE :: TwoFingerOddE e a -> Either e (TwoFingerOddE e a, (a, e))
 unsnocOddE tree = case first halfunsnocEvenE $ halfunsnocOddE tree of
   (Nothing, e) -> Left e
-  (Just (tree', a), e) -> Right (tree', a, e)
+  (Just (tree', a), e) -> Right (tree', (a, e))
 
 -- | \(O(1)\) worst case. Inverse: 'halfunconsEvenA'
 --
@@ -598,15 +600,15 @@ consEvenE e a = halfconsOddA e . halfconsEvenE a
 snocEvenE :: TwoFingerEvenE e a -> e -> a -> TwoFingerEvenE e a
 snocEvenE tree e = halfsnocOddE (halfsnocEvenE tree e)
 
-unconsEvenE :: TwoFingerEvenE e a -> Maybe (e, a, TwoFingerEvenE e a)
+unconsEvenE :: TwoFingerEvenE e a -> Maybe ((e, a), TwoFingerEvenE e a)
 unconsEvenE tree = case second halfunconsOddA <$> halfunconsEvenE tree of
   Nothing -> Nothing
-  Just (e, (a, tree')) -> Just (e, a, tree')
+  Just (e, (a, tree')) -> Just ((e, a), tree')
 
-unsnocEvenE :: TwoFingerEvenE e a -> Maybe (TwoFingerEvenE e a, e, a)
+unsnocEvenE :: TwoFingerEvenE e a -> Maybe (TwoFingerEvenE e a, (e, a))
 unsnocEvenE tree = case first halfunsnocOddE <$> halfunsnocEvenE tree of
   Nothing -> Nothing
-  Just ((tree', a), e) -> Just (tree', a, e)
+  Just ((tree', a), e) -> Just (tree', (a, e))
 
 -- | \(O(1)\) worst case. Inverse: 'halfunconsOddA'
 --
@@ -652,15 +654,15 @@ consEvenA a e = halfconsOddE a . halfconsEvenA e
 snocEvenA :: TwoFingerEvenA e a -> a -> e -> TwoFingerEvenA e a
 snocEvenA tree a = halfsnocOddA (halfsnocEvenA tree a)
 
-unconsEvenA :: TwoFingerEvenA e a -> Maybe (a, e, TwoFingerEvenA e a)
+unconsEvenA :: TwoFingerEvenA e a -> Maybe ((a, e), TwoFingerEvenA e a)
 unconsEvenA tree = case second halfunconsOddE <$> halfunconsEvenA tree of
   Nothing -> Nothing
-  Just (a, (e, tree')) -> Just (a, e, tree')
+  Just (a, (e, tree')) -> Just ((a, e), tree')
 
-unsnocEvenA :: TwoFingerEvenA e a -> Maybe (TwoFingerEvenA e a, a, e)
+unsnocEvenA :: TwoFingerEvenA e a -> Maybe (TwoFingerEvenA e a, (a, e))
 unsnocEvenA tree = case first halfunsnocOddA <$> halfunsnocEvenA tree of
   Nothing -> Nothing
-  Just ((tree', e), a) -> Just (tree', e, a)
+  Just ((tree', e), a) -> Just (tree', (e, a))
 
 -- | \(O(\log n)\) worst case. Inverse: 'halfunconsOddE'.
 --
@@ -1269,12 +1271,12 @@ shrinkOddE (DeepOddE pr m sf) = (\m' -> DeepOddE pr m' sf) <$> shrinkOddA m
 shrinkEvenA :: TwoFingerEvenA e a -> [TwoFingerEvenA e a]
 shrinkEvenA tree = case unconsEvenA tree of
   Nothing -> []
-  Just (_, _, tree') -> [tree']
+  Just (_, tree') -> [tree']
 
 shrinkEvenE :: TwoFingerEvenE e a -> [TwoFingerEvenE e a]
 shrinkEvenE tree = case unconsEvenE tree of
   Nothing -> []
-  Just (_, _, tree') -> [tree']
+  Just (_, tree') -> [tree']
 
 newtype AnyOddA = AnyOddA { getAnyOddA :: TwoFingerOddA Int [Int] }
   deriving (Show)
@@ -1343,15 +1345,15 @@ alignLeftOddAOddA as (halfunsnocOddA -> (bs, a')) = case alignLeftOddAEvenA as b
 -- prop> \(AnyOddA as) (AnyEvenA bs) -> let { (as', bs') = case alignLeftOddAEvenA as bs of { Left (aligned, rest) -> (appendEvenAOddA (bimap fst fst aligned) rest, bimap snd snd aligned) ; Right (aligned, rest) -> (bimap fst fst aligned, appendOddAOddE (bimap snd snd aligned) rest) } } in as == as' && bs == bs'
 alignLeftOddAEvenA :: TwoFingerOddA e a -> TwoFingerEvenA e' a' -> Either (TwoFingerEvenA (e, e') (a, a'), TwoFingerOddA e a) (TwoFingerOddA (e, e') (a, a'), TwoFingerOddE e' a')
 alignLeftOddAEvenA as bs = case (unconsOddA as, unconsEvenA bs) of
-  (Right (a, e, as'), Just (a', e', bs')) -> case alignLeftOddAEvenA as' bs' of
+  (Right ((a, e), as'), Just ((a', e'), bs')) -> case alignLeftOddAEvenA as' bs' of
     Left (aligned, rest) -> Left (consEvenA (a, a') (e, e') aligned, rest)
     Right (aligned, rest) -> Right (consOddA (a, a') (e, e') aligned, rest)
   (_, Nothing) -> Left (mempty, as)
-  (Left a, Just (a', e', bs')) -> Right (singletonOddA (a, a'), halfconsEvenA e' bs')
+  (Left a, Just ((a', e'), bs')) -> Right (singletonOddA (a, a'), halfconsEvenA e' bs')
 
 alignLeftEvenAEvenA :: TwoFingerEvenA e a -> TwoFingerEvenA e' a' -> (TwoFingerEvenA (e, e') (a, a'), Either (TwoFingerEvenA e a) (TwoFingerEvenA e' a'))
 alignLeftEvenAEvenA as bs = case (unconsEvenA as, unconsEvenA bs) of
-  (Just (a, e, as'), Just (a', e', bs')) -> case alignLeftEvenAEvenA as' bs' of
+  (Just ((a, e), as'), Just ((a', e'), bs')) -> case alignLeftEvenAEvenA as' bs' of
     (aligned, rest) -> (consEvenA (a, a') (e, e') aligned, rest)
   (_, Nothing) -> (mempty, Left as)
   (Nothing, _) -> (mempty, Right bs)
@@ -1373,15 +1375,15 @@ alignLeftOddEOddE as (halfunsnocOddE -> (bs, e')) = case alignLeftOddEEvenE as b
 -- prop> \(AnyOddE as) (AnyEvenE bs) -> let { (as', bs') = case alignLeftOddEEvenE as bs of { Left (aligned, rest) -> (appendEvenEOddE (bimap fst fst aligned) rest, bimap snd snd aligned) ; Right (aligned, rest) -> (bimap fst fst aligned, appendOddEOddA (bimap snd snd aligned) rest) } } in as == as' && bs == bs'
 alignLeftOddEEvenE :: TwoFingerOddE e a -> TwoFingerEvenE e' a' -> Either (TwoFingerEvenE (e, e') (a, a'), TwoFingerOddE e a) (TwoFingerOddE (e, e') (a, a'), TwoFingerOddA e' a')
 alignLeftOddEEvenE as bs = case (unconsOddE as, unconsEvenE bs) of
-  (Right (e, a, as'), Just (e', a', bs')) -> case alignLeftOddEEvenE as' bs' of
+  (Right ((e, a), as'), Just ((e', a'), bs')) -> case alignLeftOddEEvenE as' bs' of
     Left (aligned, rest) -> Left (consEvenE (e, e') (a, a') aligned, rest)
     Right (aligned, rest) -> Right (consOddE (e, e') (a, a') aligned, rest)
   (_, Nothing) -> Left (mempty, as)
-  (Left e, Just (e', a', bs')) -> Right (singletonOddE (e, e'), halfconsEvenE a' bs')
+  (Left e, Just ((e', a'), bs')) -> Right (singletonOddE (e, e'), halfconsEvenE a' bs')
 
 alignLeftEvenEEvenE :: TwoFingerEvenE e a -> TwoFingerEvenE e' a' -> (TwoFingerEvenE (e, e') (a, a'), Either (TwoFingerEvenE e a) (TwoFingerEvenE e' a'))
 alignLeftEvenEEvenE as bs = case (unconsEvenE as, unconsEvenE bs) of
-  (Just (e, a, as'), Just (e', a', bs')) -> case alignLeftEvenEEvenE as' bs' of
+  (Just ((e, a), as'), Just ((e', a'), bs')) -> case alignLeftEvenEEvenE as' bs' of
     (aligned, rest) -> (consEvenE (e, e') (a, a') aligned, rest)
   (_, Nothing) -> (mempty, Left as)
   (Nothing, _) -> (mempty, Right bs)
