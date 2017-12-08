@@ -27,7 +27,7 @@ The XML declaration is forbidden.
 
 Processing instructions are forbidden.
 
-CDATA sections forbidden.
+CDATA sections are forbidden.
 
 Namespace prefixes are thrown away in parsing and are not retained in the internal data structures. Consequently, when rendering, new prefixes are generated; this is done in a canonical way, s.t. default namespaces and lexical scoping of namespaces are never used.
 
