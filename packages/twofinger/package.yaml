@@ -37,6 +37,7 @@ _common-dependencies:
     "QuickCheck >= 2.10.1 && < 2.11"
   - &d-semigroupoids
     "semigroupoids >= 5.2.1 && < 5.3"
+  #TODO: we only use streams minimally, but it's got a pretty heavy dependency load. On the other hand, the dependencies are there to define instances.
   - &d-streams
     "streams >= 3.3 && < 3.4"
 
