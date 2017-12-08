@@ -8,7 +8,7 @@ description: |
   .
   Cons-like operations are /O(1)/ amortised, and append operations are /O(log(min(n, m)))/ amortised.
   .
-  For more details, please see the Haddock documentation of 'Q4C12.TwoFinger'.
+  For more details, please see the Haddock documentation of "Q4C12.TwoFinger".
 homepage: https://github.com/quasicomputational/mega/tree/master/packages/twofinger
 github: quasicomputational/mega
 author: quasicomputational <quasicomputational@gmail.com>
