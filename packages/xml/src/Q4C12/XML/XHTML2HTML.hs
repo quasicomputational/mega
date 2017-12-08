@@ -92,7 +92,7 @@ htmlElement (Element qn attrs body pos) = foldSequence
       , case qn of
           QName Nothing _ -> Left $ MissingNamespace pos
           QName (Just ns) local -> do
-            unless (ns == htmlNS) $
+            unless (Set.member ns blessedNamespaces) $
               Left $ UnknownNamespace pos ns
             pure $ LTB.fromText local
       , pure ">"
