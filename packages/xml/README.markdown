@@ -35,7 +35,7 @@ Entity references, attribute names, element names and namespaces must be in NFD.
 
 End-of-line normalisation is performed. Attribute value normalisation is also performed, but discouraged. Rendering uses the Unix convention of LF for line-ends. For round-tripping purposes, CR is always rendered as a character reference, and tab and LF are additionally rendered as character references in attribute values.
 
-`<` is forbidden from appearing as a literal; it must appear as a reference. This is because of the silly `]]>` special-case.
+`>` is forbidden from appearing as a literal; it must appear as a reference. This is because of the silly `]]>` special-case.
 
 What's not in the profile
 -------------------------
