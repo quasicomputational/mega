@@ -732,6 +732,7 @@ instance Bind (TwoFingerOddA e) where
   (>>-) = (>>=)
 
 -- | A \'producty\' instance:
+--
 -- >>> (,) <$> (consOddA 1 "one" $ consOddA 2 "two" $ singletonOddA 3) <*> (consOddA 'a' "foo" $ singletonOddA 'b')
 -- consOddA (1,'a') "foo" (consOddA (1,'b') "one" (consOddA (2,'a') "foo" (consOddA (2,'b') "two" (consOddA (3,'a') "foo" (singletonOddA (3,'b'))))))
 instance Applicative (TwoFingerOddA e) where
