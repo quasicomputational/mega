@@ -20,6 +20,7 @@ category: Data Structures
 extra-source-files:
   #TODO: should be under extra-doc-files
   - README.markdown
+  - CHANGELOG.markdown
   #TODO: Should this file (i.e., package.yaml) be included in sdists? Question of what to do for the includes, in that case.
 
 ghc-options: !include "../../ghc-options.yaml"
