@@ -3,14 +3,14 @@
 Write a parser, get a printer and a schema for free
 ===================================================
 
-`Q4c12.XML.Desc` and its submodules provides a way to describe the structure of an XML document and how to map it to and from a Haskell value. A RELAX NG schema can then be generated from the description. Custom datatype libraries (in the RELAX NG sense of the word) are supported.
+`Q4C12.XML.Desc` and its submodules provides a way to describe the structure of an XML document and how to map it to and from a Haskell value. A RELAX NG schema can then be generated from the description. Custom datatype libraries (in the RELAX NG sense of the word) are supported.
 
 There is one minor footgun: if your schema is recursive, then you must use one of the non-terminal functions to give a part a name and to break the cycle. Otherwise, it works fine as a parser and a printer, but a RELAX NG schema cannot be infinite.
 
 Key ideas and debts owed
 ------------------------
 
-`Q4c12.XML.Desc` uses an `Applicative`-like approach, except instead of having `fmap :: (a -> b) -> f a -> f b`, it has `rfmap :: Iso' a b -> f a -> f b`, where `Iso'` is a (full) isomorphism: it can go in either direction losslessly. This is similar to the idea of using *partial* isomorphisms (outlined in, e.g., [this blog post](http://ponies.io/posts/2015-03-01-round-tripping-balls-json-1.html) and originally described in [this 2010 paper by Tillman Rendel and Klaus Ostermann](http://www.informatik.uni-marburg.de/~rendel/unparse/rendel10invertible.pdf)), but without the partiality.
+`Q4C12.XML.Desc` uses an `Applicative`-like approach, except instead of having `fmap :: (a -> b) -> f a -> f b`, it has `rfmap :: Iso' a b -> f a -> f b`, where `Iso'` is a (full) isomorphism: it can go in either direction losslessly. This is similar to the idea of using *partial* isomorphisms (outlined in, e.g., [this blog post](http://ponies.io/posts/2015-03-01-round-tripping-balls-json-1.html) and originally described in [this 2010 paper by Tillman Rendel and Klaus Ostermann](http://www.informatik.uni-marburg.de/~rendel/unparse/rendel10invertible.pdf)), but without the partiality.
 
 In addition, the van Laarhoven representation of isomorphisms is used, allowing interopability with the `lens` library, and reducing the need for Template Haskell.
 
@@ -53,7 +53,7 @@ Most of what's left out can be dealt with by a syntactic transformation of the i
 Other things it doesn't do
 ==========================
 
-Streaming. The parser and renderer could be adjusted without fundamental difficulty, but I don't know how to fit `Q4c12.XML.Desc` into a streaming framework.
+Streaming. The parser and renderer could be adjusted without fundamental difficulty, but I don't know how to fit `Q4C12.XML.Desc` into a streaming framework.
 
 xhtml2html
 ==========
