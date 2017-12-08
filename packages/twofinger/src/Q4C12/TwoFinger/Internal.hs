@@ -21,7 +21,8 @@ import Data.Bitraversable
 import Data.Functor.Alt (Alt ((<!>)))
 import Data.Functor.Apply
   ( Apply, (<.>), MaybeApply (MaybeApply)
-  , WrappedApplicative (WrapApplicative), unwrapApplicative )
+  , WrappedApplicative (WrapApplicative), unwrapApplicative
+  )
 import Data.Functor.Bind (Bind ((>>-)))
 import Data.Functor.Classes
   ( Eq2 (liftEq2), Eq1 (liftEq), eq2, Show2 (liftShowsPrec2)
