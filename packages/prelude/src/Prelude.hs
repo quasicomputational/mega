@@ -5,7 +5,6 @@ module Prelude
   , LText, SText, TBuilder
   , hush
   , (<&>)
-  , (<>~)
   , FilePathComponent
   , validationToExcept, exceptToValidation, failure
   )
@@ -158,11 +157,9 @@ import Data.DList as Export
 import Data.DList.NonEmpty as Export
   (NonEmptyDList)
 
--- microens imports for re-export
-import Lens.Micro as Export
-  (Lens', set, over)
-import Lens.Micro.Extras as Export
-  (view)
+-- lens imports for re-export
+import Control.Lens as Export
+  (Lens', set, over, view, (<>~), Iso, Iso', from, iso, Prism, Prism', APrism, APrism', preview, matching, review, withPrism)
 
 -- profunctors imports for re-export
 import Data.Profunctor as Export
@@ -183,8 +180,6 @@ import Q4C12.HList as Export
   (HSum (HSumHere, HSumThere), absurdHSum, eliminateHSum, partitionHSum, _HSumHere, _HSumThere, eitherSum, HProd (HProdCons, HProdNil), headL, tailL, unitProd, singleProd, doubleProd, dropUnit, HProdList (HProdListCons, HProdListNil))
 import Q4C12.TwoFinger as Export
   (TwoFingerOddA, TwoFingerOddE, TwoFingerEvenA, TwoFingerEvenE)
-import Q4C12.Optic as Export
-  (Iso, Iso', from, iso, Prism, Prism', APrism, APrism', preview, matching, review, withPrism)
 
 --Imports for local use.
 import Data.Semigroup (mtimesDefault)
@@ -210,10 +205,6 @@ hush = either (const Nothing) Just
 (<&>) :: (Functor f) => f a -> (a -> b) -> f b
 (<&>) = flip fmap
 infixl 1 <&>
-
---TODO: get this operator into microlens
-(<>~) :: (Semigroup a) => Lens' s a -> a -> s -> s
-l <>~ a = over l (<> a)
 
 type FilePathComponent = String
 

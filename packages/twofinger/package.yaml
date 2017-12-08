@@ -31,8 +31,8 @@ _common-dependencies:
     "deepseq >= 1.4.3.0 && < 1.5"
   - &d-doctest
     "doctest >= 0.11.4 && < 0.14"
-  - &d-microlens
-    "microlens >= 0.4.8.1 && < 0.5"
+  - &d-lens
+    "lens >= 4.15.4 && < 4.16"
   - &d-QuickCheck
     "QuickCheck >= 2.10.1 && < 2.11"
   - &d-semigroupoids
@@ -81,7 +81,7 @@ tests:
       - q4c12-twofinger
       - *d-base
       - *d-doctest
-      - *d-microlens
+      - *d-lens
       - *d-streams
       #cabal-doctest related hacks
       - *d-QuickCheck

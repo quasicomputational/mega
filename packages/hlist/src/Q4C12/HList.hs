@@ -15,8 +15,7 @@ module Q4C12.HList
   where
 
 import Data.Bifunctor (bimap)
-import Lens.Micro (over)
-import Q4C12.Optic (Iso, Iso', AnIso, withIso, iso, Prism, prism)
+import Control.Lens (over, Iso, Iso', AnIso, withIso, iso, Prism, prism)
 
 --TODO: consider replacing this module with generics-sop or similar.
 

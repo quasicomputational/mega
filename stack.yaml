@@ -9,7 +9,6 @@ packages:
   - location: ./packages/romnum
   - location: ./packages/foldable-utils
   - location: ./packages/hlist
-  - location: ./packages/optic
   - location: ./packages/position
 extra-deps:
   #TODO: remove base-prelude extra-dep once it makes it back into Stackage (which I *think* is blocked on Stack supporting Cabal 2, which is in Stack HEAD but unreleased).

@@ -29,6 +29,3 @@ else, they are:
   it with `base-noprelude`.
 
   It's not very comprehensive: I'm adding things as I find I need them.
-
-* [q4c12-optic](packages/optic) is `Iso` and `Prism` from `lens`. Just
-  use `lens`.

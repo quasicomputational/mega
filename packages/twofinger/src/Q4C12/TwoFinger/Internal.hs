@@ -49,8 +49,7 @@ import qualified Test.QuickCheck as QC
 -- $setup
 -- >>> import Data.List (unfoldr)
 -- >>> import Data.Tuple (swap)
--- >>> import Lens.Micro (over)
--- >>> import Lens.Micro.Extras (view)
+-- >>> import Control.Lens (over, view)
 -- >>> let hush = either (const Nothing) Just
 
 --TODO: Fill in the gaps in the API.
