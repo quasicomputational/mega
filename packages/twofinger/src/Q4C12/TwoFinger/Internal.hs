@@ -1411,6 +1411,12 @@ takeNodeRight f es as =
       (y, es'', as'') = f es' as'
   in (Node2 y a x, es'', as'')
 
+takeSingleNodeLeft :: Stream a -> Stream e -> (Node e a, Stream a, Stream e)
+takeSingleNodeLeft = takeNodeLeft (\as (e :> es) -> (e, as, es))
+
+takeSingleNodeRight :: Stream e -> Stream a -> (Node e a, Stream e, Stream a)
+takeSingleNodeRight = takeNodeRight (\(e :> es) as -> (e, es, as))
+
 infiniteOddA'
   :: (Stream a -> Stream e -> (Node e' a, Stream a, Stream e))
   -> (Stream e -> Stream a -> (Node e' a, Stream e, Stream a))
@@ -1439,7 +1445,7 @@ repeatOddA a e = infiniteOddA (Stream.iterate id a) (Stream.iterate id e) (Strea
 -- >>> take 5 $ unfoldr (fmap swap . hush . unsnocOddA) infinite
 -- [(20,30),(21,31),(22,32),(23,33),(24,34)]
 infiniteOddA :: Stream a -> Stream e -> Stream e -> Stream a -> TwoFingerOddA e a
-infiniteOddA = infiniteOddA' (takeNodeLeft (\as (e :> es) -> (e, as, es))) (takeNodeRight (\(e :> es) as -> (e, es, as)))
+infiniteOddA = infiniteOddA' takeSingleNodeLeft takeSingleNodeRight
 
 -- | Infinitely repeat the given @a@ and @e@.
 --
@@ -1459,13 +1465,9 @@ infiniteOddE :: Stream e -> Stream a -> Stream a -> Stream e -> TwoFingerOddE e 
 infiniteOddE leftE leftA rightA rightE =
   DeepOddE (nodeToDigit prNode) inner (nodeToDigit sfNode)
   where
-    f :: Stream a -> Stream e -> (Node e a, Stream a, Stream e)
-    f = takeNodeLeft (\as (e :> es) -> (e, as, es))
-    g :: Stream e -> Stream a -> (Node e a, Stream e, Stream a)
-    g = takeNodeRight (\(e :> es) as -> (e, es, as))
-    (prNode, leftE', leftA') = f leftA leftE
-    (sfNode, rightA', rightE') = g rightE rightA
-    inner = infiniteOddA' (takeNodeLeft f) (takeNodeRight g) leftE' leftA' rightA' rightE'
+    (prNode, leftE', leftA') = takeSingleNodeLeft leftA leftE
+    (sfNode, rightA', rightE') = takeSingleNodeRight rightE rightA
+    inner = infiniteOddA' (takeNodeLeft takeSingleNodeLeft) (takeNodeRight takeSingleNodeRight) leftE' leftA' rightA' rightE'
 
 -- | Infinitely repeat the given @a@ and @e@.
 --
@@ -1483,15 +1485,7 @@ repeatEvenA a e = infiniteEvenA (Stream.iterate id a) (Stream.iterate id e) (Str
 -- [(20,30),(21,31),(22,32),(23,33),(24,34)]
 infiniteEvenA :: Stream a -> Stream e -> Stream a -> Stream e -> TwoFingerEvenA e a
 infiniteEvenA (a :> leftA) leftE rightA rightE =
-  DeepEvenA a (nodeToDigit prNode) inner (nodeToDigit sfNode)
-  where
-    f :: Stream a -> Stream e -> (Node e a, Stream a, Stream e)
-    f = takeNodeLeft (\as (e :> es) -> (e, as, es))
-    g :: Stream e -> Stream a -> (Node e a, Stream e, Stream a)
-    g = takeNodeRight (\(e :> es) as -> (e, es, as))
-    (prNode, leftE', leftA') = f leftA leftE
-    (sfNode, rightA', rightE') = g rightE rightA
-    inner = infiniteOddA' (takeNodeLeft f) (takeNodeRight g) leftE' leftA' rightA' rightE'
+  halfconsOddE a $ infiniteOddE leftE leftA rightA rightE
 
 -- |
 --
@@ -1509,12 +1503,4 @@ repeatEvenE e a = infiniteEvenE (Stream.iterate id e) (Stream.iterate id a) (Str
 -- [(20,30),(21,31),(22,32),(23,33),(24,34)]
 infiniteEvenE :: Stream e -> Stream a -> Stream e -> Stream a -> TwoFingerEvenE e a
 infiniteEvenE leftE leftA rightE (a :> rightA) =
-  DeepEvenE (nodeToDigit prNode) inner (nodeToDigit sfNode) a
-  where
-    f :: Stream a -> Stream e -> (Node e a, Stream a, Stream e)
-    f = takeNodeLeft (\as (e :> es) -> (e, as, es))
-    g :: Stream e -> Stream a -> (Node e a, Stream e, Stream a)
-    g = takeNodeRight (\(e :> es) as -> (e, es, as))
-    (prNode, leftE', leftA') = f leftA leftE
-    (sfNode, rightA', rightE') = g rightE rightA
-    inner = infiniteOddA' (takeNodeLeft f) (takeNodeRight g) leftE' leftA' rightA' rightE'
+  halfsnocOddE (infiniteOddE leftE leftA rightA rightE) a
