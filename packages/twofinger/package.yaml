@@ -1,5 +1,5 @@
 name: q4c12-twofinger
-version: "0"
+version: "0.0.0.1"
 synopsis: Efficient alternating finger trees
 homepage: https://github.com/quasicomputational/mega/tree/master/packages/twofinger
 github: quasicomputational/mega
