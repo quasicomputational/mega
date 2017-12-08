@@ -48,11 +48,12 @@ tests:
     source-dirs:
       - test
     main: Doctest.hs
-    other-modules:
-      - Build_doctests
+    #TODO: Build_doctests ought to be listed as an autogen-module and an other-module, but hpack doesn't know about autogen modules: https://github.com/sol/hpack/issues/207
     ghc-options:
       #TODO: this is needed because cabal-doctest generates a module that triggers this warning. Sigh. Should file a bug about that...
       - "-Wno-missing-import-lists"
+      #And this one is as a result of the Build_doctests hack above
+      - "-Wno-missing-home-modules"
     dependencies:
       #https://github.com/phadej/cabal-doctest/issues/19
       - q4c12-foldable-utils
