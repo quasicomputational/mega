@@ -8,9 +8,9 @@ license-file:
   - LICENSE
   - LICENSE.BSD2
   - LICENSE.W3C
-extra-source-files:
-  #TODO: README.markdown should really be in extra-doc-files, but hpack doesn't know about that. I should send a patch about that. hpack bug: https://github.com/sol/hpack/issues/206
+extra-doc-files:
   - README.markdown
+extra-source-files:
   - data/html.xml
   - test/golden/**/*.in
   - test/golden/**/*.out
