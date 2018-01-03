@@ -60,7 +60,7 @@ instance (a ~ Q Pat, AcceptsVars r) => AcceptsVars (a -> r) where
   withVars f = do
     name <- TH.newName "x"
     (p, vs) <- withVars (f $ TH.varP name)
-    pure $ (p, name:vs)
+    pure (p, name:vs)
   withWildcards f = withWildcards (f TH.wildP)
 
 data CasePat

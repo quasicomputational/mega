@@ -47,7 +47,7 @@ partitionHSum (a : as) = go a $ partitionHSum as
     go (HSumThere y) (HProdListCons xs rest) = HProdListCons xs (go y rest)
 
 eitherSum :: Iso (Either a b) (Either a' b') (HSum '[a, b]) (HSum '[a', b'])
-eitherSum = iso (either HSumHere (HSumThere . HSumHere)) (eliminateHSum Left $ eliminateHSum Right $ absurdHSum)
+eitherSum = iso (either HSumHere (HSumThere . HSumHere)) (eliminateHSum Left $ eliminateHSum Right absurdHSum)
 
 --TODO: an unzip operation? [HProd as] -> HProdList as?
 data HProd :: [*] -> * where

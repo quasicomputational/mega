@@ -73,7 +73,7 @@ instance RFunctor (EvenFlow Print) where
   rfmap i (PrintEF a) = PrintEF $ a . view (from i)
 
 instance RPlus (EvenFlow Print) where
-  rempty = PrintEF $ \x -> case x of {}
+  rempty = PrintEF $ \case {}
   rplus a as = PrintEF $ \case
     HSumHere x -> runPrintEF a x
     HSumThere xs -> runPrintEF as xs
@@ -90,7 +90,7 @@ instance RFunctor (OddFlow Print) where
   rfmap i (PrintOF a) = PrintOF $ a . view (from i)
 
 instance RPlus (OddFlow Print) where
-  rempty = PrintOF $ \x -> case x of {}
+  rempty = PrintOF $ \case {}
   rplus a as = PrintOF $ \case
     HSumHere x -> runPrintOF a x
     HSumThere xs -> runPrintOF as xs
@@ -107,7 +107,7 @@ instance RFunctor (El Print) where
   rfmap i (PrintEl a) = PrintEl $ a . view (from i)
 
 instance RPlus (El Print) where
-  rempty = PrintEl $ \x -> case x of {}
+  rempty = PrintEl $ \case {}
   rplus a as = PrintEl $ \case
     HSumHere x -> runPrintEl a x
     HSumThere xs -> runPrintEl as xs
@@ -116,7 +116,7 @@ instance RFunctor (DT Print) where
   rfmap i (PrintDT a) = PrintDT $ a . view (from i)
 
 instance RPlus (DT Print) where
-  rempty = PrintDT $ \x -> case x of {}
+  rempty = PrintDT $ \case {}
   rplus a as = PrintDT $ \case
     HSumHere x -> runPrintDT a x
     HSumThere xs -> runPrintDT as xs
