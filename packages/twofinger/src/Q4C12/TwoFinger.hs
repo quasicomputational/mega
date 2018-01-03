@@ -50,6 +50,10 @@
 --
 -- This package's alternating finger trees are not annotated with
 -- sizes as described in section 4 of the paper.
+--
+-- Many of the functions in this package follow laws, which are not
+-- documented inline. [tests/Properties.hs](https://github.com/quasicomputational/mega/blob/master/packages/twofinger/test/Properties.hs)
+--is an  automatically-tested QuickCheck suite of properties.
 module Q4C12.TwoFinger
   ( -- * TwoFingerOddA
     TwoFingerOddA,
@@ -126,28 +130,3 @@ import Q4C12.TwoFinger.Internal
     infiniteOddA, infiniteOddE,
     infiniteEvenA, infiniteEvenE
   )
-
--- $setup
--- >>> import Q4C12.TwoFinger.Internal (AnyOddA (AnyOddA), AnyOddE (AnyOddE), AnyEvenA (AnyEvenA), AnyEvenE (AnyEvenE))
--- >>> import Data.Semigroup ((<>))
-
--- $monoid_action_properties
--- prop> \(AnyOddA a) (AnyOddA b) (AnyEvenE c) -> appendOddAEvenE (a <> b) c == a <> appendOddAEvenE b c
--- prop> \(AnyOddA a) (AnyOddE b) (AnyOddA c) -> appendEvenAOddA (appendOddAOddE a b) c == appendOddAEvenE a (appendOddEOddA b c)
--- prop> \(AnyOddA a) (AnyOddE b) (AnyEvenA c) -> appendOddAOddE a (appendOddEEvenA b c) == appendOddAOddE a b <> c
--- prop> \(AnyOddA a) (AnyEvenE b) (AnyOddE c) -> appendOddAOddE a (appendEvenEOddE b c) == appendOddAOddE (appendOddAEvenE a b) c
--- prop> \(AnyOddA a) (AnyEvenE b) (AnyEvenE c) -> appendOddAEvenE a (b <> c) == appendOddAEvenE (appendOddAEvenE a b) c
---
--- prop> \(AnyOddE a) (AnyOddA b) (AnyOddE c) -> appendOddEEvenA a (appendOddAOddE b c) == appendEvenEOddE (appendOddEOddA a b) c
--- prop> \(AnyOddE a) (AnyOddA b) (AnyEvenE c) -> appendOddEOddA a (appendOddAEvenE b c) == appendOddEOddA a b <> c 
--- prop> \(AnyOddE a) (AnyEvenA b) (AnyOddA c) -> appendOddEOddA a (appendEvenAOddA b c) == appendOddEOddA (appendOddEEvenA a b) c
--- prop> \(AnyOddE a) (AnyEvenA b) (AnyEvenA c) -> appendOddEEvenA a (b <> c) == appendOddEEvenA (appendOddEEvenA a b) c
---
--- prop> \(AnyEvenA a) (AnyOddA b) (AnyOddA c) -> appendEvenAOddA a (b <> c) == appendEvenAOddA a b <> c
--- prop> \(AnyEvenA a) (AnyOddA b) (AnyOddE c) -> appendOddAOddE (appendEvenAOddA a b) c == a <> appendOddAOddE b c
--- prop> \(AnyEvenA a) (AnyOddA b) (AnyEvenE c) -> appendOddAEvenE (appendEvenAOddA a b) c == appendEvenAOddA a (appendOddAEvenE b c)
--- prop> \(AnyEvenA a) (AnyEvenA b) (AnyOddA c) -> appendEvenAOddA (a <> b) c == appendEvenAOddA a (appendEvenAOddA b c)
---
--- prop> \(AnyEvenE a) (AnyOddE b) (AnyOddA c) -> appendOddEOddA (appendEvenEOddE a b) c == a <> appendOddEOddA b c
--- prop> \(AnyEvenE a) (AnyOddE b) (AnyEvenA c) -> appendOddEEvenA (appendEvenEOddE a b) c == appendEvenEOddE a (appendOddEEvenA b c)
--- prop> \(AnyEvenE a) (AnyEvenE b) (AnyOddE c) -> appendEvenEOddE (a <> b) c == appendEvenEOddE a (appendEvenEOddE b c)

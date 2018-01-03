@@ -43,7 +43,7 @@ _common-dependencies:
   - &d-q4c12-prelude
     "q4c12-prelude >= 0 && < 0.0.1"
   - &d-q4c12-twofinger
-    "q4c12-twofinger >= 0 && < 0.1"
+    "q4c12-twofinger >= 0.1 && < 0.2"
   - &d-safe
     "safe >= 0.3.15 && < 0.4"
   - &d-tasty
