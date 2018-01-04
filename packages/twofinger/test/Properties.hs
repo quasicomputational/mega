@@ -1,3 +1,4 @@
+--TODO: It's nice being able to edit the properties as code, which we couldn't have if they were haddocks, but it'd also be nice to have some way to cross-link them to the relevant functions in the Q4C12.TwoFinger's generated haddocks; maybe even to generate pretty documentation of the properties?
 module Main
   ( main
   )
