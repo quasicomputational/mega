@@ -284,7 +284,8 @@ monadProperties :: TestTree
 monadProperties = testGroup "OddA monad laws"
   [ testProperty "join . join === join . fmap join" $
       --Since we generate 3 layers deep, the things can get big with the default settings.
-      let gen a = genOddA QC.arbitrary a =<< QC.choose (0, 3)
+      let gen :: Gen a -> Gen (TwoFingerOddA Int a)
+          gen a = genOddA QC.arbitrary a =<< QC.choose (0, 3)
       in QC.forAll (gen $ gen $ gen QC.arbitrary) $ \as ->
            join (join as) == (join (fmap join as) :: TwoFingerOddA Int Int)
   , testProperty "join . pure === id" $ \(AnyOddA as) ->
