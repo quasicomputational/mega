@@ -86,7 +86,6 @@ module Q4C12.TwoFinger
     -- ** Half conses
     halfconsEvenE, halfsnocEvenE, halfunconsEvenE, halfunsnocEvenE,
     -- * Appending different flavours
-    -- $monoid_action_properties
     -- ** Monoid actions
     appendEvenAOddA, appendOddEEvenA,
     appendOddAEvenE, appendEvenEOddE,
