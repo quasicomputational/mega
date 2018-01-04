@@ -1,5 +1,5 @@
-Next
-====
+q4c12-twofinger 0.1 (2018-01-04)
+================================
 
 * Packaging: list `CHANGELOG.markdown` and `README.markdown` as `extra-doc-files`, rather than `extra-source-files`.
 * Drop the `QuickCheck` dependency from the library. Move the property tests out of haddocks and into the testsuite.
