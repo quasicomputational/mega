@@ -280,6 +280,19 @@ alignIdentityProperties = testGroup "align identities"
       as == bimap (uncurry $ flip ($)) (uncurry $ flip ($)) (fst $ alignLeftEvenEEvenE as (repeatEvenE id id))
   ]
 
+monadProperties :: TestTree
+monadProperties = testGroup "OddA monad laws"
+  [ testProperty "join . join === join . fmap join" $
+      --Since we generate 3 layers deep, the things can get big with the default settings.
+      let gen a = genOddA QC.arbitrary a =<< QC.choose (0, 3)
+      in QC.forAll (gen $ gen $ gen QC.arbitrary) $ \as ->
+           join (join as) == (join (fmap join as) :: TwoFingerOddA Int Int)
+  , testProperty "join . pure === id" $ \(AnyOddA as) ->
+      as == (join (pure as) :: TwoFingerOddA Int Int)
+  , testProperty "join . fmap pure === id" $ \(AnyOddA as) ->
+      as == (join (fmap pure as) :: TwoFingerOddA Int Int)
+  ]
+
 main :: IO ()
 main = defaultMain $ testGroup "property tests"
   [ halfconsProperties
@@ -287,14 +300,6 @@ main = defaultMain $ testGroup "property tests"
   , monoidIdentityProperties
   , alignProperties
   , alignIdentityProperties
-  , testGroup "OddA monad laws"
-    [ testProperty "join . join === join . fmap join" $ \(AnyOddA as) ->
-        let as' = fmap (fmap getAnyOddA . getAnyOddA) as
-        in join (join as') == (join (fmap join as') :: TwoFingerOddA Int Int)
-    , testProperty "join . pure === id" $ \(AnyOddA as) ->
-        as == (join (pure as) :: TwoFingerOddA Int Int)
-    , testProperty "join . fmap pure === id" $ \(AnyOddA as) ->
-        as == (join (fmap pure as) :: TwoFingerOddA Int Int)
-    ]
+  , monadProperties
   ]
 
