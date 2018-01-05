@@ -1,5 +1,5 @@
 module Q4C12.Position
-  ( Position (Position), posLine, posColumn
+  ( Position
   , PositionRange (PositionRange), posRangeStart, posRangeEnd
   , position, positionRange
   , startPosition, updatePosition
