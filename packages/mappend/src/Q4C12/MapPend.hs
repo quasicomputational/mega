@@ -8,7 +8,10 @@ module Q4C12.MapPend
   )
   where
 
+import Control.Lens (Iso, iso)
+import Data.Map (Map)
 import qualified Data.Map as Map
+import Data.Semigroup (Semigroup ((<>)))
 
 newtype MapPend k v = MapPend { getMapPend :: Map k v }
   deriving (Functor, Foldable, Traversable)

@@ -16,5 +16,6 @@ library:
   # Suppress Paths_*
   other-modules: []
   dependencies:
+    - "base >= 4.9.1.0 && < 4.11"
     - "containers >= 0.5.9.2 && < 0.6"
-    - "q4c12-prelude >= 0 && < 0.0.1"
+    - "lens >= 4.15.4 && < 4.16"
