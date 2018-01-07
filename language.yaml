@@ -6,6 +6,7 @@
 - LambdaCase
 - KindSignatures
 - OverloadedStrings
+- PatternGuards
 - StandaloneDeriving
 - TypeOperators
 - ViewPatterns
