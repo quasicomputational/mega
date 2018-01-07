@@ -1,5 +1,6 @@
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE PatternGuards #-}
+{-# OPTIONS_HADDOCK not-home #-}
 -- |
 -- Stability: unstable
 --
