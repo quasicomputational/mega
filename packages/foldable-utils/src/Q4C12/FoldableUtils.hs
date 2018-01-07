@@ -114,25 +114,25 @@ bifoldMapM
 bifoldMapM f g = getMonoidA . bifoldMap (MonoidA . f) (MonoidA . g)
 
 --TODO: more candidates for upstreaming... somewhere?
--- | Right semigroup action.
+-- | Left semigroup action.
 --
 -- >>> prependsMap (fmap show) [1 :| [2, 3], 4 :| []] ("foo" :| ["bar"])
 -- "1" :| ["2","3","4","foo","bar"]
 prependsMap :: (Semigroup a, Foldable f) => (b -> a) -> f b -> a -> a
 prependsMap f = appEndo . foldMap (\b -> Endo (f b <>))
 
--- | Right semigroup action.
+-- | Left semigroup action.
 --
 -- >>> getMax $ prepends [Max 9, Max 23, Max 7] (Max 12)
 -- 23
 prepends :: (Semigroup a, Foldable f) => f a -> a -> a
 prepends = prependsMap id
 
--- | Left semigroup action.
+-- | Right semigroup action.
 appendsMap :: (Semigroup a, Foldable f) => (b -> a) -> a -> f b -> a
 appendsMap f a bs = getDual $ prependsMap (Dual . f) (Reverse bs) (Dual a)
 
--- | Left semigroup action.
+-- | Right semigroup action.
 --
 -- >>> getLast $ appends (Last 1) [Last 2, Last 3]
 -- 3
