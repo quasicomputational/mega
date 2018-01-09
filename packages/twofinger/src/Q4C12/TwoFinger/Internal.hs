@@ -1189,7 +1189,6 @@ alignLeftOddAOddA as (halfunsnocOddA -> (bs, a')) = case alignLeftOddAEvenA as b
     (halfsnocEvenA aligned (a, a'), Left rest)
   Right (aligned, rest) -> (aligned, Right $ halfsnocOddE rest a')
 
---TODO: if we had TwoFingerEvenE1, we could avoid the arbitrary Left/Right selection in the Left/Nothing case.
 -- |
 -- >>> alignLeftOddAEvenA (consOddA 'a' 1 $ consOddA 'b' 2 $ singletonOddA 'c') (consEvenA "foo" 10 mempty)
 -- Left (consEvenA ('a',"foo") (1,10) mempty,consOddA 'b' 2 (singletonOddA 'c'))
@@ -1197,13 +1196,15 @@ alignLeftOddAOddA as (halfunsnocOddA -> (bs, a')) = case alignLeftOddAEvenA as b
 -- >>> alignLeftOddAEvenA (consOddA 'a' 1 $ singletonOddA 'b') (consEvenA "foo" 10 $ consEvenA "bar" 20 $ consEvenA "baz" 30 mempty)
 -- Right (consOddA ('a',"foo") (1,10) (singletonOddA ('b',"bar")),consOddE 20 "baz" (singletonOddE 30))
 alignLeftOddAEvenA :: TwoFingerOddA e a -> TwoFingerEvenA e' a' -> Either (TwoFingerEvenA (e, e') (a, a'), TwoFingerOddA e a) (TwoFingerOddA (e, e') (a, a'), TwoFingerOddE e' a')
-alignLeftOddAEvenA as bs = case (unconsOddA as, unconsEvenA bs) of
-  (Right ((a, e), as'), Just ((a', e'), bs')) -> case alignLeftOddAEvenA as' bs' of
-    Left (aligned, rest) -> Left (consEvenA (a, a') (e, e') aligned, rest)
-    Right (aligned, rest) -> Right (consOddA (a, a') (e, e') aligned, rest)
-  (_, Nothing) -> Left (mempty, as)
-  (Left a, Just ((a', e'), bs')) -> Right (singletonOddA (a, a'), halfconsEvenA e' bs')
+alignLeftOddAEvenA as bs = case unconsEvenA bs of
+  Nothing -> Left (mempty, as)
+  Just ((a', e'), bs') -> case unconsOddA as  of
+    Left a -> Right (singletonOddA (a, a'), halfconsEvenA e' bs')
+    Right ((a, e), as') -> case alignLeftOddAEvenA as' bs' of
+      Left (aligned, rest) -> Left (consEvenA (a, a') (e, e') aligned, rest)
+      Right (aligned, rest) -> Right (consOddA (a, a') (e, e') aligned, rest)
 
+--TODO: this makes an arbitrary choice in the (Nothing, Nothing) case. We'd need TwoFingerEvenA1 to resolve it.
 alignLeftEvenAEvenA :: TwoFingerEvenA e a -> TwoFingerEvenA e' a' -> (TwoFingerEvenA (e, e') (a, a'), Either (TwoFingerEvenA e a) (TwoFingerEvenA e' a'))
 alignLeftEvenAEvenA as bs = case (unconsEvenA as, unconsEvenA bs) of
   (Just ((a, e), as'), Just ((a', e'), bs')) -> case alignLeftEvenAEvenA as' bs' of
@@ -1223,13 +1224,15 @@ alignLeftOddEOddE as (halfunsnocOddE -> (bs, e')) = case alignLeftOddEEvenE as b
   Right (aligned, rest) -> (aligned, Right $ halfsnocOddA rest e')
 
 alignLeftOddEEvenE :: TwoFingerOddE e a -> TwoFingerEvenE e' a' -> Either (TwoFingerEvenE (e, e') (a, a'), TwoFingerOddE e a) (TwoFingerOddE (e, e') (a, a'), TwoFingerOddA e' a')
-alignLeftOddEEvenE as bs = case (unconsOddE as, unconsEvenE bs) of
-  (Right ((e, a), as'), Just ((e', a'), bs')) -> case alignLeftOddEEvenE as' bs' of
-    Left (aligned, rest) -> Left (consEvenE (e, e') (a, a') aligned, rest)
-    Right (aligned, rest) -> Right (consOddE (e, e') (a, a') aligned, rest)
-  (_, Nothing) -> Left (mempty, as)
-  (Left e, Just ((e', a'), bs')) -> Right (singletonOddE (e, e'), halfconsEvenE a' bs')
+alignLeftOddEEvenE as bs = case unconsEvenE bs of
+  Nothing -> Left (mempty, as)
+  Just ((e', a'), bs') -> case unconsOddE as of
+    Left e -> Right (singletonOddE (e, e'), halfconsEvenE a' bs')
+    Right ((e, a), as') -> case alignLeftOddEEvenE as' bs' of
+      Left (aligned, rest) -> Left (consEvenE (e, e') (a, a') aligned, rest)
+      Right (aligned, rest) -> Right (consOddE (e, e') (a, a') aligned, rest)
 
+--TODO: Another arbitrary choice, this time needing TwoFingerEvenE1
 alignLeftEvenEEvenE :: TwoFingerEvenE e a -> TwoFingerEvenE e' a' -> (TwoFingerEvenE (e, e') (a, a'), Either (TwoFingerEvenE e a) (TwoFingerEvenE e' a'))
 alignLeftEvenEEvenE as bs = case (unconsEvenE as, unconsEvenE bs) of
   (Just ((e, a), as'), Just ((e', a'), bs')) -> case alignLeftEvenEEvenE as' bs' of
