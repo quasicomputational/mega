@@ -15,3 +15,5 @@ extra-deps:
   - base-noprelude-4.10.1.0
   #TODO: remove transformers extra-dep once GHC 8.4 is a thing. Or, alternatively, once a new transformers-compat is released (https://github.com/ekmett/transformers-compat/issues/25), start using that.
   - transformers-0.5.5.0
+  #TODO: https://github.com/fpco/stackage/issues/3178
+  - tasty-1.0
