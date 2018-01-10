@@ -534,7 +534,7 @@ halfunconsOddA (EmptyOddA a) = (a, EmptyEvenE)
 halfunconsOddA (SingleOddA a e1 a1) = (a, SingleEvenE e1 a1)
 halfunconsOddA (DeepOddA a0 pr m sf a1) = (a0, DeepEvenE pr m sf a1)
 
--- | \(O(1)\) worst case. Inverse: 'halfsnocOddA'
+-- | \(O(1)\) worst case. Inverse: 'halfsnocEvenA'
 halfunsnocOddA :: TwoFingerOddA e a -> (TwoFingerEvenA e a, a)
 halfunsnocOddA (EmptyOddA a) = (EmptyEvenA, a)
 halfunsnocOddA (SingleOddA a1 e1 a2) = (SingleEvenA a1 e1, a2)
