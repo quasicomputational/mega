@@ -41,6 +41,8 @@ _common-dependencies:
     "doctest >= 0.11.4 && < 0.14"
   - &d-lens
     "lens >= 4.15.4 && < 4.16"
+  - &d-lens-properties
+    "lens-properties >= 4.11.1 && < 4.12"
   - &d-semigroupoids
     "semigroupoids >= 5.2.1 && < 5.3"
   #TODO: we only use streams minimally, but it's got a pretty heavy dependency load. On the other hand, the dependencies are there to define instances.
@@ -83,6 +85,8 @@ tests:
     dependencies:
       - q4c12-twofinger
       - *d-base
+      - *d-lens
+      - *d-lens-properties
       - *d-tasty
       - *d-tasty-quickcheck
   doctests:

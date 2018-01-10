@@ -1,9 +1,12 @@
+{-# LANGUAGE TemplateHaskell #-}
 --TODO: It's nice being able to edit the properties as code, which we couldn't have if they were haddocks, but it'd also be nice to have some way to cross-link them to the relevant functions in the Q4C12.TwoFinger's generated haddocks; maybe even to generate pretty documentation of the properties?
 module Main
   ( main
   )
   where
 
+import Control.Lens (Lens', makePrisms)
+import Control.Lens.Properties (isLens)
 import Control.Monad (join)
 import Data.Bifunctor (bimap)
 import Data.Semigroup ((<>))
@@ -11,7 +14,7 @@ import Test.Tasty (TestTree, testGroup, defaultMain)
 import Test.Tasty.QuickCheck (Gen, Arbitrary, testProperty)
 import qualified Test.Tasty.QuickCheck as QC
 
-import Q4C12.TwoFinger.Internal (Digit (One, Two, Three, Four), TwoFingerOddA (SingleOddA, EmptyOddA, DeepOddA), TwoFingerOddE (SingleOddE, DeepOddE), TwoFingerEvenA (SingleEvenA, EmptyEvenA, DeepEvenA), TwoFingerEvenE (SingleEvenE, EmptyEvenE, DeepEvenE), Node (Node2, Node3), unconsEvenA, unconsEvenE, digitToTree, halfsnocOddA, halfsnocOddE, halfunsnocOddA, halfconsEvenE, halfunconsOddA, halfconsOddE, halfsnocEvenA, repeatEvenA, repeatEvenE, repeatOddA, repeatOddE, alignLeftOddAOddA, alignLeftOddAEvenA, alignLeftOddEOddE, alignLeftOddEEvenE, alignLeftEvenAEvenA, alignLeftEvenEEvenE, appendOddEOddA, appendEvenEOddE, appendOddEEvenA, appendOddAOddE, appendEvenAOddA, appendOddAEvenE, halfunsnocEvenA, halfunsnocEvenE, halfsnocEvenE, halfunconsEvenA, halfunsnocOddE, halfunconsEvenE, halfconsOddA, halfunconsOddE, halfconsEvenA)
+import Q4C12.TwoFinger.Internal (Digit (One, Two, Three, Four), TwoFingerOddA (SingleOddA, EmptyOddA, DeepOddA), TwoFingerOddE (SingleOddE, DeepOddE), TwoFingerEvenA (SingleEvenA, EmptyEvenA, DeepEvenA), TwoFingerEvenE (SingleEvenE, EmptyEvenE, DeepEvenE), Node (Node2, Node3), unconsEvenA, unconsEvenE, digitToTree, halfsnocOddA, halfsnocOddE, halfunsnocOddA, halfconsEvenE, halfunconsOddA, halfconsOddE, halfsnocEvenA, repeatEvenA, repeatEvenE, repeatOddA, repeatOddE, alignLeftOddAOddA, alignLeftOddAEvenA, alignLeftOddEOddE, alignLeftOddEEvenE, alignLeftEvenAEvenA, alignLeftEvenEEvenE, appendOddEOddA, appendEvenEOddE, appendOddEEvenA, appendOddAOddE, appendEvenAOddA, appendOddAEvenE, halfunsnocEvenA, halfunsnocEvenE, halfsnocEvenE, halfunconsEvenA, halfunsnocOddE, halfunconsEvenE, halfconsOddA, halfunconsOddE, halfconsEvenA, firstOddA, lastOddA)
 
 genDigit :: Gen e -> Gen a -> Gen (Digit e a)
 genDigit e a = QC.oneof
@@ -66,14 +69,14 @@ shrinkEvenE tree = case unconsEvenE tree of
   Just (_, tree') -> [tree']
 
 newtype AnyOddA e a = AnyOddA { getAnyOddA :: TwoFingerOddA e a }
-  deriving (Show)
+  deriving (Show, Eq)
 
 instance (Arbitrary e, Arbitrary a) => Arbitrary (AnyOddA e a) where
   arbitrary = fmap AnyOddA $ genOddA QC.arbitrary QC.arbitrary =<< QC.choose (0, 10)
   shrink = fmap AnyOddA . shrinkOddA . getAnyOddA
 
 newtype AnyOddE e a = AnyOddE { getAnyOddE :: TwoFingerOddE e a }
-  deriving (Show)
+  deriving (Show, Eq)
 
 instance (Arbitrary e, Arbitrary a) => Arbitrary (AnyOddE e a) where
   arbitrary = AnyOddE <$> QC.oneof
@@ -83,7 +86,7 @@ instance (Arbitrary e, Arbitrary a) => Arbitrary (AnyOddE e a) where
   shrink = fmap AnyOddE . shrinkOddE . getAnyOddE
 
 newtype AnyEvenA e a = AnyEvenA { getAnyEvenA :: TwoFingerEvenA e a }
-  deriving (Show)
+  deriving (Show, Eq)
 
 instance (Arbitrary e, Arbitrary a) => Arbitrary (AnyEvenA e a) where
   arbitrary = AnyEvenA <$> QC.oneof
@@ -94,7 +97,7 @@ instance (Arbitrary e, Arbitrary a) => Arbitrary (AnyEvenA e a) where
   shrink = fmap AnyEvenA . shrinkEvenA . getAnyEvenA
 
 newtype AnyEvenE e a = AnyEvenE { getAnyEvenE :: TwoFingerEvenE e a }
-  deriving (Show)
+  deriving (Show, Eq)
 
 instance (Arbitrary e, Arbitrary a) => Arbitrary (AnyEvenE e a) where
   arbitrary = AnyEvenE <$> QC.oneof
@@ -103,6 +106,11 @@ instance (Arbitrary e, Arbitrary a) => Arbitrary (AnyEvenE e a) where
     , DeepEvenE <$> genDigit QC.arbitrary QC.arbitrary <*> (genOddA (genNode QC.arbitrary QC.arbitrary) QC.arbitrary =<< QC.choose (0, 10)) <*> genDigit QC.arbitrary QC.arbitrary <*> QC.arbitrary
     ]
   shrink = fmap AnyEvenE . shrinkEvenE . getAnyEvenE
+
+makePrisms ''AnyOddA
+makePrisms ''AnyOddE
+makePrisms ''AnyEvenA
+makePrisms ''AnyEvenE
 
 intFields :: (p Int [Int] -> r) -> p Int [Int] -> r
 intFields = id
@@ -295,6 +303,13 @@ monadProperties = testGroup "OddA monad laws"
       as == (join (fmap pure as) :: TwoFingerOddA Int Int)
   ]
 
+--TODO: test isTraversal on the various traversals? Is there an isTraversal1? isTraversal for the bitraversals??
+lensProperties :: TestTree
+lensProperties = testGroup "lens laws"
+  [ testProperty "firstOddA" $ isLens $ (_AnyOddA . firstOddA :: Lens' (AnyOddA Int Int) Int)
+  , testProperty "lastOddA" $ isLens $ (_AnyOddA . lastOddA :: Lens' (AnyOddA Int Int) Int)
+  ]
+
 main :: IO ()
 main = defaultMain $ testGroup "property tests"
   [ halfconsProperties
@@ -303,5 +318,6 @@ main = defaultMain $ testGroup "property tests"
   , alignProperties
   , alignIdentityProperties
   , monadProperties
+  , lensProperties
   ]
 

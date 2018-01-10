@@ -17,3 +17,5 @@ extra-deps:
   - transformers-0.5.5.0
   #TODO: https://github.com/fpco/stackage/issues/3178
   - tasty-1.0
+  #TODO: https://github.com/fpco/stackage/pull/3181
+  - lens-properties-4.11.1
