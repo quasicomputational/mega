@@ -139,7 +139,7 @@ appendsMap f a bs = getDual $ prependsMap (Dual . f) (Reverse bs) (Dual a)
 appends :: (Semigroup a, Foldable f) => a -> f a -> a
 appends = appendsMap id
 
---TODO: Upstreamable? I think the correct type signature will be '(Cons s s a a) => (b -> Either r (a, b) -> b -> (s, r)'. Except maybe this listy version ought to be the canonical version, because it's innately cons-y (better to make a Vector with fromList than repeated consing, for instance). Must also look at how base's unfoldr is implemented, to steal its tricks...
+--TODO: Upstreamable? Lists are the correct type here. Must also look at how base's unfoldr is implemented, to steal its tricks...
 -- | Like 'Data.List.unfold', but allowing you to return a residual value as well.
 --
 -- >>> unfoldr' (\n -> if n < 10 then Left n else Right (show n, n - 10)) 22
