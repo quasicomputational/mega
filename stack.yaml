@@ -1,6 +1,4 @@
 resolver: nightly-2018-01-03
-ghc-options:
-  $locals: -O0
 packages:
   - location: ./packages/xml
   - location: ./packages/mappend
