@@ -1,0 +1,25 @@
+sudo: false
+language: generic
+
+#TODO: hlint, old GHCs, GHC HEAD, cabal check, building a sdist then testing the sdist, checking the sdist isn't missing files, packunused, maybe packdeps?
+matrix:
+  include:
+    - env: STACK_OPTIONS=--ghc-options=-Werror
+    - env: STACK_OPTIONS="--resolver nightly"
+
+before_install:
+  - mkdir -p $HOME/.local/bin
+  - curl -sL https://www.stackage.org/stack/linux-x86_64 | tar xz --wildcards --strip-components=1 -C ~/.local/bin '*/stack';
+  - stack setup
+
+install:
+  #TODO: use our own hpack; can't do that since --with-hpack is broken (fixed in HEAD: https://github.com/commercialhaskell/stack/issues/3696).
+  - stack --no-terminal test $STACK_OPTIONS --only-dependencies --fast
+
+script:
+  - stack --no-terminal test $STACK_OPTIONS --haddock --no-haddock-deps --fast
+
+notification:
+  email: false
+
+#TODO: would like to enable caching of $HOME/.stack, but, if I do, https://github.com/commercialhaskell/stack/issues/3773 bites me.
