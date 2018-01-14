@@ -8,11 +8,10 @@ packages:
   - location: ./packages/foldable-utils
   - location: ./packages/hlist
   - location: ./packages/position
+  - location: ./packages/transformers-compat
 extra-deps:
   #TODO: remove base-prelude extra-dep once it makes it back into Stackage (which I *think* is blocked on Stack supporting Cabal 2, which is in Stack HEAD but unreleased).
   - base-noprelude-4.10.1.0
-  #TODO: remove transformers extra-dep once GHC 8.4 is a thing. Or, alternatively, once a new transformers-compat is released (https://github.com/ekmett/transformers-compat/issues/25), start using that.
-  - transformers-0.5.5.0
   #TODO: https://github.com/fpco/stackage/issues/3178
   - tasty-1.0
   #TODO: https://github.com/fpco/stackage/pull/3181

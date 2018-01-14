@@ -42,6 +42,9 @@ _common-dependencies:
     "q4c12-position >= 0 && < 0.1"
   - &d-q4c12-prelude
     "q4c12-prelude >= 0 && < 0.0.1"
+  - &d-q4c12-transformers-compat
+    #TODO: replace with real transformers-compat
+    "q4c12-transformers-compat >= 0 && < 0.1"
   - &d-q4c12-twofinger
     "q4c12-twofinger >= 0.1 && < 0.2"
   - &d-safe
@@ -60,7 +63,7 @@ _common-dependencies:
   - &d-text-icu
     "text-icu >= 0.7.0.1 && < 0.8"
   - &d-transformers
-    "transformers >= 0.5.3.0 && < 0.6"
+    "transformers >= 0.5 && < 0.6"
 
 library:
   source-dirs:
@@ -77,6 +80,7 @@ library:
     - *d-q4c12-mappend
     - *d-q4c12-position
     - *d-q4c12-prelude
+    - *d-q4c12-transformers-compat
     - *d-safe
     - *d-template-haskell
     - *d-text
