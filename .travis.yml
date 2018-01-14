@@ -11,9 +11,14 @@ before_install:
   - mkdir -p $HOME/.local/bin
   - curl -sL https://www.stackage.org/stack/linux-x86_64 | tar xz --wildcards --strip-components=1 -C ~/.local/bin '*/stack';
   - stack setup
+  - TMPDIR=$(mktemp -d)
+  - pushd $TMPDIR
+  - stack --no-terminal install hpack-0.21.2
+  - popd
 
 install:
-  #TODO: use our own hpack; can't do that since --with-hpack is broken (fixed in HEAD: https://github.com/commercialhaskell/stack/issues/3696).
+  - find packages/ -path 'packages/*/package.yaml' -exec $HOME/.local/bin/hpack '{}' ';'
+  #TODO: --with-hpack would avoid the above mess, but can't do that since --with-hpack is broken (fixed in HEAD: https://github.com/commercialhaskell/stack/issues/3696). This problem will go away when Stack starts using a more recent hpack (assuming we haven't moved on to even newer, shinier features).
   - stack --no-terminal test $STACK_OPTIONS --only-dependencies --fast
 
 script:
