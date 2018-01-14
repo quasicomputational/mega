@@ -27,4 +27,6 @@ script:
 notification:
   email: false
 
-#TODO: would like to enable caching of $HOME/.stack, but, if I do, https://github.com/commercialhaskell/stack/issues/3773 bites me.
+cache:
+  directories:
+    - $HOME/.stack
