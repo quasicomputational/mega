@@ -1,4 +1,4 @@
-resolver: nightly-2018-01-03
+resolver: nightly-2018-01-15
 packages:
   - location: ./packages/xml
   - location: ./packages/mappend
@@ -14,5 +14,3 @@ extra-deps:
   - base-noprelude-4.10.1.0
   #TODO: https://github.com/fpco/stackage/issues/3178
   - tasty-1.0
-  #TODO: https://github.com/fpco/stackage/pull/3181
-  - lens-properties-4.11.1
