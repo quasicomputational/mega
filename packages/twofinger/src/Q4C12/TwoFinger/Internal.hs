@@ -66,6 +66,8 @@ import GHC.Generics (Generic)
 
 --TODO: revise the naming scheme of functions? In particular, singletonOddA -> emptyOddA??
 
+--TODO: efficient unzips? The fmap-based approach can be a space leak.
+
 --TODO: send this upstream to semigroupoids? Opened issue: https://github.com/ekmett/semigroupoids/issues/66
 (<.*>) :: (Apply f) => f (a -> b) -> MaybeApply f a -> f b
 ff <.*> MaybeApply (Left fa) = ff <.> fa
