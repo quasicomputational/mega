@@ -30,7 +30,7 @@ genNode e a = QC.oneof
   , Node3 <$> e <*> a <*> e <*> a <*> e
   ]
 
--- | The 'Int' parameter is expontential size: for a value \(n\), the generated tree will have (slightly more than) \(2^n\) to \(3^n\) elements.
+-- | The 'Int' parameter is expontential size: for a value \(n\), the generated tree will have (slightly more than) \(2^(n/2)\) to \(3^(n/2)\) elements.
 genOddA :: Gen e -> Gen a -> Int -> Gen (TwoFingerOddA e a)
 genOddA e a 1 = SingleOddA <$> a <*> e <*> a
 genOddA _ a n | n <= 0 = EmptyOddA <$> a
