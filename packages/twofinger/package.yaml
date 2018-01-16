@@ -49,7 +49,7 @@ _common-dependencies:
   - &d-streams
     "streams >= 3.3 && < 3.4"
   - &d-tasty
-    "tasty >= 1.0 && < 1.1"
+    "tasty >= 0.12 && < 0.13 || >= 1.0 && < 1.1"
   - &d-tasty-quickcheck
     "tasty-quickcheck >= 0.9.1 && < 0.10"
 

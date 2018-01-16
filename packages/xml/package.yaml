@@ -50,7 +50,7 @@ _common-dependencies:
   - &d-safe
     "safe >= 0.3.15 && < 0.4"
   - &d-tasty
-    "tasty >= 1.0 && < 1.1"
+    "tasty >= 0.12 && < 0.13 || >= 1.0 && < 1.1"
   - &d-tasty-expected-failure
     "tasty-expected-failure >= 0.11.0.4 && < 0.12"
   - &d-tasty-golden

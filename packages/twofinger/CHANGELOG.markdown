@@ -2,7 +2,7 @@ Next
 ====
 
 * Fix a dangling section reference in the haddocks.
-* Allow tasty 1.0.
+* Allow tasty 1.0 along with tasty 0.12.
 * More tests!
 
 q4c12-twofinger 0.1 (2018-01-04)
