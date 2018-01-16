@@ -310,6 +310,8 @@ lensProperties = testGroup "lens laws"
   , testProperty "lastOddA" $ isLens $ (_AnyOddA . lastOddA :: Lens' (AnyOddA Int Int) Int)
   ]
 
+--TODO: 'Associativity' properties for align*.
+--TODO: Infinite trees? Some of the properties ought to be able to handle it!
 main :: IO ()
 main = defaultMain $ testGroup "property tests"
   [ halfconsProperties
