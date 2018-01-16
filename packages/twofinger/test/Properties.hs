@@ -122,46 +122,46 @@ halfconsProperties = testGroup "half operations"
         halfunconsEvenE (halfconsOddA e as) == Just (e, as)
     , testProperty "OddE" $ \a -> intFields $ \(AnyOddE as) ->
         halfunconsEvenA (halfconsOddE a as) == Just (a, as)
-    , testProperty "EvenA" $ \a -> intFields $ \(AnyEvenE as) ->
-        halfunconsOddA (halfconsEvenE a as) == (a, as)
-    , testProperty "EvenE" $ \e -> intFields $ \(AnyEvenA as) ->
+    , testProperty "EvenA" $ \e -> intFields $ \(AnyEvenA as) ->
         halfunconsOddE (halfconsEvenA e as) == (e, as)
+    , testProperty "EvenE" $ \a -> intFields $ \(AnyEvenE as) ->
+        halfunconsOddA (halfconsEvenE a as) == (a, as)
     ]
   , testGroup "halfsnoc"
     [ testProperty "OddA" $ \e -> intFields $ \(AnyOddA as) ->
         halfunsnocEvenA (halfsnocOddA as e) == Just (as, e)
     , testProperty "OddE" $ \a -> intFields $ \(AnyOddE as) ->
         halfunsnocEvenE (halfsnocOddE as a) == Just (as, a)
-    , testProperty "EvenA" $ \e -> intFields $ \(AnyEvenE as) ->
-        halfunsnocOddE (halfsnocEvenE as e) == (as, e)
-    , testProperty "EvenE" $ \a -> intFields $ \(AnyEvenA as) ->
+    , testProperty "EvenA" $ \a -> intFields $ \(AnyEvenA as) ->
         halfunsnocOddA (halfsnocEvenA as a) == (as, a)
+    , testProperty "EvenE" $ \e -> intFields $ \(AnyEvenE as) ->
+        halfunsnocOddE (halfsnocEvenE as e) == (as, e)
     ]
   , testGroup "halfuncons"
     [ testProperty "OddA" $ intFields $ \(AnyOddA as) ->
         as == uncurry halfconsEvenE (halfunconsOddA as)
     , testProperty "OddE" $ intFields $  \(AnyOddE as) ->
         as == uncurry halfconsEvenA (halfunconsOddE as)
-    , testProperty "EvenA" $ intFields $ \(AnyEvenE as) ->
-        as == maybe mempty (uncurry halfconsOddA) (halfunconsEvenE as)
-    , testProperty "EvenE" $ intFields $ \(AnyEvenA as) ->
+    , testProperty "EvenA" $ intFields $ \(AnyEvenA as) ->
         as == maybe mempty (uncurry halfconsOddE) (halfunconsEvenA as)
+    , testProperty "EvenE" $ intFields $ \(AnyEvenE as) ->
+        as == maybe mempty (uncurry halfconsOddA) (halfunconsEvenE as)
     ]
   , testGroup "halfunsnoc"
     [ testProperty "OddA" $ intFields $ \(AnyOddA as) ->
         as == uncurry halfsnocEvenA (halfunsnocOddA as)
     , testProperty "OddE" $ intFields $  \(AnyOddE as) ->
         as == uncurry halfsnocEvenE (halfunsnocOddE as)
-    , testProperty "EvenA" $ intFields $ \(AnyEvenE as) ->
-        as == maybe mempty (uncurry halfsnocOddE) (halfunsnocEvenE as)
-    , testProperty "EvenE" $ intFields $ \(AnyEvenA as) ->
+    , testProperty "EvenA" $ intFields $ \(AnyEvenA as) ->
         as == maybe mempty (uncurry halfsnocOddA) (halfunsnocEvenA as)
+    , testProperty "EvenE" $ intFields $ \(AnyEvenE as) ->
+        as == maybe mempty (uncurry halfsnocOddE) (halfunsnocEvenE as)
     ]
   ]
 
 associativeProperties :: TestTree
 associativeProperties = testGroup "associativity"
-  [ testGroup "leftmost AnyOddA"
+  [ testGroup "leftmost OddA"
     [ testProperty "OddA OddA" $ intFields $ \(AnyOddA a) (AnyOddA b) (AnyOddA c) ->
         a <> (b <> c) == (a <> b) <> c
     , testProperty "OddA EvenE" $ intFields $ \(AnyOddA a) (AnyOddA b) (AnyEvenE c) ->
