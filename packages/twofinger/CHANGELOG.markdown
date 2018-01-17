@@ -1,5 +1,5 @@
-Next
-====
+q4c12-twofinger 0.2 (2018-01-17)
+================================
 
 * Fix a dangling section reference in the haddocks.
 * Allow `tasty` 1.0 along with `tasty` 0.12.
