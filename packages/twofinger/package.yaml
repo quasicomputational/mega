@@ -1,5 +1,5 @@
 name: q4c12-twofinger
-version: "0.1.0.1"
+version: "0.2"
 synopsis: Efficient alternating finger trees
 description: |
   This package provides efficient alternating sequences based on finger trees. These can represent sequences made up of two types of element, @e@ and @a@  where two of the same type of element cannot follow each other directly.
@@ -35,6 +35,8 @@ _common-dependencies:
     "bifunctors >= 5.4.2 && < 5.6"
   - &d-cabal-doctest
     "cabal-doctest >= 1.0.3 && < 1.1"
+  - &d-containers
+    "containers >= 0.5.10.2 && < 0.5.11"
   - &d-deepseq
     "deepseq >= 1.4.3.0 && < 1.5"
   - &d-doctest
@@ -45,9 +47,6 @@ _common-dependencies:
     "lens-properties >= 4.11.1 && < 4.12"
   - &d-semigroupoids
     "semigroupoids >= 5.2.1 && < 5.3"
-  #TODO: we only use streams minimally, but it's got a pretty heavy dependency load. On the other hand, the dependencies are there to define instances.
-  - &d-streams
-    "streams >= 3.3 && < 3.4"
   - &d-tasty
     "tasty >= 0.12 && < 0.13 || >= 1.0 && < 1.1"
   - &d-tasty-quickcheck
@@ -67,9 +66,9 @@ library:
   other-modules: []
   dependencies:
     - *d-base
+    - *d-containers
     - *d-deepseq
     - *d-semigroupoids
-    - *d-streams
   when:
     - condition: impl(ghc < 8.2)
       dependencies:
@@ -106,6 +105,5 @@ tests:
       - *d-base
       - *d-doctest
       - *d-lens
-      - *d-streams
 
 #TODO: Benchmarks!

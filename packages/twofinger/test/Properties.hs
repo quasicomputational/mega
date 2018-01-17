@@ -11,101 +11,86 @@ import Control.Monad (join)
 import Data.Bifunctor (bimap)
 import Data.Semigroup ((<>))
 import Test.Tasty (TestTree, testGroup, defaultMain)
-import Test.Tasty.QuickCheck (Gen, Arbitrary, testProperty)
+import Test.Tasty.QuickCheck (Gen, Arbitrary, Arbitrary1, Arbitrary2, testProperty, shrink2, arbitrary2, liftArbitrary, liftArbitrary2, liftShrink, liftShrink2)
 import qualified Test.Tasty.QuickCheck as QC
 
-import Q4C12.TwoFinger.Internal (Digit (One, Two, Three, Four), TwoFingerOddA (SingleOddA, EmptyOddA, DeepOddA), TwoFingerOddE (SingleOddE, DeepOddE), TwoFingerEvenA (SingleEvenA, EmptyEvenA, DeepEvenA), TwoFingerEvenE (SingleEvenE, EmptyEvenE, DeepEvenE), Node (Node2, Node3), unconsEvenA, unconsEvenE, digitToTree, halfsnocOddA, halfsnocOddE, halfunsnocOddA, halfconsEvenE, halfunconsOddA, halfconsOddE, halfsnocEvenA, repeatEvenA, repeatEvenE, repeatOddA, repeatOddE, alignLeftOddAOddA, alignLeftOddAEvenA, alignLeftOddEOddE, alignLeftOddEEvenE, alignLeftEvenAEvenA, alignLeftEvenEEvenE, appendOddEOddA, appendEvenEOddE, appendOddEEvenA, appendOddAOddE, appendEvenAOddA, appendOddAEvenE, halfunsnocEvenA, halfunsnocEvenE, halfsnocEvenE, halfunconsEvenA, halfunsnocOddE, halfunconsEvenE, halfconsOddA, halfunconsOddE, halfconsEvenA, firstOddA, lastOddA)
-
-genDigit :: Gen e -> Gen a -> Gen (Digit e a)
-genDigit e a = QC.oneof
-  [ One <$> e
-  , Two <$> e <*> a <*> e
-  , Three <$> e <*> a <*> e <*> a <*> e
-  , Four <$> e <*> a <*> e <*> a <*> e <*> a <*> e
-  ]
-
-genNode :: Gen e -> Gen a -> Gen (Node e a)
-genNode e a = QC.oneof
-  [ Node2 <$> e <*> a <*> e
-  , Node3 <$> e <*> a <*> e <*> a <*> e
-  ]
-
--- | The 'Int' parameter is expontential size: for a value \(n\), the generated tree will have (slightly more than) \(2^(n/2)\) to \(3^(n/2)\) elements.
-genOddA :: Gen e -> Gen a -> Int -> Gen (TwoFingerOddA e a)
-genOddA e a 1 = SingleOddA <$> a <*> e <*> a
-genOddA _ a n | n <= 0 = EmptyOddA <$> a
-genOddA e a n =
-  DeepOddA <$> a <*> genDigit e a <*> genOddA (genNode e a) a (n - 2) <*> genDigit e a <*> a
-
---TODO: better shrinks? This isn't wrong, and it's better than the default, but we could be doing better (e.g., trying just the middle tree in Deep; also possibly just dropping things off the ends...).
-shrinkOddA :: TwoFingerOddA e a -> [TwoFingerOddA e a]
-shrinkOddA = \case
-  EmptyOddA _ -> []
-  SingleOddA a1 _ a2 ->
-    [ EmptyOddA a1
-    , EmptyOddA a2
-    ]
-  DeepOddA a0 pr m sf a1 -> mconcat
-    [ [ halfsnocEvenA (halfconsOddE a0 $ digitToTree pr) (fst $ halfunconsOddA m)
-      , halfconsEvenE (snd $ halfunsnocOddA m) (halfsnocOddE (digitToTree sf) a1)
-      ]
-    , [EmptyOddA a0]
-    , [EmptyOddA a1]
-    , (\m' -> DeepOddA a0 pr m' sf a1) <$> shrinkOddA m
-    ]
-
-shrinkOddE :: TwoFingerOddE e a -> [TwoFingerOddE e a]
-shrinkOddE (SingleOddE _) = []
-shrinkOddE (DeepOddE pr m sf) = (\m' -> DeepOddE pr m' sf) <$> shrinkOddA m
-
-shrinkEvenA :: TwoFingerEvenA e a -> [TwoFingerEvenA e a]
-shrinkEvenA tree = case unconsEvenA tree of
-  Nothing -> []
-  Just (_, tree') -> [tree']
-
-shrinkEvenE :: TwoFingerEvenE e a -> [TwoFingerEvenE e a]
-shrinkEvenE tree = case unconsEvenE tree of
-  Nothing -> []
-  Just (_, tree') -> [tree']
+import Q4C12.TwoFinger.Internal (TwoFingerOddA (TwoFingerOddA), TwoFingerOddE (TwoFingerOddE), TwoFingerEvenA (TwoFingerEvenA), TwoFingerEvenE (EmptyEvenE, TwoFingerEvenE), unconsEvenA, unconsEvenE, halfsnocOddA, halfsnocOddE, halfunsnocOddA, halfconsEvenE, halfunconsOddA, halfconsOddE, halfsnocEvenA, appendOddEOddA, appendEvenEOddE, appendOddEEvenA, appendOddAOddE, appendEvenAOddA, appendOddAEvenE, halfunsnocEvenA, halfunsnocEvenE, halfsnocEvenE, halfunconsEvenA, halfunsnocOddE, halfunconsEvenE, halfconsOddA, halfunconsOddE, halfconsEvenA, firstOddA, lastOddA)
 
 newtype AnyOddA e a = AnyOddA { getAnyOddA :: TwoFingerOddA e a }
   deriving (Show, Eq)
 
+instance Arbitrary2 AnyOddA where
+  liftArbitrary2 e a = fmap AnyOddA $
+    TwoFingerOddA <$> liftArbitrary (liftArbitrary2 a e) <*> a
+  liftShrink2 f g (AnyOddA (TwoFingerOddA as a)) = do
+    as' <- liftShrink (liftShrink2 g f) as
+    a' <- g a
+    pure $ AnyOddA $ TwoFingerOddA as' a'
+
+instance (Arbitrary e) => Arbitrary1 (AnyOddA e) where
+  liftArbitrary = liftArbitrary2 QC.arbitrary
+  liftShrink = liftShrink2 pure
+
 instance (Arbitrary e, Arbitrary a) => Arbitrary (AnyOddA e a) where
-  arbitrary = fmap AnyOddA $ genOddA QC.arbitrary QC.arbitrary =<< QC.choose (0, 10)
-  shrink = fmap AnyOddA . shrinkOddA . getAnyOddA
+  arbitrary = arbitrary2
+  shrink = shrink2
 
 newtype AnyOddE e a = AnyOddE { getAnyOddE :: TwoFingerOddE e a }
   deriving (Show, Eq)
 
+instance Arbitrary2 AnyOddE where
+  liftArbitrary2 e a = fmap AnyOddE $ TwoFingerOddE <$> e <*> liftArbitrary (liftArbitrary2 a e)
+  liftShrink2 f g (AnyOddE (TwoFingerOddE e as)) = do
+    e' <- f e
+    as' <- liftShrink (liftShrink2 g f) as
+    pure $ AnyOddE $ TwoFingerOddE e' as'
+
+instance (Arbitrary e) => Arbitrary1 (AnyOddE e) where
+  liftArbitrary = liftArbitrary2 QC.arbitrary
+  liftShrink = liftShrink2 pure
+
 instance (Arbitrary e, Arbitrary a) => Arbitrary (AnyOddE e a) where
-  arbitrary = AnyOddE <$> QC.oneof
-    [ SingleOddE <$> QC.arbitrary
-    , DeepOddE <$> genDigit QC.arbitrary QC.arbitrary <*> (genOddA (genNode QC.arbitrary QC.arbitrary) QC.arbitrary =<< QC.choose (0, 10)) <*> genDigit QC.arbitrary QC.arbitrary
-    ]
-  shrink = fmap AnyOddE . shrinkOddE . getAnyOddE
+  arbitrary = arbitrary2
+  shrink = shrink2
 
 newtype AnyEvenA e a = AnyEvenA { getAnyEvenA :: TwoFingerEvenA e a }
   deriving (Show, Eq)
 
+instance Arbitrary2 AnyEvenA where
+  liftArbitrary2 e a = AnyEvenA . TwoFingerEvenA <$> liftArbitrary (liftArbitrary2 a e)
+  liftShrink2 f g (AnyEvenA (TwoFingerEvenA as)) =
+    AnyEvenA . TwoFingerEvenA <$> liftShrink (liftShrink2 g f) as
+
+instance (Arbitrary e) => Arbitrary1 (AnyEvenA e) where
+  liftArbitrary = liftArbitrary2 QC.arbitrary
+  liftShrink = liftShrink2 pure
+
 instance (Arbitrary e, Arbitrary a) => Arbitrary (AnyEvenA e a) where
-  arbitrary = AnyEvenA <$> QC.oneof
-    [ pure EmptyEvenA
-    , SingleEvenA <$> QC.arbitrary <*> QC.arbitrary
-    , DeepEvenA <$> QC.arbitrary <*> genDigit QC.arbitrary QC.arbitrary <*> (genOddA (genNode QC.arbitrary QC.arbitrary) QC.arbitrary =<< QC.choose (0, 10)) <*> genDigit QC.arbitrary QC.arbitrary
-    ]
-  shrink = fmap AnyEvenA . shrinkEvenA . getAnyEvenA
+  arbitrary = arbitrary2
+  shrink = shrink2
 
 newtype AnyEvenE e a = AnyEvenE { getAnyEvenE :: TwoFingerEvenE e a }
   deriving (Show, Eq)
 
-instance (Arbitrary e, Arbitrary a) => Arbitrary (AnyEvenE e a) where
-  arbitrary = AnyEvenE <$> QC.oneof
+instance Arbitrary2 AnyEvenE where
+  liftArbitrary2 e a = AnyEvenE <$> QC.oneof
     [ pure EmptyEvenE
-    , SingleEvenE <$> QC.arbitrary <*> QC.arbitrary
-    , DeepEvenE <$> genDigit QC.arbitrary QC.arbitrary <*> (genOddA (genNode QC.arbitrary QC.arbitrary) QC.arbitrary =<< QC.choose (0, 10)) <*> genDigit QC.arbitrary QC.arbitrary <*> QC.arbitrary
+    , TwoFingerEvenE <$> e <*> liftArbitrary (liftArbitrary2 a e) <*> a
     ]
-  shrink = fmap AnyEvenE . shrinkEvenE . getAnyEvenE
+  liftShrink2 _ _ (AnyEvenE EmptyEvenE) = []
+  liftShrink2 f g (AnyEvenE (TwoFingerEvenE e as a)) = fmap AnyEvenE $ do
+    e' <- f e
+    as' <- liftShrink (liftShrink2 g f) as
+    a' <- g a
+    [ mempty, TwoFingerEvenE e' as' a' ]
+
+instance (Arbitrary e) => Arbitrary1 (AnyEvenE e) where
+  liftArbitrary = liftArbitrary2 QC.arbitrary
+  liftShrink = liftShrink2 pure
+
+instance (Arbitrary e, Arbitrary a) => Arbitrary (AnyEvenE e a) where
+  arbitrary = arbitrary2
+  shrink = shrink2
 
 makePrisms ''AnyOddA
 makePrisms ''AnyOddE
@@ -233,68 +218,12 @@ monoidIdentityProperties = testGroup "monoidal identity"
       a == appendOddEEvenA a mempty
   ]
 
-alignProperties :: TestTree
-alignProperties = testGroup "aligning is lossless"
-  [ testProperty "OddA OddA" $ intFields $ \(AnyOddA as) -> intFields $ \(AnyOddA bs) ->
-      let (aligned, rest) = alignLeftOddAOddA as bs
-          as' = appendOddAEvenE (bimap fst fst aligned) (either id (const mempty) rest)
-          bs' = appendOddAEvenE (bimap snd snd aligned) (either (const mempty) id rest)
-      in as == as' && bs == bs'
-  , testProperty "OddA EvenA" $ intFields $ \(AnyOddA as) -> intFields $ \(AnyEvenA bs) ->
-      let (as', bs') = case alignLeftOddAEvenA as bs of
-            Left (aligned, rest) ->
-              (appendEvenAOddA (bimap fst fst aligned) rest, bimap snd snd aligned)
-            Right (aligned, rest) ->
-              (bimap fst fst aligned, appendOddAOddE (bimap snd snd aligned) rest)
-      in as == as' && bs == bs'
-  , testProperty "OddE OddE" $ intFields $ \(AnyOddE as) -> intFields $ \(AnyOddE bs) ->
-      let (aligned, rest) = alignLeftOddEOddE as bs
-          as' = appendOddEEvenA (bimap fst fst aligned) (either id (const mempty) rest)
-          bs' = appendOddEEvenA (bimap snd snd aligned) (either (const mempty) id rest)
-      in as == as' && bs == bs'
-  , testProperty "OddE EvenE" $ intFields $ \(AnyOddE as) -> intFields $ \(AnyEvenE bs) ->
-      let (as', bs') = case alignLeftOddEEvenE as bs of
-            Left (aligned, rest) ->
-              (appendEvenEOddE (bimap fst fst aligned) rest, bimap snd snd aligned)
-            Right (aligned, rest) ->
-              (bimap fst fst aligned, appendOddEOddA (bimap snd snd aligned) rest)
-      in as == as' && bs == bs'
-  ]
-
-alignIdentityProperties :: TestTree
-alignIdentityProperties = testGroup "align identities"
-  [ testProperty "left OddA OddA" $ intFields $ \(AnyOddA as) ->
-      as == bimap (uncurry ($)) (uncurry ($)) (fst $ alignLeftOddAOddA (repeatOddA id id) as)
-  , testProperty "right OddA OddA" $ intFields $ \(AnyOddA as) ->
-      as == bimap (uncurry $ flip ($)) (uncurry $ flip ($)) (fst $ alignLeftOddAOddA as (repeatOddA id id))
-  , testProperty "left OddA EvenA" $ intFields $ \(AnyEvenA as) ->
-      either ((as ==) . bimap (uncurry ($)) (uncurry ($)) . fst) (const False) (alignLeftOddAEvenA (repeatOddA id id) as)
-  , testProperty "right OddA EvenA" $ intFields $ \(AnyOddA as) ->
-      either (const False) ((==) as . bimap (uncurry $ flip ($)) (uncurry $ flip ($)) . fst) $ alignLeftOddAEvenA as (repeatEvenA id id)
-  , testProperty "left OddE OddE" $ intFields $ \(AnyOddE as) ->
-      as == bimap (uncurry ($)) (uncurry ($)) (fst $ alignLeftOddEOddE (repeatOddE id id) as)
-  , testProperty "right OddE OddE" $ intFields $ \(AnyOddE as) ->
-      as == bimap (uncurry $ flip ($)) (uncurry $ flip ($)) (fst $ alignLeftOddEOddE as (repeatOddE id id))
-  , testProperty "left OddE EvenE" $ intFields $ \(AnyEvenE as) ->
-      either ((==) as . bimap (uncurry ($)) (uncurry ($)) . fst) (const False) $ alignLeftOddEEvenE (repeatOddE id id) as
-  , testProperty "right OddE EvenE" $ intFields $ \(AnyOddE as) ->
-      either (const False) ((==) as . bimap (uncurry $ flip ($)) (uncurry $ flip ($)) . fst) $ alignLeftOddEEvenE as (repeatEvenE id id)
-  , testProperty "left EvenA EvenA" $ intFields $ \(AnyEvenA as) ->
-      as == bimap (uncurry ($)) (uncurry ($)) (fst $ alignLeftEvenAEvenA (repeatEvenA id id) as)
-  , testProperty "right EvenA EvenA" $ intFields $ \(AnyEvenA as) ->
-      as == bimap (uncurry $ flip ($)) (uncurry $ flip ($)) (fst $ alignLeftEvenAEvenA as (repeatEvenA id id))
-  , testProperty "left EvenE EvenE" $ intFields $ \(AnyEvenE as) ->
-      as == bimap (uncurry ($)) (uncurry ($)) (fst $ alignLeftEvenEEvenE (repeatEvenE id id) as)
-  , testProperty "right EvenE EvenE" $ intFields $ \(AnyEvenE as) ->
-      as == bimap (uncurry $ flip ($)) (uncurry $ flip ($)) (fst $ alignLeftEvenEEvenE as (repeatEvenE id id))
-  ]
-
 monadProperties :: TestTree
 monadProperties = testGroup "OddA monad laws"
   [ testProperty "join . join === join . fmap join" $
-      --Since we generate 3 layers deep, the things can get big with the default settings.
+      --Cut size, since we generate three layers multiplicatively.
       let gen :: Gen a -> Gen (TwoFingerOddA Int a)
-          gen a = genOddA QC.arbitrary a =<< QC.choose (0, 3)
+          gen x = QC.scale (`mod` 50) $ getAnyOddA <$> QC.liftArbitrary x
       in QC.forAll (gen $ gen $ gen QC.arbitrary) $ \as ->
            join (join as) == (join (fmap join as) :: TwoFingerOddA Int Int)
   , testProperty "join . pure === id" $ \(AnyOddA as) ->
@@ -310,16 +239,11 @@ lensProperties = testGroup "lens laws"
   , testProperty "lastOddA" $ isLens $ (_AnyOddA . lastOddA :: Lens' (AnyOddA Int Int) Int)
   ]
 
---TODO: 'Associativity' properties for align*.
---TODO: Infinite trees? Some of the properties ought to be able to handle it!
 main :: IO ()
 main = defaultMain $ testGroup "property tests"
   [ halfconsProperties
   , associativeProperties
   , monoidIdentityProperties
-  , alignProperties
-  , alignIdentityProperties
   , monadProperties
   , lensProperties
   ]
-

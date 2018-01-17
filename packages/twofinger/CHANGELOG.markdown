@@ -5,6 +5,8 @@ Next
 * Allow tasty 1.0 along with tasty 0.12.
 * More tests!
 * `Bitraversable1` and `Bifoldable1` for `TwoFingerOddE`.
+* Re-use `Seq` from `containers` instead of rolling our own finger-trees. This changes some worst-case running time, some for the better and some for the worse.
+* Drop `align*`, `infinite*` and `repeat*`. The `align*` functions did not work properly before in the infinite/infinite case, and `Seq` from `containers` does not support infinite trees; further, implementing aligning directly with `uncons` is often clearer.
 
 q4c12-twofinger 0.1 (2018-01-04)
 ================================

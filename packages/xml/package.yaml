@@ -46,7 +46,7 @@ _common-dependencies:
     #TODO: replace with real transformers-compat
     "q4c12-transformers-compat >= 0 && < 0.1"
   - &d-q4c12-twofinger
-    "q4c12-twofinger >= 0.1 && < 0.2"
+    "q4c12-twofinger >= 0.2 && < 0.3"
   - &d-safe
     "safe >= 0.3.15 && < 0.4"
   - &d-tasty

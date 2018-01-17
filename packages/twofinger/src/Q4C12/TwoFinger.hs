@@ -1,9 +1,8 @@
--- | This module provides alternating finger trees, which are similar
--- to "Data.Sequence" in the @containers@ package, or
--- "Data.FingerTree" in the @fingertree@ package, except that, between
--- every element (of type @e@) in the \'normal\' finger tree, there is
--- a \'separator\' of type @a@. @'TwoFingerOddA' e ()@ is isomorphic
--- to @[e]@, and @'TwoFingerOddA' e a@ is isomorphic to @([(a, e)], a)@.
+-- | This module provides alternating finger trees, based on
+-- 'Data.Seq.Seq' from the @containers@ package. Between every element
+-- (of type @e@) in the \'normal\' finger tree, there is a
+-- \'separator\' of type @a@. @'TwoFingerOddA' e ()@ is isomorphic to
+-- @[e]@, and @'TwoFingerOddA' e a@ is isomorphic to @([(a, e)], a)@.
 -- (The type variables are in that order because that permits a
 -- 'Traversable1' instance for 'TwoFingerOddA'.)
 --
@@ -48,9 +47,6 @@
 --      /Journal of Functional Programming/ 16:2 (2006) pp 197-217.
 --      <http://staff.city.ac.uk/~ross/papers/FingerTree.html>
 --
--- This package's alternating finger trees are not annotated with
--- sizes as described in section 4 of the paper.
---
 -- Many of the functions in this package follow laws, which are not
 -- documented inline. [tests/Properties.hs](https://github.com/quasicomputational/mega/blob/master/packages/twofinger/test/Properties.hs)
 --is an  automatically-tested QuickCheck suite of properties.
@@ -91,14 +87,6 @@ module Q4C12.TwoFinger
     appendOddAEvenE, appendEvenEOddE,
     -- ** Two odds make an even
     appendOddAOddE, appendOddEOddA,
-    -- * Aligning (zipping)
-    alignLeftOddAOddA, alignLeftOddAEvenA,
-    alignLeftOddEOddE, alignLeftOddEEvenE,
-    -- * Infinite trees
-    repeatOddA, repeatOddE,
-    repeatEvenA, repeatEvenE,
-    infiniteOddA, infiniteOddE,
-    infiniteEvenA, infiniteEvenE
   )
   where
 
@@ -122,10 +110,4 @@ import Q4C12.TwoFinger.Internal
     appendEvenAOddA, appendOddEEvenA,
     appendOddAEvenE, appendEvenEOddE,
     appendOddAOddE, appendOddEOddA,
-    alignLeftOddAOddA, alignLeftOddAEvenA,
-    alignLeftOddEOddE, alignLeftOddEEvenE,
-    repeatOddA, repeatOddE,
-    repeatEvenA, repeatEvenE,
-    infiniteOddA, infiniteOddE,
-    infiniteEvenA, infiniteEvenE
   )
