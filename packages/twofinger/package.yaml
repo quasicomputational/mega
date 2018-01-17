@@ -1,5 +1,5 @@
 name: q4c12-twofinger
-version: "0.2"
+version: "0.2.0.1"
 synopsis: Efficient alternating finger trees
 description: |
   This package provides efficient alternating sequences based on finger trees. These can represent sequences made up of two types of element, @e@ and @a@  where two of the same type of element cannot follow each other directly.
