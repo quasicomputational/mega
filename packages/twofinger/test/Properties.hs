@@ -8,13 +8,12 @@ module Main
 import Control.Lens (Lens', makePrisms)
 import Control.Lens.Properties (isLens)
 import Control.Monad (join)
-import Data.Bifunctor (bimap)
 import Data.Semigroup ((<>))
 import Test.Tasty (TestTree, testGroup, defaultMain)
 import Test.Tasty.QuickCheck (Gen, Arbitrary, Arbitrary1, Arbitrary2, testProperty, shrink2, arbitrary2, liftArbitrary, liftArbitrary2, liftShrink, liftShrink2)
 import qualified Test.Tasty.QuickCheck as QC
 
-import Q4C12.TwoFinger.Internal (TwoFingerOddA (TwoFingerOddA), TwoFingerOddE (TwoFingerOddE), TwoFingerEvenA (TwoFingerEvenA), TwoFingerEvenE (EmptyEvenE, TwoFingerEvenE), unconsEvenA, unconsEvenE, halfsnocOddA, halfsnocOddE, halfunsnocOddA, halfconsEvenE, halfunconsOddA, halfconsOddE, halfsnocEvenA, appendOddEOddA, appendEvenEOddE, appendOddEEvenA, appendOddAOddE, appendEvenAOddA, appendOddAEvenE, halfunsnocEvenA, halfunsnocEvenE, halfsnocEvenE, halfunconsEvenA, halfunsnocOddE, halfunconsEvenE, halfconsOddA, halfunconsOddE, halfconsEvenA, firstOddA, lastOddA)
+import Q4C12.TwoFinger.Internal (TwoFingerOddA (TwoFingerOddA), TwoFingerOddE (TwoFingerOddE), TwoFingerEvenA (TwoFingerEvenA), TwoFingerEvenE (EmptyEvenE, TwoFingerEvenE), halfsnocOddA, halfsnocOddE, halfunsnocOddA, halfconsEvenE, halfunconsOddA, halfconsOddE, halfsnocEvenA, appendOddEOddA, appendEvenEOddE, appendOddEEvenA, appendOddAOddE, appendEvenAOddA, appendOddAEvenE, halfunsnocEvenA, halfunsnocEvenE, halfsnocEvenE, halfunconsEvenA, halfunsnocOddE, halfunconsEvenE, halfconsOddA, halfunconsOddE, halfconsEvenA, firstOddA, lastOddA)
 
 newtype AnyOddA e a = AnyOddA { getAnyOddA :: TwoFingerOddA e a }
   deriving (Show, Eq)
@@ -35,7 +34,7 @@ instance (Arbitrary e, Arbitrary a) => Arbitrary (AnyOddA e a) where
   arbitrary = arbitrary2
   shrink = shrink2
 
-newtype AnyOddE e a = AnyOddE { getAnyOddE :: TwoFingerOddE e a }
+newtype AnyOddE e a = AnyOddE { _getAnyOddE :: TwoFingerOddE e a }
   deriving (Show, Eq)
 
 instance Arbitrary2 AnyOddE where
@@ -53,7 +52,7 @@ instance (Arbitrary e, Arbitrary a) => Arbitrary (AnyOddE e a) where
   arbitrary = arbitrary2
   shrink = shrink2
 
-newtype AnyEvenA e a = AnyEvenA { getAnyEvenA :: TwoFingerEvenA e a }
+newtype AnyEvenA e a = AnyEvenA { _getAnyEvenA :: TwoFingerEvenA e a }
   deriving (Show, Eq)
 
 instance Arbitrary2 AnyEvenA where
@@ -69,7 +68,7 @@ instance (Arbitrary e, Arbitrary a) => Arbitrary (AnyEvenA e a) where
   arbitrary = arbitrary2
   shrink = shrink2
 
-newtype AnyEvenE e a = AnyEvenE { getAnyEvenE :: TwoFingerEvenE e a }
+newtype AnyEvenE e a = AnyEvenE { _getAnyEvenE :: TwoFingerEvenE e a }
   deriving (Show, Eq)
 
 instance Arbitrary2 AnyEvenE where
