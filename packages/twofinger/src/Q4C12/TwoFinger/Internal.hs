@@ -306,9 +306,18 @@ instance Bifunctor TwoFingerOddE where
 instance Bifoldable TwoFingerOddE where
   bifoldMap = bifoldMapDefault
 
+instance Bifoldable1 TwoFingerOddE where
+  bifoldMap1 = bifoldMap1Default
+
 instance Bitraversable TwoFingerOddE where
-  bitraverse f _ (SingleOddE e) = SingleOddE <$> f e
-  bitraverse f g (DeepOddE pr m sf) = DeepOddE <$> bitraverse f g pr <*> bitraverse (bitraverse f g) g m <*> bitraverse f g sf
+  bitraverse = bitraverseDefault
+
+instance Bitraversable1 TwoFingerOddE where
+  bitraverse1 f _ (SingleOddE e) = SingleOddE <$> f e
+  bitraverse1 f g (DeepOddE pr m sf) = DeepOddE
+    <$> bitraverse1 f g pr
+   <.*> bitraverse (MaybeApply . Left . bitraverse1 f g) (MaybeApply . Left . g) m
+    <.> bitraverse1 f g sf
 
 instance (NFData e, NFData a) => NFData (TwoFingerOddE e a)
 
