@@ -2,7 +2,7 @@ Next
 ====
 
 * Fix a dangling section reference in the haddocks.
-* Allow tasty 1.0 along with tasty 0.12.
+* Allow `tasty` 1.0 along with `tasty` 0.12.
 * More tests!
 * `Bitraversable1` and `Bifoldable1` for `TwoFingerOddE`.
 * Re-use `Seq` from `containers` instead of rolling our own finger-trees. This changes some worst-case running time, some for the better and some for the worse.
