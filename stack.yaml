@@ -8,7 +8,12 @@ packages:
   - location: ./packages/foldable-utils
   - location: ./packages/hlist
   - location: ./packages/position
-  - location: ./packages/transformers-compat
 extra-deps:
   #TODO: remove base-prelude extra-dep once it makes it back into Stackage (which I *think* is blocked on Stack supporting Cabal 2, which is in Stack HEAD but unreleased). https://github.com/fpco/stackage/issues/3202 is part of it.
   - base-noprelude-4.10.1.0
+  #TODO: replace once there's a new transformers-compat release. Remove the flags and also add versions to all transformers-compat deps when that happens.
+  - git: https://github.com/ekmett/transformers-compat/
+    commit: 9b92fded8d332df19c9bacc296488a248993d777
+flags:
+  transformers-compat:
+    five: true
