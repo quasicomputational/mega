@@ -62,6 +62,9 @@ custom-setup:
 library:
   source-dirs:
     - src
+  exposed-modules:
+    - Q4C12.TwoFinger
+    - Q4C12.TwoFinger.Internal
   # Suppress Paths_*
   other-modules: []
   dependencies:

@@ -13,6 +13,8 @@ default-extensions: !include "../../language.yaml"
 library:
   source-dirs:
     - src
+  exposed-modules:
+    - Prelude
   # Suppress Paths_*
   other-modules: []
   dependencies:

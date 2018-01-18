@@ -68,6 +68,19 @@ _common-dependencies:
 library:
   source-dirs:
     - src
+  exposed-modules:
+    - Q4C12.XML
+    - Q4C12.XML.Desc
+    - Q4C12.XML.Desc.Class
+    - Q4C12.XML.Desc.Parse
+    - Q4C12.XML.Desc.Print
+    - Q4C12.XML.Desc.RApplicative
+    - Q4C12.XML.Desc.RELAX
+    - Q4C12.XML.Desc.TH
+    - Q4C12.XML.Entity
+    - Q4C12.XML.Internal
+    - Q4C12.XML.TH
+    - Q4C12.XML.XHTML2HTML
   # Suppress Paths_*
   other-modules: []
   dependencies:
