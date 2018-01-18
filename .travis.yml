@@ -24,7 +24,7 @@ install:
 script:
   - stack --no-terminal test $STACK_OPTIONS --haddock --no-haddock-deps --fast
 
-notification:
+notifications:
   email: false
 
 cache:
