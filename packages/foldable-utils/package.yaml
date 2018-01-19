@@ -59,6 +59,8 @@ tests:
       ghc-options:
         #And this one is as a result of the Build_doctests hack above. TODO: if the hack lasts long enough that 8.0 is out of the support window, remove this check.
         - "-Wno-missing-home-modules"
+        #Have to specify this one in the conditional because of https://github.com/sol/hpack/issues/255 TODO remove once fixed
+        - "-Wno-missing-import-lists"
     dependencies:
       #https://github.com/phadej/cabal-doctest/issues/19
       - q4c12-foldable-utils
