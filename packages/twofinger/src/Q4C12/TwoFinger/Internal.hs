@@ -125,7 +125,7 @@ instance (NFData e, NFData a) => NFData (TwoFingerOddA e a)
 
 --TODO: If we had 'type>', we could document the lensiness directly.
 --See https://github.com/sol/doctest/issues/153
--- | Access the first @a@ of a @'TwoFingerOddA' e a@. \(O(1)\). This
+-- | Access the first @a@ of a @'TwoFingerOddA' e a@. \(O(1)\) amortised, \(O(\log n)\) worst case. This
 -- type is @Lens' ('TwoFingerOddA' e a) a@ in disguise.
 --
 -- >>> view firstOddA (consOddA 3 True $ singletonOddA 15)
