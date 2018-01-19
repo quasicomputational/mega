@@ -87,6 +87,14 @@ bitraverseDefault
 bitraverseDefault f g =
   unwrapApplicative . bitraverse1 (WrapApplicative . f) (WrapApplicative . g)
 
+--Only needed for containers prior to 0.5.9.1, which are boot libraries for GHCs < 8.2. TODO: rm once they're out of the support window.
+liftEqSeq :: (a -> b -> Bool) -> Seq a -> Seq b -> Bool
+liftEqSeq f as bs = case (Seq.viewl as, Seq.viewl bs) of
+  (Seq.EmptyL, Seq.EmptyL) -> True
+  (Seq.EmptyL, _ Seq.:< _) -> False
+  (_ Seq.:< _, Seq.EmptyL) -> False
+  (a Seq.:< as', b Seq.:< bs') -> f a b && liftEqSeq f as' bs'
+
 -- * Types, EqN?\/ShowN?\/(Bi)Functor\/Foldable1?\/Traversable1?
 -- instances, and odd traversals.
 
@@ -113,7 +121,7 @@ instance (Show e, Show a) => Show (TwoFingerOddA e a) where
 
 instance Eq2 TwoFingerOddA where
   liftEq2 f g (TwoFingerOddA as a) (TwoFingerOddA bs b) =
-    liftEq (liftEq2 g f) as bs && g a b
+    liftEqSeq (liftEq2 g f) as bs && g a b
 
 instance (Eq e) => Eq1 (TwoFingerOddA e) where
   liftEq = liftEq2 (==)
@@ -200,7 +208,7 @@ instance (Show e, Show a) => Show (TwoFingerOddE e a) where
 
 instance Eq2 TwoFingerOddE where
   liftEq2 f g (TwoFingerOddE a as) (TwoFingerOddE b bs) =
-    liftEq (liftEq2 g f) as bs && f a b
+    liftEqSeq (liftEq2 g f) as bs && f a b
 
 instance (Eq e) => Eq1 (TwoFingerOddE e) where
   liftEq = liftEq2 (==)
@@ -267,7 +275,7 @@ instance Eq2 TwoFingerEvenE where
   liftEq2 _ _ EmptyEvenE (TwoFingerEvenE {}) = False
   liftEq2 _ _ (TwoFingerEvenE {}) EmptyEvenE = False
   liftEq2 f g (TwoFingerEvenE a as e) (TwoFingerEvenE a' as' e') =
-    g e e' && f a a' && liftEq (liftEq2 g f) as as'
+    g e e' && f a a' && liftEqSeq (liftEq2 g f) as as'
 
 instance (Eq e) => Eq1 (TwoFingerEvenE e) where
   liftEq = liftEq2 (==)
@@ -322,7 +330,7 @@ instance (Show e, Show a) => Show (TwoFingerEvenA e a) where
 
 instance Eq2 TwoFingerEvenA where
   liftEq2 f g (TwoFingerEvenA as) (TwoFingerEvenA bs) =
-    liftEq (liftEq2 g f) as bs
+    liftEqSeq (liftEq2 g f) as bs
 
 instance (Eq e) => Eq1 (TwoFingerEvenA e) where
   liftEq = liftEq2 (==)

@@ -36,9 +36,9 @@ _common-dependencies:
   - &d-cabal-doctest
     "cabal-doctest >= 1.0.3 && < 1.1"
   - &d-containers
-    "containers >= 0.5.10.2 && < 0.5.11"
+    "containers >= 0.5.7.1 && < 0.5.11"
   - &d-deepseq
-    "deepseq >= 1.4.3.0 && < 1.5"
+    "deepseq >= 1.4.2.0 && < 1.5"
   - &d-doctest
     "doctest >= 0.11.4 && < 0.14"
   - &d-lens
@@ -100,8 +100,11 @@ tests:
     ghc-options:
       #TODO: this is needed because cabal-doctest generates a module that triggers this warning. Sigh. Should file a bug about that...
       - "-Wno-missing-import-lists"
-      #And this one is as a result of the Build_doctests hack above
-      - "-Wno-missing-home-modules"
+    when:
+      condition: impl(ghc >= 8.2)
+      ghc-options:
+        #And this one is as a result of the Build_doctests hack above
+        - "-Wno-missing-home-modules"
     dependencies:
       #https://github.com/phadej/cabal-doctest/issues/19
       - q4c12-twofinger

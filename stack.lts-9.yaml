@@ -1,0 +1,18 @@
+resolver: lts-9.21
+packages:
+  #TODO: if we get romnum and position away from depending on our prelude, we can re-include them here. (Not mappend, since it needs a newer containers than 8.0's boot library.)
+  - location: ./packages/twofinger
+  - location: ./packages/foldable-utils
+  - location: ./packages/hlist
+extra-deps:
+  - lens-properties-4.11.1
+  - optparse-applicative-0.14.0.0
+  - QuickCheck-2.11.3
+  - tasty-1.0.0.1
+  - tasty-quickcheck-0.9.2
+  #TODO: replace once there's a new transformers-compat release. Remove the flags and also add versions to all transformers-compat deps when that happens.
+  - git: https://github.com/ekmett/transformers-compat/
+    commit: 9b92fded8d332df19c9bacc296488a248993d777
+flags:
+  transformers-compat:
+    five: true
