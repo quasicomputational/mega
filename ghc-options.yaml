@@ -1,7 +1,0 @@
-- "-Weverything"
-- "-Wno-implicit-prelude"
-- "-Wno-unsafe"
-- "-Wno-safe"
-# TODO: worth trying to fix these warning disablements? I think they might need some attention from upstream, maybe...
-- "-Wno-missed-specialisations"
-- "-Wno-all-missed-specialisations"

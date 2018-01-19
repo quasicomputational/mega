@@ -7,8 +7,8 @@ license: BSD2
 license-file:
   - LICENSE.BSD2
 
-ghc-options: !include "../../ghc-options.yaml"
-default-extensions: !include "../../language.yaml"
+#TODO: replace with hpack's defaulting mechanism, once that has support for local files
+<<: !include "../../defaults.yaml"
 
 _common-dependencies:
   # Define version ranges once and only once across components.
