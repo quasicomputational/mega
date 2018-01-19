@@ -1,9 +1,10 @@
 resolver: lts-9.21
 packages:
-  #TODO: if we get romnum and position away from depending on our prelude, we can re-include them here. (Not mappend, since it needs a newer containers than 8.0's boot library.) (Also, the thing keeping the prelude out is the lack of a transformers-compat release.)
+  #TODO: if we get romnum and position away from depending on our prelude, we can re-include them here. (Also, the thing keeping the prelude out is the lack of a transformers-compat release.)
   - location: ./packages/twofinger
   - location: ./packages/foldable-utils
   - location: ./packages/hlist
+  - location: ./packages/mappend
 extra-deps:
   - lens-properties-4.11.1
   - optparse-applicative-0.14.0.0

@@ -32,5 +32,9 @@ empty = MapPend Map.empty
 singleton :: k -> v -> MapPend k v
 singleton k = MapPend . Map.singleton k
 
+--Note: can't use alterF because that's not in older containers, which are boot libraries with GHC 8.0 and earlier. TODO: switch to alterF once they're out of the support window.
 at :: (Ord k, Functor f) => k -> (Maybe v -> f (Maybe v)) -> MapPend k v -> f (MapPend k v)
-at k = _MapPend . flip Map.alterF k
+at = \k f (MapPend m) -> MapPend . g k m <$> f (Map.lookup k m)
+  where
+    g :: (Ord k) => k -> Map k v -> Maybe v -> Map k v
+    g k m = maybe (Map.delete k m) (\a -> Map.insert k a m)
