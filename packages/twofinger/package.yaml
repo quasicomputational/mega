@@ -104,7 +104,7 @@ tests:
     when:
       condition: impl(ghc >= 8.2)
       ghc-options:
-        #And this one is as a result of the Build_doctests hack above
+        #And this one is as a result of the Build_doctests hack above. TODO: if the hack lasts long enough that 8.0 is out of the support window, remove this check.
         - "-Wno-missing-home-modules"
     dependencies:
       #https://github.com/phadej/cabal-doctest/issues/19
