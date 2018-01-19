@@ -1,0 +1,7 @@
+packages:
+  --TODO: if we get romnum and position away from depending on our prelude, we can re-include them here. (Also, the thing keeping the prelude out is the lack of a transformers-compat release.)
+  ./packages/mappend
+  ./packages/twofinger
+  ./packages/foldable-utils
+  ./packages/hlist
+extra-packages:

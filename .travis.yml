@@ -1,15 +1,25 @@
 sudo: false
 language: generic
 
-#TODO: hlint, old GHCs, GHC HEAD, cabal check, building a sdist then testing the sdist, checking the sdist isn't missing files, packunused, maybe packdeps?
+#TODO: hlint, GHC HEAD, cabal check, building a sdist then testing the sdist, checking the sdist isn't missing files, packunused, maybe packdeps?
 matrix:
   include:
-    - env: STACK_OPTIONS=--ghc-options=-Werror
-    - env: STACK_OPTIONS="--resolver nightly"
-    - env: STACK_OPTIONS="--stack-yaml stack.lts-9.yaml"
-    - env: STACK_OPTIONS="--stack-yaml stack.lts-10.yaml"
+    - env: CMD=stack OPTIONS=--ghc-options=-Werror
+    - env: CMD=stack OPTIONS="--resolver nightly"
+    - env: CMD=cabal-new-test OPTIONS="--project-file=cabal.ghc-8.2.project"
+      addons: {apt: {packages: [cabal-install-2.0,ghc-8.2.2], sources: [hvr-ghc]}}
+    - env: CMD=cabal-new-test OPTIONS="--project-file=cabal.ghc-8.0.project"
+      addons: {apt: {packages: [cabal-install-2.0,ghc-8.0.2], sources: [hvr-ghc]}}
 
 before_install:
+  - "PATH=/opt/ghc/bin:$HOME/.local/bin:$PATH"
+  - |
+    case "$CMD" in
+    cabal-new-test)
+      cabal --version
+      cabal update -v
+      ;;
+    esac
   - mkdir -p "$HOME/.local/bin"
   - curl -sL https://www.stackage.org/stack/linux-x86_64 | tar xz --wildcards --strip-components=1 -C ~/.local/bin '*/stack';
   - stack setup
@@ -20,15 +30,45 @@ before_install:
 
 install:
   - find packages/ -path 'packages/*/package.yaml' -exec "$HOME/.local/bin/hpack" '{}' ';'
-  #TODO: --with-hpack would avoid the above mess, but can't do that since --with-hpack is broken (fixed in HEAD: https://github.com/commercialhaskell/stack/issues/3696). This problem will go away when Stack starts using a more recent hpack (assuming we haven't moved on to even newer, shinier features).
-  - stack --no-terminal test $STACK_OPTIONS --only-dependencies --fast
+  - case "$CMD" in
+    stack)
+      stack --no-terminal test $OPTIONS --only-dependencies --fast
+      ;;
+    cabal-new-test)
+      cabal new-build all --enable-tests --only-dependencies $OPTIONS
+      ;;
+    esac
 
 script:
-  - stack --no-terminal test $STACK_OPTIONS --haddock --no-haddock-deps --fast
+  - case "$CMD" in
+    stack)
+      stack --no-terminal test $OPTIONS --haddock --no-haddock-deps --fast
+      ;;
+    cabal-new-test)
+      cabal new-test all --enable-tests $OPTIONS
+      ;;
+    esac
 
 notifications:
   email: false
 
 cache:
   directories:
-    - $HOME/.stack
+    - $HOME/.cabal/packages
+    - $HOME/.cabal/store
+    - $HOME/.cabal/bin
+  
+    - $HOME/.stack/bin
+    - $HOME/.stack/precompiled
+    - $HOME/.stack/programs
+    - $HOME/.stack/setup-exe-cache
+    - $HOME/.stack/snapshots
+
+# We remove the index because it churns quite a bit and we don't want
+# to pay the cost of repeatedly caching it even though we don't care
+# about most changing packages.
+before_cache:
+  - rm -fv -- "$HOME"/.cabal/packages/hackage.haskell.org/build-reports.log
+  - rm -fv -- "$HOME"/.cabal/packages/hackage.haskell.org/00-index*
+  - rm -fv -- "$HOME"/.cabal/packages/hackage.haskell.org/01-index*
+  - rm -fv -- "$HOME"/.cabal/packages/hackage.haskell.org/*.json

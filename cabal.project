@@ -1,0 +1,9 @@
+packages:
+  ./packages/xml
+  ./packages/mappend
+  ./packages/twofinger
+  ./packages/prelude
+  ./packages/romnum
+  ./packages/foldable-utils
+  ./packages/hlist
+  ./packages/position
