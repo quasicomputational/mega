@@ -7,6 +7,7 @@ matrix:
     - env: STACK_OPTIONS=--ghc-options=-Werror
     - env: STACK_OPTIONS="--resolver nightly"
     - env: STACK_OPTIONS="--stack-yaml stack.lts-9.yaml"
+    - env: STACK_OPTIONS="--stack-yaml stack.lts-10.yaml"
 
 before_install:
   - mkdir -p "$HOME/.local/bin"
