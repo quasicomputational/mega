@@ -1,3 +1,8 @@
+Next
+====
+
+* Allow `deepseq` 1.4.2.0 and `containers` 0.5.7.1, which are boot libraries for GHC 8.0.
+
 q4c12-twofinger 0.2 (2018-01-17)
 ================================
 
