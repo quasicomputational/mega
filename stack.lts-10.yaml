@@ -1,13 +1,11 @@
 resolver: lts-10.3
 packages:
-  #TODO: romnum and position could go back in if they were on the other side of the prelude (and the thing keeping the prelude out is the lack of a transformers-compat release)
+  #TODO: romnum and position could go back in if they were on the other side of the prelude (and the thing keeping the prelude out is the lack of a transformers-compat release; ditto xml, in fact!).
   - location: ./packages/twofinger
   - location: ./packages/foldable-utils
   - location: ./packages/hlist
   - location: ./packages/mappend
 extra-deps:
   - base-noprelude-4.10.1.0
-  - either-5
-  - formatting-6.3.0
   - lens-properties-4.11.1
   - tasty-1.0.0.1
