@@ -41,6 +41,7 @@ library:
     - *d-base
     - *d-transformers
   when:
+    #TODO: rm once 8.0 is unsupported
     - condition: impl(ghc < 8.2)
       dependencies:
         - *d-bifunctors
