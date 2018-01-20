@@ -46,6 +46,8 @@ _common-dependencies:
     "lens >= 4.15.4 && < 4.16"
   - &d-lens-properties
     "lens-properties >= 4.11.1 && < 4.12"
+  - &d-QuickCheck
+    "QuickCheck >= 2.10.1 && < 2.11 || >= 2.11.3 && < 2.12"
   - &d-semigroupoids
     "semigroupoids >= 5.2.1 && < 5.3"
   - &d-tasty
@@ -91,6 +93,7 @@ tests:
       - *d-base
       - *d-lens
       - *d-lens-properties
+      - *d-QuickCheck
       - *d-tasty
       - *d-tasty-quickcheck
   doctests:

@@ -10,8 +10,10 @@ import Control.Lens.Properties (isLens)
 import Control.Monad (join)
 import Data.Semigroup ((<>))
 import Test.Tasty (TestTree, testGroup, defaultMain)
-import Test.Tasty.QuickCheck (Gen, Arbitrary, Arbitrary1, Arbitrary2, testProperty, shrink2, arbitrary2, liftArbitrary, liftArbitrary2, liftShrink, liftShrink2)
-import qualified Test.Tasty.QuickCheck as QC
+--Note: only import the specifically tasty-related things from tasty-quickcheck, because of https://github.com/feuerbach/tasty/issues/208
+import Test.Tasty.QuickCheck (testProperty)
+import Test.QuickCheck (Gen, Arbitrary, Arbitrary1, Arbitrary2, shrink2, arbitrary2, liftArbitrary, liftArbitrary2, liftShrink, liftShrink2)
+import qualified Test.QuickCheck as QC
 
 import Q4C12.TwoFinger.Internal (TwoFingerOddA (TwoFingerOddA), TwoFingerOddE (TwoFingerOddE), TwoFingerEvenA (TwoFingerEvenA), TwoFingerEvenE (EmptyEvenE, TwoFingerEvenE), halfsnocOddA, halfsnocOddE, halfunsnocOddA, halfconsEvenE, halfunconsOddA, halfconsOddE, halfsnocEvenA, appendOddEOddA, appendEvenEOddE, appendOddEEvenA, appendOddAOddE, appendEvenAOddA, appendOddAEvenE, halfunsnocEvenA, halfunsnocEvenE, halfsnocEvenE, halfunconsEvenA, halfunsnocOddE, halfunconsEvenE, halfconsOddA, halfunconsOddE, halfconsEvenA, firstOddA, lastOddA)
 
