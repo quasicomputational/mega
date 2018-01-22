@@ -10,6 +10,7 @@ license-file:
   - LICENSE.W3C
 extra-doc-files:
   - README.markdown
+  - doc/using-desc.lhs
 extra-source-files:
   - data/html.xml
   - test/golden/**/*.in
@@ -21,6 +22,8 @@ defaults:
 
 _common-dependencies:
     # Define version ranges once and only once across components.
+  - &d-base
+    "base >= 4.9.1.0 && < 4.11"
   - &d-base-noprelude
     "base-noprelude >= 4.9.1.0 && < 4.12"
   - &d-containers
@@ -31,10 +34,14 @@ _common-dependencies:
     "dlist >= 0.8.0.3 && < 0.9"
   - &d-dlist-nonempty
     "dlist-nonempty >= 0.1.1 && < 0.2"
+  - &d-either
+    "either >= 5 && < 5.1"
   - &d-filepath
     "filepath >= 1.4.1.1 && < 1.5"
   - &d-formatting
     "formatting >= 6.3.0 && < 6.4"
+  - &d-lens
+    "lens >= 4.15.4 && < 4.16"
   - &d-q4c12-mappend
     "q4c12-mappend >= 0 && < 0.1"
   - &d-q4c12-position
@@ -49,6 +56,8 @@ _common-dependencies:
     "tasty >= 0.12 && < 0.13 || >= 1.0 && < 1.1"
   - &d-tasty-expected-failure
     "tasty-expected-failure >= 0.11.0.4 && < 0.12"
+  - &d-tasty-hunit
+    "tasty-hunit >= 0.10.0.1 && < 0.11"
   - &d-tasty-golden
     "tasty-golden >= 2.3.1.1 && < 2.4"
   - &d-template-haskell
@@ -152,6 +161,18 @@ tests:
       - *d-tasty-golden
       - *d-text
       - *d-transformers
+  using-desc:
+    main: doc/using-desc.lhs
+    other-modules: []
+    dependencies:
+      - q4c12-xml
+      - *d-base
+      - *d-dlist-nonempty
+      - *d-either
+      - *d-lens
+      - *d-q4c12-twofinger
+      - *d-tasty-hunit
+      - *d-text
 
 benchmarks:
   parse-xml:
