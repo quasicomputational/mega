@@ -35,7 +35,8 @@ install:
     esac
 
 script:
-  - case "$CMD" in
+  - |
+    case "$CMD" in
     stack)
       stack --no-terminal test $OPTIONS --haddock --no-haddock-deps --fast
       ;;
