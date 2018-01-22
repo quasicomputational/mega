@@ -75,6 +75,7 @@ library:
     - Q4C12.XML.Desc.RApplicative
     - Q4C12.XML.Desc.RELAX
     - Q4C12.XML.Desc.TH
+    - Q4C12.XML.Desc.Total
     - Q4C12.XML.Entity
     - Q4C12.XML.Internal
     - Q4C12.XML.TH

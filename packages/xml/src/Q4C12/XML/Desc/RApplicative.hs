@@ -32,10 +32,6 @@ class (RFunctor f) => RPlus f where
   rempty :: f (HSum '[])
   rplus :: f a -> f (HSum as) -> f (HSum (a ': as))
 
---TODO: define what happens here wrt ordering and overlap?
-rchoice :: (RPlus f) => Iso' s (Either t a) -> f a -> f t -> f s
-rchoice p fa ft = rfmap (from eitherSum . from p) $ rplus ft $ rplus fa rempty
-
 --TODO: the RAlternative constraint is actually way too strong: we only need the equivalent of RApply (which is equivalent to saying rconsR = rconsL). (But remember that RAlternative gives us more laws than just RApply!)
 --Also TODO: we don't include RApplyL here, because we don't have any use for it, but that's another superclass RAlternative can have...
 -- Laws:

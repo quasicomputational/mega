@@ -3,6 +3,7 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE PolyKinds #-}
 {-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE TemplateHaskellQuotes #-}
 {-# LANGUAGE TypeFamilies #-}
 module Q4C12.XML.Desc.Total
   ( switch, _case, _group
@@ -45,11 +46,11 @@ makeIsos typeName = do
                 to = ConP 'VoidableJust [foldr (\h t -> ConE 'HProdCons [h, t]) (conE 'HProdNil) fieldNames]
             pure $ HProdCons typ $ HProdCons fr $ HProdCons to HProdNil
       genericData <- traverse getGenericConstructor cons
-      let genericType = AppT (AppT (ConT ''HSumF) ''Voidable) $ foldr (\h t -> AppT (AppT PromotedConsT (AppT (PromotedT ''Just) h)) t) PromotedNilT (view headL <$> genericData)
-      genericFrom <- lamCaseE $ genericData <&> \(HProdCons _ (HProdCons frPat (HProdCons toPat HProdNil))) ->
+      let genericType = AppT (AppT (ConT ''HSumF) ''Voidable) $ foldr (\h t -> AppT (AppT PromotedConsT (AppT (PromotedT 'Just) h)) t) PromotedNilT (view headL <$> genericData)
+      genericFrom <- lamCaseE $ genericData <&> \(HProdCons _ (HProdCons frPat (HProdCons toPat HProdNil))) -> do
         exp <- fromPatToExp toPat
         match frPat (normalB exp) []
-      genericTo <- lamCaseE $ genericData <&> \(HProdCons _ (HProdCons frPat (HProdCons toPat HProdNil))) ->
+      genericTo <- lamCaseE $ genericData <&> \(HProdCons _ (HProdCons frPat (HProdCons toPat HProdNil))) -> do
         exp <- fromPatToExp frPat
         match toPat (normalB exp) []
       let genericName = mkName $ "_" <> typeName
