@@ -19,6 +19,7 @@ import qualified Data.DList as DList
 import qualified Data.DList.NonEmpty as NEDList
 import qualified Data.Map as Map
 import qualified Data.Sequence as Seq
+import Data.String (IsString (fromString))
 import qualified Data.Text as ST
 import Data.Text.ICU.Normalize (isNormalized, NormalizationMode (NFD))
 import qualified Data.Text.Lazy as LT
@@ -82,6 +83,9 @@ instance Semigroup (Markup pos) where
 instance Monoid (Markup pos) where
   mempty = Markup mempty
   mappend = (<>)
+
+instance (pos ~ ()) => IsString (Markup pos) where
+  fromString = markupText . fromString
 
 markupNull :: Markup pos -> Bool
 markupNull (Markup tree) = maybe False null (onlyOddA tree)
