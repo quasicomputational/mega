@@ -29,14 +29,14 @@ fromPatToExp (ConP name pats) =
   foldl' TH.appE (TH.conE name) (fromPatToExp <$> pats)
 fromPatToExp _ = fail "fromPatToExp: Unknown pattern type, oops!" --TODO: review other constructors for usefulness
 
-getGenericConstructor :: Con -> Q (Q Type, Q Pat, Q Pat)
+getGenericConstructor :: Con -> Q (Name, Q Type, Q Pat, Q Pat)
 getGenericConstructor (NormalC conName bangTypes) = do
   fieldNames <- traverse (const $ newName "x") bangTypes
   let fields = pure . snd <$> bangTypes
       typ = [t| HProd $(foldr (\h t -> [t| $h ': $t |]) TH.promotedNilT fields) |]
       fr = TH.conP conName (TH.varP <$> fieldNames)
       to = [p| VoidableJust $(foldr (\h t -> [p| HProdCons $(TH.varP h) $t |]) [p| HProdNil |] fieldNames) |]
-  pure (typ, fr, to)
+  pure (conName, typ, fr, to)
 getGenericConstructor _ =
   fail "getGenericConstructor: only works on normal ADTs."
 
@@ -44,27 +44,36 @@ extractVarFromBinder :: TyVarBndr -> Name
 extractVarFromBinder (PlainTV name) = name
 extractVarFromBinder (KindedTV name _) = name
 
-fst3L :: Lens (s, x, y) (t, x, y) s t
-fst3L f (a, b, c) = f a <&> \a' -> (a', b, c)
+snd4L :: Lens (a, x, b, c) (a, x', b, c) x x'
+snd4L f (a, x, b, c) = f x <&> \x' -> (a, x', b, c)
 
---TODO: fill this out.
+makeToGeneric :: Name -> [Name] -> [(a, Q Type, Q Pat, Q Pat)] -> Q [Dec]
+makeToGeneric typeName varNames genericData = do
+  let genericType = [t| HSumF Voidable $(foldr (\h t -> [t| 'Just $h ': $t |]) TH.promotedNilT (view snd4L <$> genericData)) |]
+      genericFrom = TH.lamCaseE $ genericData <&> \(_, _, frPat, toPat) ->
+        TH.match frPat (TH.normalB $ fromPatToExp =<< toPat) []
+      genericTo = TH.lamCaseE $ genericData <&> \(_, _, frPat, toPat) ->
+        TH.match toPat (TH.normalB $ fromPatToExp =<< frPat) []
+      genericName = mkName $ "_" <> nameBase typeName
+      resType = foldl' TH.appT (TH.conT typeName) (TH.varT <$> varNames)
+  sequence
+    [ TH.sigD genericName [t| Iso' $resType $genericType |]
+    , TH.funD genericName [TH.clause [] (TH.normalB [e| iso $genericFrom $genericTo |]) []]
+    ]
+
+makeSelectors :: [(Name, Q Type, a, b)] -> Q [Dec]
+makeSelectors = _
+
 makeIsos :: Name -> Q [Dec]
 makeIsos typeName = do
   info <- reify typeName
   case info of
     TyConI (DataD _ _ varBinders _ cons _) -> do
       genericData <- traverse getGenericConstructor cons
-      let genericType = [t| HSumF Voidable $(foldr (\h t -> [t| 'Just $h ': $t |]) TH.promotedNilT (view fst3L <$> genericData)) |]
-          genericFrom = TH.lamCaseE $ genericData <&> \(_, frPat, toPat) ->
-            TH.match frPat (TH.normalB $ fromPatToExp =<< toPat) []
-          genericTo = TH.lamCaseE $ genericData <&> \(_, frPat, toPat) ->
-            TH.match toPat (TH.normalB $ fromPatToExp =<< frPat) []
-          genericName = mkName $ "_" <> nameBase typeName
-          varNames = extractVarFromBinder <$> varBinders
-          resType = foldl' TH.appT (TH.conT typeName) (TH.varT <$> varNames)
-      sequence
-        [ TH.sigD genericName [t| Iso' $resType $genericType |]
-        , TH.funD genericName [TH.clause [] (TH.normalB [e| iso $genericFrom $genericTo |]) []]
+      let varNames = extractVarFromBinder <$> varBinders
+      foldSequence
+        [ makeToGeneric typeName varNames genericData
+        , makeSelectors genericData
         ]
     _ -> fail "makeIsos: unknown result from reify."
 
