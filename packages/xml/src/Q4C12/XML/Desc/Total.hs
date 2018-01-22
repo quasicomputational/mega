@@ -81,6 +81,7 @@ makeIsos typeName = do
 _case :: (RPlus f) => Iso' s (Either t a) -> f a -> f t -> f s
 _case p fa ft = rfmap (from eitherSum . from p) $ rplus ft $ rplus fa $ rempty
 
+--TODO: generalise from just El to... well, I guess I need a 'Labellable' typeclass now?
 _group :: (Desc tag, VoidableMaybeList as, MergeableLists as bs) => LText -> (El tag (HSumF Voidable (NothingList as)) -> El tag (HSumF Voidable as)) -> El tag (HSumF Voidable bs) -> El tag (HSumF Voidable (MergedLists as bs))
 _group label f a = rfmap voidableHSums $ rplus (nonTerminalE label $ f $ rfmap (iso absurdHSum (absurdVoidedMaybeHSumF (pr f))) rempty) $ rplus a rempty
   where
