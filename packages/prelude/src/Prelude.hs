@@ -161,7 +161,7 @@ import Data.DList.NonEmpty as Export
 
 -- lens imports for re-export
 import Control.Lens as Export
-  (Lens', set, over, view, (<>~), Iso, Iso', from, iso, Prism, Prism', APrism, APrism', preview, matching, review, withPrism)
+  (Lens', Lens, set, over, view, (<>~), Iso, Iso', from, iso, Prism, Prism', APrism, APrism', preview, matching, review, withPrism)
 
 -- profunctors imports for re-export
 import Data.Profunctor as Export

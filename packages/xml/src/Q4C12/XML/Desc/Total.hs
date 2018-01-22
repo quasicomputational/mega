@@ -3,7 +3,8 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE PolyKinds #-}
 {-# LANGUAGE RankNTypes #-}
-{-# LANGUAGE TemplateHaskellQuotes #-}
+--TODO: really should be able to get away with just TemplateHaskellQuotes
+{-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE TypeFamilies #-}
 module Q4C12.XML.Desc.Total
   ( switch, _case, _group
@@ -11,52 +12,60 @@ module Q4C12.XML.Desc.Total
   )
   where
 
+import Language.Haskell.TH (Q, Exp, Dec (DataD), Pat (LitP, VarP, TupP, WildP, ConP), Type, Con (NormalC), Name, Info (TyConI), TyVarBndr (PlainTV, KindedTV), reify, mkName, newName, nameBase)
+import qualified Language.Haskell.TH.Lib as TH
+
 import Q4C12.XML.Desc.Class (Desc, El, nonTerminalE)
 import Q4C12.XML.Desc.RApplicative (RPlus, rfmap, rempty, rplus)
 
 --TODO: issue with doing it this way: it's less efficient to inspect a HSum than a native sum type. Can we claw some of that back with unpacking?
 
-data ConstructorInfo = ConstructorInfo Name [Type]
-
 fromPatToExp :: Pat -> Q Exp
-fromPatToExp (TH.LitP lit) = TH.litE lit
-fromPatToExp (TH.VarP name) = TH.varE name
-fromPatToExp (TH.TupP pats) = TH.tupE $ fromPatToExp <$> pats
-fromPatToExp TH.WildP = fail "fromPatToExp: Cannot convert a wildcard pattern into an expression."
-fromPatToExp (TH.ConP name pats) =
+fromPatToExp (LitP lit) = TH.litE lit
+fromPatToExp (VarP name) = TH.varE name
+fromPatToExp (TupP pats) = TH.tupE $ fromPatToExp <$> pats
+fromPatToExp WildP = fail "fromPatToExp: Cannot convert a wildcard pattern into an expression."
+fromPatToExp (ConP name pats) =
   foldl' TH.appE (TH.conE name) (fromPatToExp <$> pats)
 fromPatToExp _ = fail "fromPatToExp: Unknown pattern type, oops!" --TODO: review other constructors for usefulness
+
+getGenericConstructor :: Con -> Q (Q Type, Q Pat, Q Pat)
+getGenericConstructor (NormalC conName bangTypes) = do
+  fieldNames <- traverse (const $ newName "x") bangTypes
+  let fields = pure . snd <$> bangTypes
+      typ = [t| HProd $(foldr (\h t -> [t| $h ': $t |]) TH.promotedNilT fields) |]
+      fr = TH.conP conName (TH.varP <$> fieldNames)
+      to = [p| VoidableJust $(foldr (\h t -> [p| HProdCons $(TH.varP h) $t |]) [p| HProdNil |] fieldNames) |]
+  pure (typ, fr, to)
+getGenericConstructor _ =
+  fail "getGenericConstructor: only works on normal ADTs."
+
+extractVarFromBinder :: TyVarBndr -> Name
+extractVarFromBinder (PlainTV name) = name
+extractVarFromBinder (KindedTV name _) = name
+
+fst3L :: Lens (s, x, y) (t, x, y) s t
+fst3L f (a, b, c) = f a <&> \a' -> (a', b, c)
 
 --TODO: fill this out.
 makeIsos :: Name -> Q [Dec]
 makeIsos typeName = do
-  info <- TH.reify typeName
+  info <- reify typeName
   case info of
-    TH.TyConI (TH.DataD ctx _ varBinders _ cons _) -> do
-      let varNames = extractVarFromBinder <$> varBinders
-          resType = foldl' TH.AppT (TH.ConT typeName) (TH.VarT <$> varNames)
-          extractConstructorInfo (TH.NormalC conName bangTypes) =
-            pure $ ConstructorInfo (snd <$> bangTypes)
-          extractConstructorInfo _ = fail "makeIsos: only works on normal ADTs."
-      cons <- traverse extractConstructorInfo cons
-      let getGenericConstructor (ConstructorInfo _ fields) = do
-            fieldNames <- traverse (const $ newName "x") fields
-            let typ = AppT (PromotedT 'Just) $ AppT (ConT ''HProd) $ foldr (\h t -> AppT (AppT PromotedConsT h) t) PromotedNilT fields
-                fr = ConP conName (VarP <$> fieldNames)
-                to = ConP 'VoidableJust [foldr (\h t -> ConE 'HProdCons [h, t]) (conE 'HProdNil) fieldNames]
-            pure $ HProdCons typ $ HProdCons fr $ HProdCons to HProdNil
+    TyConI (DataD _ _ varBinders _ cons _) -> do
       genericData <- traverse getGenericConstructor cons
-      let genericType = AppT (AppT (ConT ''HSumF) ''Voidable) $ foldr (\h t -> AppT (AppT PromotedConsT (AppT (PromotedT 'Just) h)) t) PromotedNilT (view headL <$> genericData)
-      genericFrom <- lamCaseE $ genericData <&> \(HProdCons _ (HProdCons frPat (HProdCons toPat HProdNil))) -> do
-        exp <- fromPatToExp toPat
-        match frPat (normalB exp) []
-      genericTo <- lamCaseE $ genericData <&> \(HProdCons _ (HProdCons frPat (HProdCons toPat HProdNil))) -> do
-        exp <- fromPatToExp frPat
-        match toPat (normalB exp) []
-      let genericName = mkName $ "_" <> typeName
-      pure [ SigD genericName $ AppT (AppT (ConT ''Iso') resType) genericType
-           , FunD genericName $ Clause [] (AppE (AppE (VarE 'iso) genericFrom) genericTo)
-           ]
+      let genericType = [t| HSumF Voidable $(foldr (\h t -> [t| 'Just $h ': $t |]) TH.promotedNilT (view fst3L <$> genericData)) |]
+          genericFrom = TH.lamCaseE $ genericData <&> \(_, frPat, toPat) ->
+            TH.match frPat (TH.normalB $ fromPatToExp =<< toPat) []
+          genericTo = TH.lamCaseE $ genericData <&> \(_, frPat, toPat) ->
+            TH.match toPat (TH.normalB $ fromPatToExp =<< frPat) []
+          genericName = mkName $ "_" <> nameBase typeName
+          varNames = extractVarFromBinder <$> varBinders
+          resType = foldl' TH.appT (TH.conT typeName) (TH.varT <$> varNames)
+      sequence
+        [ TH.sigD genericName [t| Iso' $resType $genericType |]
+        , TH.funD genericName [TH.clause [] (TH.normalB [e| iso $genericFrom $genericTo |]) []]
+        ]
     _ -> fail "makeIsos: unknown result from reify."
 
 --TODO: define what happens here wrt ordering and overlap?
