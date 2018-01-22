@@ -1,5 +1,5 @@
 sudo: false
-language: generic
+language: haskell
 
 #TODO: hlint, GHC HEAD, cabal check, building a sdist then testing the sdist, checking the sdist isn't missing files, packunused, maybe packdeps?
 matrix:
@@ -7,20 +7,15 @@ matrix:
     - env: CMD=stack OPTIONS=--ghc-options=-Werror
     - env: CMD=stack OPTIONS="--resolver nightly"
     - env: CMD=cabal-new-test OPTIONS="--project-file=cabal.ghc-8.2.project"
-      addons: {apt: {packages: [cabal-install-2.0,ghc-8.2.2], sources: [hvr-ghc]}}
+      ghc: "8.2.2"
+      cabal: "2.0"
     - env: CMD=cabal-new-test OPTIONS="--project-file=cabal.ghc-8.0.project"
-      addons: {apt: {packages: [cabal-install-2.0,ghc-8.0.2], sources: [hvr-ghc]}}
+      ghc: "8.0"
+      cabal: "2.0"
 
 before_install:
-  - "PATH=/opt/ghc/bin:$HOME/.local/bin:$PATH"
-  - |
-    case "$CMD" in
-    cabal-new-test)
-      cabal --version
-      cabal update -v
-      ;;
-    esac
   - mkdir -p "$HOME/.local/bin"
+  - PATH=$HOME/.local/bin:$PATH
   - curl -sL https://www.stackage.org/stack/linux-x86_64 | tar xz --wildcards --strip-components=1 -C ~/.local/bin '*/stack';
   - stack setup
   - TMPDIR=$(mktemp -d)
@@ -54,21 +49,10 @@ notifications:
 
 cache:
   directories:
-    - $HOME/.cabal/packages
     - $HOME/.cabal/store
     - $HOME/.cabal/bin
-  
     - $HOME/.stack/bin
     - $HOME/.stack/precompiled
     - $HOME/.stack/programs
     - $HOME/.stack/setup-exe-cache
     - $HOME/.stack/snapshots
-
-# We remove the index because it churns quite a bit and we don't want
-# to pay the cost of repeatedly caching it even though we don't care
-# about most changing packages.
-before_cache:
-  - rm -fv -- "$HOME"/.cabal/packages/hackage.haskell.org/build-reports.log
-  - rm -fv -- "$HOME"/.cabal/packages/hackage.haskell.org/00-index*
-  - rm -fv -- "$HOME"/.cabal/packages/hackage.haskell.org/01-index*
-  - rm -fv -- "$HOME"/.cabal/packages/hackage.haskell.org/*.json
