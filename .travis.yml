@@ -1,5 +1,5 @@
 sudo: false
-language: haskell
+language: generic
 
 #TODO: hlint, GHC HEAD, cabal check, building a sdist then testing the sdist, checking the sdist isn't missing files, packunused, maybe packdeps?
 matrix:
@@ -7,25 +7,35 @@ matrix:
     - env: CMD=stack OPTIONS=--ghc-options=-Werror
     - env: CMD=stack OPTIONS="--resolver nightly"
     - env: CMD=cabal-new-test OPTIONS="--project-file=cabal.ghc-8.2.project"
-      ghc: "8.2.2"
-      cabal: "2.0"
+      addons: {apt: {packages: [ghc-8.2.2,cabal-install-2.0], sources: [hvr-ghc]}}
     - env: CMD=cabal-new-test OPTIONS="--project-file=cabal.ghc-8.0.project"
-      ghc: "8.0"
-      cabal: "2.0"
+      addons: {apt: {packages: [ghc-8.0.2,cabal-install-2.0], sources: [hvr-ghc]}}
+    - env: CMD=cabal-new-test OPTIONS="--project-file=cabal.ghc-8.4.project --allow-newer" GHCHEAD=true
+      addons: {apt: {packages: [ghc-8.4.1,cabal-install-head], sources: [hvr-ghc]}}
+      #TODO: regularise once GHC 8.4's officially out
 
 before_install:
   - mkdir -p "$HOME/.local/bin"
-  - PATH=$HOME/.local/bin:$PATH
+  - PATH=$HOME/.local/bin:/opt/ghc/bin:$PATH
   - curl -sL https://www.stackage.org/stack/linux-x86_64 | tar xz --wildcards --strip-components=1 -C ~/.local/bin '*/stack';
   - stack setup
   - TMPDIR=$(mktemp -d)
   - pushd $TMPDIR
   - stack --no-terminal install hpack-0.21.2
   - popd
+  #Note order: have to generate .cabal files before new-update!
+  - find packages/ -path 'packages/*/package.yaml' -exec "$HOME/.local/bin/hpack" '{}' ';'
+  #TODO: remove the condition once we can use cabal-install 2.2 and hence new-update in all configurations
+  - |
+    case "$CMD" in
+    cabal-new-test)
+      if ${GHCHEAD-false} ; then cabal new-update $OPTIONS; else cabal update; fi
+      ;;
+    esac
 
 install:
-  - find packages/ -path 'packages/*/package.yaml' -exec "$HOME/.local/bin/hpack" '{}' ';'
-  - case "$CMD" in
+  - |
+    case "$CMD" in
     stack)
       stack --no-terminal test $OPTIONS --only-dependencies --fast
       ;;
