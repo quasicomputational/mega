@@ -1,16 +1,26 @@
 default-extensions:
+  - BinaryLiterals
   - DataKinds
   - DeriveGeneric
   - DeriveLift
   - DeriveTraversable
   - EmptyCase
+  - EmptyDataDecls
   - LambdaCase
   - KindSignatures
+  #Enable MonoLocalBinds so we don't get surprised by unrelated things breaking when GADTs or TypeFamilies are turned on.
+  - MonoLocalBinds
+  - NegativeLiterals
+  - NumDecimals
   - OverloadedStrings
   - PatternGuards
+  - PostfixOperators
   - StandaloneDeriving
   - TypeOperators
   - ViewPatterns
+  #TODO: MagicHash? UnboxedTuples? ConstraintKinds? ExplicitForAll? BangPatterns? TemplateHaskellQuotes?? RankNTypes???
+  #TODO: once 8.0 is out of the window, enable DerivingStrategies
+  #TODO: once GHC 8.2 is out of the window, enable HexFloatLiterals and EmptyDataDeriving
 when:
   #TODO: once GHC 8.0 is out of the support window, remove this check.
   - condition: impl(ghc >= 8.2)
