@@ -77,8 +77,8 @@ htmlElement (Element qn attrs body pos) = foldSequence
            else fold
              [ "="
              , if LT.all isSafeUnquoted val
-               then escapeText val
-               else fold ["\"", escapeText val, "\""]
+               then LTB.fromLazyText $ escapeAttr val
+               else fold ["\"", LTB.fromLazyText $ escapeAttr val, "\""]
              ]
        ]
   , pure ">"
@@ -100,10 +100,13 @@ htmlElement (Element qn attrs body pos) = foldSequence
   ]
 
 htmlMarkup :: Markup pos -> Either (HTMLException pos) TBuilder
-htmlMarkup (Markup inl) = bifoldMapM htmlElement (pure . escapeText . foldMap snd) inl
+htmlMarkup (Markup inl) = bifoldMapM htmlElement (pure . LTB.fromLazyText . escapeText . foldMap snd) inl
 
-escapeText :: LText -> TBuilder
-escapeText = LTB.fromLazyText . LT.replace "<" "&lt;" . LT.replace ">" "&gt;" . LT.replace "\xA0" "&nbsp;" . LT.replace "\"" "&quot;" . LT.replace "&" "&amp;"
+escapeText :: LText -> LText
+escapeText = LT.replace "<" "&lt;" . LT.replace ">" "&gt;" . LT.replace "\xA0" "&nbsp;" . LT.replace "&" "&amp;"
+
+escapeAttr :: LText -> LText
+escapeAttr = LT.replace "\"" "&quot;" . escapeText
 
 elementShouldBeVoid :: QName -> Bool
 elementShouldBeVoid (QName nsMay local) =
