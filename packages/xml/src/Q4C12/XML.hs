@@ -1,5 +1,5 @@
 module Q4C12.XML
-  ( Element (Element), element
+  ( Element (Element), element, elementPosition
   , QName (QName)
   , DoctypeResolver, systemResolver, publicResolver, noEntities
   , Markup (Markup, getMarkup), markupNull
@@ -16,7 +16,7 @@ module Q4C12.XML
   where
 
 import Q4C12.XML.Internal
-  ( Element (Element), element
+  ( Element (Element), element, elementPosition
   , QName (QName)
   , DoctypeResolver, systemResolver, publicResolver, noEntities
   , Markup (Markup, getMarkup), markupNull

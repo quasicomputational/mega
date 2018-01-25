@@ -91,12 +91,11 @@ markupNull :: Markup pos -> Bool
 markupNull (Markup tree) = maybe False null (onlyOddA tree)
 
 --TODO: shouldn't attr values be strict?
---TODO: source location for attrs
 data Element pos = Element
   { _ename :: QName
   , _eattrs :: Map QName (pos, Seq (pos, LText))
   , _ebody :: Markup pos
-  , _epos :: pos
+  , elementPosition :: pos
   }
   deriving (Show, Functor, Generic)
 

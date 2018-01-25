@@ -39,6 +39,8 @@ main = do
     findByExtension [".in"] "test/golden/dtd-generation"
   x2hTests <- fmap dropExtension <$>
     findByExtension [".in"] "test/golden/xhtml2html"
+  x2hFailTests <- fmap dropExtension <$>
+    findByExtension [".fails"] "test/golden/xhtml2html"
   defaultMain $ testGroup "xml parsing and re-rendering"
     [ testGroup "should work" $ testXML exampleResolver <$> xmlTests
     , testGroup "should work with stderr" $ testXMLStderr exampleResolver <$> xmlTestsWithStdErr
@@ -49,7 +51,10 @@ main = do
       , testGroup "should fail" $ testXMLShouldFail htmlResolver <$> htmlFailTests
       ]
     , testGroup "DTD generation" $ testDTDGeneration <$> dtdGenerationTests
-    , testGroup "xhtml2html" $ testXHTML2HTML <$> x2hTests
+    , testGroup "xhtml2html" $
+        [ testGroup "should work" $ testXHTML2HTML <$> x2hTests
+        , testGroup "should fail" $ testXHTML2HTMLShouldFail <$> x2hFailTests
+        ]
     ]
 
 expectXMLBroken :: Set TestName
@@ -134,3 +139,16 @@ testXHTML2HTML baseName =
           Left err -> fail $ "XHTML2HTML failed: " <> LT.unpack (LTB.toLazyText $ displayHTMLExceptionPos err)
           Right html ->
             pure $ LTEnc.encodeUtf8 $ LTB.toLazyText html
+
+testXHTML2HTMLShouldFail :: TestName -> TestTree
+testXHTML2HTMLShouldFail baseName =
+  goldenVsStringDiff baseName (\ref new -> ["diff", "-u", ref, new]) (addExtension baseName "out") $ do
+    xmlMay <- parseXML htmlResolver <$> STIO.readFile (addExtension baseName "fails")
+    case xmlMay of
+      (Left err, warns) -> fail $ LT.unpack $ LTB.toLazyText $ XML.displayError err <> "\n" <> XML.displayWarnings warns
+      (Right xml, warns) -> do
+        unless (null warns) $
+          fail $ LT.unpack $ LTB.toLazyText $ XML.displayWarnings warns
+        case htmlDocument xml of
+          Left err -> pure $ LTEnc.encodeUtf8 $ LTB.toLazyText $ displayHTMLExceptionPos err
+          Right html -> fail "Unexpected success!"
