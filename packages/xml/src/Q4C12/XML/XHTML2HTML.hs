@@ -22,10 +22,9 @@ data HTMLException pos
   = UnknownNamespace pos SText
   | MissingNamespace pos
   | ElementShouldBeVoid pos
-  --TODO: list the containing <style> element's position, too?
-  | LTInStyle pos
-  | NBSPInStyle pos
-  | ElementInStyle pos
+  --TODO: list the containing raw-text element's position, too?
+  | LTInRawText SText pos
+  | ElementInRawText SText pos
 
 displayHTMLExceptionPos :: HTMLException PositionRange -> TBuilder
 displayHTMLExceptionPos (UnknownNamespace pos ns) = bprint
@@ -37,15 +36,12 @@ displayHTMLExceptionPos (MissingNamespace pos) = bprint
 displayHTMLExceptionPos (ElementShouldBeVoid pos) = bprint
   ("Error while HTMLifying: Element at " . positionRange . " should be void.")
   pos
-displayHTMLExceptionPos (LTInStyle pos) = bprint
-  ("Error while HTMLifying: <style> can't have &lt; in it in the HTML syntax, but there's one at " . positionRange . ".")
-  pos
-displayHTMLExceptionPos (NBSPInStyle pos) = bprint
-  ("Error while HTMLifying: unwise for <style> to have an NBSP in it in the HTML syntax, but there's one at " . positionRange . ".")
-  pos
-displayHTMLExceptionPos (ElementInStyle pos) = bprint
-  ("Error while HTMLifying: <style> can't have child elements, but there's one at " . positionRange . ".")
-  pos
+displayHTMLExceptionPos (LTInRawText element pos) = bprint
+  ("Error while HTMLifying: <" . stext . "> can't have &lt; in it in the HTML syntax, but there's one at " . positionRange . ".")
+  element pos
+displayHTMLExceptionPos (ElementInRawText element pos) = bprint
+  ("Error while HTMLifying: <" . stext . "> can't have child elements, but there's one at " . positionRange . ".")
+  element pos
 
 displayHTMLException :: HTMLException pos -> TBuilder
 displayHTMLException (UnknownNamespace _ ns) = bprint
@@ -55,12 +51,12 @@ displayHTMLException (MissingNamespace _) =
   "Error while HTMLifying: Element in no namespace."
 displayHTMLException (ElementShouldBeVoid _) =
   "Error while HTMLifying: Element should be void."
-displayHTMLException (LTInStyle _) =
-  "Error while HTMLifying: <style> can't have &lt; in it in the HTML syntax."
-displayHTMLException (NBSPInStyle _) =
-  "Error while HTMLifying: unwise for <style> to have an NBSP in it in the HTML syntax."
-displayHTMLException (ElementInStyle _) = bprint
-  "Error while HTMLifying: <style> can't have child elements."
+displayHTMLException (LTInRawText element _) = bprint
+  ("Error while HTMLifying: <" . stext . "> can't have &lt; in it in the HTML syntax.")
+  element
+displayHTMLException (ElementInRawText element _) = bprint
+  ("Error while HTMLifying: <" . stext . "> can't have child elements.")
+  element
 
 htmlDocument :: Element pos -> Either (HTMLException pos) TBuilder
 htmlDocument el = foldSequence
@@ -71,7 +67,10 @@ htmlDocument el = foldSequence
 blessedNamespaces :: Set SText
 blessedNamespaces = Set.fromList [htmlNS, svgNS, mathmlNS]
 
---TODO: <style> isn't the only element with stupid escaping behaviour; see https://html.spec.whatwg.org/#parsing-html-fragments for others.
+rawTextElements :: Set QName
+rawTextElements = Set.fromList $ fmap hname
+  [ "style", "script", "xmp", "iframe", "noembed", "noframes", "plaintext" ]
+
 htmlElement :: Element pos -> Either (HTMLException pos) TBuilder
 htmlElement (Element qn attrs body pos) = foldSequence
   [ pure "<"
@@ -108,7 +107,10 @@ htmlElement (Element qn attrs body pos) = foldSequence
          then pure mempty
          else Left $ ElementShouldBeVoid pos
     else foldSequence
-      [ htmlMarkup (qn == hname "style") body
+      [ case qn of
+          QName _ local | Set.member qn rawTextElements
+            -> htmlMarkup (Just local) body
+          _ -> htmlMarkup Nothing body
       , pure "</"
       , case qn of
           QName Nothing _ -> Left $ MissingNamespace pos
@@ -120,14 +122,13 @@ htmlElement (Element qn attrs body pos) = foldSequence
       ]
   ]
 
-htmlMarkup :: Bool -> Markup pos -> Either (HTMLException pos) TBuilder
-htmlMarkup False (Markup inl) = bifoldMapM htmlElement (pure . LTB.fromLazyText . escapeText . foldMap snd) inl
-htmlMarkup True (Markup inl) = case unconsOddA inl of
-  Right ((_, el), _) -> Left $ ElementInStyle $ elementPosition el
+htmlMarkup :: Maybe SText -> Markup pos -> Either (HTMLException pos) TBuilder
+htmlMarkup Nothing (Markup inl) = bifoldMapM htmlElement (pure . LTB.fromLazyText . escapeText . foldMap snd) inl
+htmlMarkup (Just element) (Markup inl) = case unconsOddA inl of
+  Right ((_, el), _) -> Left $ ElementInRawText element $ elementPosition el
   Left chunks -> flip foldMapM chunks $ \case
     (pos, t)
-      | LT.any (== '<') t -> Left $ LTInStyle pos
-      | LT.any (== '\xA0') t -> Left $ NBSPInStyle pos
+      | LT.any (== '<') t -> Left $ LTInRawText element pos
       | otherwise -> Right $ LTB.fromLazyText t
 
 escapeText :: LText -> LText
