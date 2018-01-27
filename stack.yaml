@@ -1,4 +1,4 @@
-resolver: nightly-2018-01-15
+resolver: nightly-2018-01-27
 packages:
   - location: ./packages/xml
   - location: ./packages/mappend

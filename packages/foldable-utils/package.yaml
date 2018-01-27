@@ -17,7 +17,7 @@ _common-dependencies:
   - &d-bifunctors
     "bifunctors >= 5.4.2 && < 5.5"
   - &d-cabal-doctest
-    "cabal-doctest >= 1.0.3 && < 1.1"
+    "cabal-doctest >= 1.0.5 && < 1.1"
   - &d-doctest
     "doctest >= 0.11.4 && < 0.14"
   - &d-transformers
@@ -52,18 +52,12 @@ tests:
       - test
     main: Doctest.hs
     #Suppress Paths_*
-    other-modules:
-      []
-    #TODO: Build_doctests ought to be listed as an autogen-module and an other-module, but hpack doesn't know about autogen modules: https://github.com/sol/hpack/issues/207
-    ghc-options:
-      #TODO: this is needed because cabal-doctest generates a module that triggers this warning. Sigh. Should file a bug about that...
-      - "-Wno-missing-import-lists"
+    other-modules: []
     when:
-      condition: impl(ghc >= 8.2)
+      #Have to specify this in a conditional because of https://github.com/sol/hpack/issues/255 TODO remove once fixed
+      condition: "true"
       ghc-options:
-        #And this one is as a result of the Build_doctests hack above. TODO: if the hack lasts long enough that 8.0 is out of the support window, remove this check.
-        - "-Wno-missing-home-modules"
-        #Have to specify this one in the conditional because of https://github.com/sol/hpack/issues/255 TODO remove once fixed
+        #TODO: this is needed because cabal-doctest generates a module that triggers this warning. Sigh. Should file a bug about that...
         - "-Wno-missing-import-lists"
     dependencies:
       #https://github.com/phadej/cabal-doctest/issues/19

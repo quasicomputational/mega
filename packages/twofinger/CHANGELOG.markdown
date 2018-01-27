@@ -3,6 +3,7 @@ Next
 
 * Allow `deepseq` 1.4.2.0 and `containers` 0.5.7.1, which are boot libraries for GHC 8.0.
 * Added `SUPPORT.markdown`, documenting which GHCs this package will build on.
+* Packaging: requiring `cabal-doctest` 1.0.5 cleans up some ugliness, and lets us DTRT.
 
 q4c12-twofinger 0.2 (2018-01-17)
 ================================
