@@ -151,4 +151,4 @@ testXHTML2HTMLShouldFail baseName =
           fail $ LT.unpack $ LTB.toLazyText $ XML.displayWarnings warns
         case htmlDocument xml of
           Left err -> pure $ LTEnc.encodeUtf8 $ LTB.toLazyText $ displayHTMLExceptionPos err
-          Right html -> fail "Unexpected success!"
+          Right _ -> fail "Unexpected success!"
