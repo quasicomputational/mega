@@ -19,4 +19,4 @@ library:
   other-modules: []
   dependencies:
     - "base >= 4.9.1.0 && < 4.11"
-    - "lens >= 4.15.4 && < 4.16"
+    - "lens >= 4.15.4 && < 4.17"

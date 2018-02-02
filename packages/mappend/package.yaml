@@ -20,4 +20,4 @@ library:
   dependencies:
     - "base >= 4.8.2.0 && < 4.11"
     - "containers >= 0.5.7.1 && < 0.6"
-    - "lens >= 4.15.4 && < 4.16"
+    - "lens >= 4.15.4 && < 4.17"

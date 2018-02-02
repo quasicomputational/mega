@@ -26,7 +26,7 @@ library:
     - "dlist-nonempty >= 0.1.1 && < 0.2"
     - "either >= 5 && < 5.1"
     - "filepath >= 1.4.1.1 && < 1.5"
-    - "lens >= 4.15.4 && < 4.16"
+    - "lens >= 4.15.4 && < 4.17"
     - "profunctors >= 5.2.1 && < 5.3"
     - "q4c12-foldable-utils >= 0 && < 0.1"
     - "q4c12-hlist >= 0 && < 0.1"

@@ -43,7 +43,7 @@ _common-dependencies:
   - &d-doctest
     "doctest >= 0.11.4 && < 0.14"
   - &d-lens
-    "lens >= 4.15.4 && < 4.16"
+    "lens >= 4.15.4 && < 4.17"
   - &d-lens-properties
     "lens-properties >= 4.11.1 && < 4.12"
   - &d-QuickCheck
