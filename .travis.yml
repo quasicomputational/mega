@@ -17,17 +17,18 @@ matrix:
 before_install:
   - mkdir -p "$HOME/.local/bin"
   - PATH=$HOME/.local/bin:/opt/ghc/bin:$PATH
-  - curl -sL https://www.stackage.org/stack/linux-x86_64 | tar xz --wildcards --strip-components=1 -C ~/.local/bin '*/stack';
-  - stack setup
-  - TMPDIR=$(mktemp -d)
-  - pushd $TMPDIR
-  - stack --no-terminal install hpack-0.21.2
-  - popd
-  #Note order: have to generate .cabal files before new-update!
+  - export HPACKVER=0.25.0
+  - curl -sL https://github.com/sol/hpack/releases/download/"$HPACKVER"/hpack_linux.gz | gunzip > ~/.local/bin/hpack
+  - chmod +x ~/.local/bin/hpack
+  #Note order: have to generate .cabal files before new-update! See https://github.com/haskell/cabal/issues/5096, though we have to do this at *some* point and it might as well be now.
   - find packages/ -path 'packages/*/package.yaml' -exec "$HOME/.local/bin/hpack" '{}' ';'
   #TODO: remove the condition once we can use cabal-install 2.2 and hence new-update in all configurations
   - |
     case "$CMD" in
+    stack)
+      curl -sL https://www.stackage.org/stack/linux-x86_64 | tar xz --wildcards --strip-components=1 -C ~/.local/bin '*/stack';
+      stack setup
+      ;;
     cabal-new-test)
       if ${GHCHEAD-false} ; then cabal new-update $OPTIONS; else cabal update; fi
       ;;
