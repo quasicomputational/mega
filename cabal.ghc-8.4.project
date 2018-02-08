@@ -1,9 +1,12 @@
 packages:
-  --TODO: if we get romnum and position away from depending on our prelude, we can re-include them here. (Also, the thing keeping the prelude out is the lack of a transformers-compat release.)
+  ./packages/xml
   ./packages/mappend
   ./packages/twofinger
+  ./packages/prelude
+  ./packages/romnum
   ./packages/foldable-utils
   ./packages/hlist
+  ./packages/position
 extra-packages:
 
 --TODO: remove once 8.4's released and this stops being provisional testing
