@@ -41,7 +41,7 @@ _common-dependencies:
   - &d-deepseq
     "deepseq >= 1.4.2.0 && < 1.5"
   - &d-doctest
-    "doctest >= 0.11.4 && < 0.14"
+    "doctest >= 0.11.4 && < 0.15"
   - &d-lens
     "lens >= 4.15.4 && < 4.17"
   - &d-lens-properties
@@ -53,7 +53,7 @@ _common-dependencies:
   - &d-tasty
     "tasty >= 0.12 && < 0.13 || >= 1.0 && < 1.1"
   - &d-tasty-quickcheck
-    "tasty-quickcheck >= 0.9.1 && < 0.10"
+    "tasty-quickcheck >= 0.9.1 && < 0.11"
 
 custom-setup:
   dependencies:
