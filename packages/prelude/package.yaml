@@ -6,9 +6,8 @@ author: quasicomputational <quasicomputational@gmail.com>
 license: BSD2
 license-file:
   - LICENSE.BSD2
-
-#TODO: replace with hpack's defaulting mechanism, once that has support for local files
-<<: !include "../../defaults.yaml"
+defaults:
+  local: ../../hpack/defaults.rolling.yaml
 
 library:
   source-dirs:

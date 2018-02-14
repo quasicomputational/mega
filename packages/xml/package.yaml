@@ -16,9 +16,8 @@ extra-source-files:
   - test/golden/**/*.out
   - test/golden/**/*.errout
   - test/golden/**/*.fails
-
-#TODO: replace with hpack's defaulting mechanism, once that has support for local files
-<<: !include "../../defaults.yaml"
+defaults:
+  local: ../../hpack/defaults.rolling.yaml
 
 _common-dependencies:
     # Define version ranges once and only once across components.
