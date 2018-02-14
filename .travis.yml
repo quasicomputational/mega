@@ -17,7 +17,7 @@ matrix:
 before_install:
   - mkdir -p "$HOME/.local/bin"
   - PATH=$HOME/.local/bin:/opt/ghc/bin:$PATH
-  - export HPACKVER=0.25.0
+  - export HPACKVER=0.27.0
   - curl -sL https://github.com/sol/hpack/releases/download/"$HPACKVER"/hpack_linux.gz | gunzip > ~/.local/bin/hpack
   - chmod +x ~/.local/bin/hpack
   #Note order: have to generate .cabal files before new-update! See https://github.com/haskell/cabal/issues/5096, though we have to do this at *some* point and it might as well be now.
