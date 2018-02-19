@@ -6,11 +6,11 @@ matrix:
   include:
     - env: CMD=stack OPTIONS=--ghc-options=-Werror
     - env: CMD=stack OPTIONS="--resolver nightly"
-    - env: CMD=cabal-new-test OPTIONS="--project-file=cabal.ghc-8.2.project"
+    - env: CMD=cabal-new-test OPTIONS="--project-file=cabal/ghc-8.2.project"
       addons: {apt: {packages: [ghc-8.2.2,cabal-install-2.0], sources: [hvr-ghc]}}
-    - env: CMD=cabal-new-test OPTIONS="--project-file=cabal.ghc-8.0.project"
+    - env: CMD=cabal-new-test OPTIONS="--project-file=cabal/ghc-8.0.project"
       addons: {apt: {packages: [ghc-8.0.2,cabal-install-2.0], sources: [hvr-ghc]}}
-    - env: CMD=cabal-new-test OPTIONS="--project-file=cabal.ghc-8.4.project --allow-newer" GHCHEAD=true
+    - env: CMD=cabal-new-test OPTIONS="--project-file=cabal/ghc-8.4.project --allow-newer" GHCHEAD=true
       addons: {apt: {packages: [ghc-8.4.1,cabal-install-head], sources: [hvr-ghc]}}
       #TODO: regularise once GHC 8.4's officially out
 
