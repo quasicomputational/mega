@@ -1,5 +1,4 @@
 packages:
-  ./packages/xml
   ./packages/mappend
   ./packages/twofinger
   ./packages/prelude
