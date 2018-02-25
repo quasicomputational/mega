@@ -33,5 +33,4 @@ library:
     - "semigroupoids >= 5.2.1 && < 5.3"
     - "text >= 1.2.2.2 && < 1.3"
     - "transformers >= 0.5 && < 0.6"
-    #TODO: fix version number once released
-    - "transformers-compat"
+    - "transformers-compat >= 0.6 && < 0.7"
