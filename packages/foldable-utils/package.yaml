@@ -14,7 +14,7 @@ _common-dependencies:
   - &d-base
     "base >= 4.9.1.0 && < 4.11"
   - &d-bifunctors
-    "bifunctors >= 5.4.2 && < 5.5"
+    "bifunctors >= 5.5 && < 5.6"
   - &d-cabal-doctest
     "cabal-doctest >= 1.0.5 && < 1.1"
   - &d-doctest
