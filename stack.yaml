@@ -11,7 +11,7 @@ packages:
 extra-deps:
   #TODO: remove base-prelude extra-dep once it makes it back into Stackage. https://github.com/fpco/stackage/issues/3202 is part of it.
   - base-noprelude-4.10.1.0@rev:0
-  #TODO: https://github.com/fpco/stackage/issues/3312; all the rest of these are fallout, including the below allow-newer toggle.
+  #TODO: https://github.com/fpco/stackage/issues/3312; all the rest of these are fallout
   - transformers-compat-0.6.0.5@rev:0
   - bifunctors-5.5.2@rev:1
   - exceptions-0.9.0@rev:0
@@ -20,5 +20,4 @@ extra-deps:
   - lens-4.16@rev:0
   - kan-extensions-5.1@rev:1
   - adjunctions-4.4@rev:0
-#TODO: this is more fallout from transformers-compat; optparse-applicative hasn't been revised or updated.
-allow-newer: true
+  - optparse-applicative-0.14.2.0@rev:0
