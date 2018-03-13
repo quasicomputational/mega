@@ -1,9 +1,12 @@
 sudo: false
 language: generic
 
-#TODO: this is here basically because of a hack. Github assumes that, if the commits fast-forward okay, they must be okay, but that can obviously go wrong if there have been changes to master and the commits have not been rebased on top of HEAD. It'd be lovely to have a cast-iron pre-commit check; maybe bors-ng? Doesn't solve the problem of the big, green, do-the-wrong-thing attractive nuisance button.
+#Configured for bors-ng
 branches:
   only:
+    - staging
+    - trying
+    #Needs to be included for PRs to be built.
     - master
 
 #TODO: hlint, cabal check, building a sdist then testing the sdist, checking the sdist isn't missing files, packunused, maybe packdeps?
