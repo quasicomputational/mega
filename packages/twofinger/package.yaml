@@ -79,6 +79,11 @@ library:
     - condition: impl(ghc < 8.2)
       dependencies:
         - *d-bifunctors
+    - condition: "true"
+      #Have to specify this in a conditional because of https://github.com/sol/hpack/issues/255 TODO remove once fixed
+      ghc-options:
+        #Post-SMP, our signatures strictly are redundant. However, for implementation sanity, they need to be that way on 8.2. TODO: remove this once 8.2 is out of the window.
+        - "-Wno-redundant-constraints"
 
 #TODO: cabal-doctest (or perhaps doctest itself) doesn't play nicely with coverage reports.
 tests:
@@ -102,10 +107,14 @@ tests:
     other-modules: []
     when:
       #Have to specify this in a conditional because of https://github.com/sol/hpack/issues/255 TODO remove once fixed
-      condition: "true"
-      ghc-options:
-        #TODO: this is needed because cabal-doctest generates a module that triggers this warning. Sigh. Should file a bug about that...
-        - "-Wno-missing-import-lists"
+      - condition: "true"
+        ghc-options:
+          #TODO: this is needed because cabal-doctest generates a module that triggers this warning. Sigh. Should file a bug about that...
+          - "-Wno-missing-import-lists"
+      - condition: impl(ghc >= 8.4)
+        ghc-options:
+          #TODO: file a but about this, too
+          - "-Wno-missing-export-lists"
     dependencies:
       #https://github.com/phadej/cabal-doctest/issues/19
       - q4c12-twofinger
