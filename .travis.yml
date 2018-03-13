@@ -3,6 +3,7 @@ language: generic
 
 #TODO: hlint, cabal check, building a sdist then testing the sdist, checking the sdist isn't missing files, packunused, maybe packdeps?
 matrix:
+  fast_finish: true
   include:
     - env: CMD=stack OPTIONS=--ghc-options=-Werror
     - env: CMD=stack OPTIONS="--resolver nightly"
