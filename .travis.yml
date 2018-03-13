@@ -1,6 +1,10 @@
 sudo: false
 language: generic
 
+branches:
+  only:
+    - master
+
 #TODO: hlint, cabal check, building a sdist then testing the sdist, checking the sdist isn't missing files, packunused, maybe packdeps?
 matrix:
   fast_finish: true
