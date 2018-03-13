@@ -6,8 +6,6 @@ branches:
   only:
     - staging
     - trying
-    #Needs to be included for PRs to be built.
-    - master
 
 #TODO: hlint, cabal check, building a sdist then testing the sdist, checking the sdist isn't missing files, packunused, maybe packdeps?
 matrix:
