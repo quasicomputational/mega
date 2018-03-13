@@ -42,10 +42,10 @@ import Data.Either as Export
 import Data.Eq as Export
   (Eq, (==), (/=))
 --TODO: do we actually get anything out of Foldable if we use foldr/foldl'? That is, we might as well go through toList for those, right?
---TODO: elem is a potential performance landmine: if a container places more restrictions on its elements and can use those for retrieval, the (Eq a) constraint forces it to go linear. (e.g., Data.Set.member is O(log n).)
+--Note: elem is a potential performance landmine: if a container places more restrictions on its elements and can use those for retrieval, the (Eq a) constraint forces it to go linear. (e.g., Data.Set.member is O(log n).) Hence, we don't want to export it generally.
 import Data.Foldable as Export
   ( Foldable (foldMap), toList, foldr, traverse_, sequence_, foldl', fold
-  , for_, any, all, null, elem, find
+  , for_, any, all, null, find
   )
 import Data.Function as Export
   (($), const, flip, (&), fix)
