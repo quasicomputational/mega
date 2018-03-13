@@ -17,5 +17,5 @@ library:
   # Suppress Paths_*
   other-modules: []
   dependencies:
-    - "base >= 4.9.1.0 && < 4.11"
+    - "base >= 4.9.1.0 && < 4.12"
     - "lens >= 4.15.4 && < 4.17"

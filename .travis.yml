@@ -5,18 +5,25 @@ branches:
   only:
     - master
 
-#TODO: hlint, GHC HEAD, cabal check, building a sdist then testing the sdist, checking the sdist isn't missing files, packunused, maybe packdeps?
+#TODO: hlint, cabal check, building a sdist then testing the sdist, checking the sdist isn't missing files, packunused, maybe packdeps?
 matrix:
   include:
     - env: CMD=stack OPTIONS=--ghc-options=-Werror
     - env: CMD=stack OPTIONS="--resolver nightly"
-    - env: CMD=cabal-new-test OPTIONS="--project-file=cabal/ghc-8.2.project"
-      addons: {apt: {packages: [ghc-8.2.2,cabal-install-2.0], sources: [hvr-ghc]}}
     - env: CMD=cabal-new-test OPTIONS="--project-file=cabal/ghc-8.0.project"
       addons: {apt: {packages: [ghc-8.0.2,cabal-install-2.0], sources: [hvr-ghc]}}
-    - env: CMD=cabal-new-test OPTIONS="--project-file=cabal/ghc-8.4.project --allow-newer" GHCHEAD=true
-      addons: {apt: {packages: [ghc-8.4.1,cabal-install-head], sources: [hvr-ghc]}}
-      #TODO: regularise once GHC 8.4's officially out
+    - env: CMD=cabal-new-test OPTIONS="--project-file=cabal/ghc-8.2.project"
+      addons: {apt: {packages: [ghc-8.2.2,cabal-install-2.0], sources: [hvr-ghc]}}
+    - env: CMD=cabal-new-test OPTIONS="--project-file=cabal/ghc-8.4.project"
+      addons: {apt: {packages: [ghc-8.4.1,cabal-install-2.2], sources: [hvr-ghc]}}
+    - env: CMD=cabal-new-test OPTIONS="--project-file=cabal/ghc-head.project --allow-newer" GHCHEAD=true
+      addons: {apt: {packages: [ghc-head,cabal-install-head], sources: [hvr-ghc]}}
+  allow_failures:
+    #TODO: https://github.com/fpco/stackage/issues/3365; however, we possibly don't want to be beholden to nightly's whims anyway, so maybe this should be an allowed failure.
+    - env: CMD=stack OPTIONS="--resolver nightly"
+    #TODO: allowable once cabal-install 2.2 is out
+    - env: CMD=cabal-new-test OPTIONS="--project-file=cabal/ghc-8.4.project"
+    - env: CMD=cabal-new-test OPTIONS="--project-file=cabal/ghc-head.project --allow-newer" GHCHEAD=true
 
 before_install:
   - mkdir -p "$HOME/.local/bin"

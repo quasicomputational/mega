@@ -17,7 +17,7 @@ library:
   # Suppress Paths_*
   other-modules: []
   dependencies:
-    - "base-noprelude >= 4.9.1.0 && < 4.11"
+    - "base-noprelude >= 4.9.1.0 && < 4.12"
     - "formatting >= 6.3.0 && < 6.4"
     - "q4c12-prelude >= 0 && < 0.0.1"
     - "text >= 1.2.2.2 && < 1.3"

@@ -12,7 +12,7 @@ defaults:
 _common-dependencies:
   # Define version ranges once and only once across components.
   - &d-base
-    "base >= 4.9.1.0 && < 4.11"
+    "base >= 4.9.1.0 && < 4.12"
   - &d-bifunctors
     "bifunctors >= 5.5 && < 5.6"
   - &d-cabal-doctest
