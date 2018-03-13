@@ -7,7 +7,3 @@ packages:
   ./packages/hlist
   ./packages/position
 extra-packages:
-
---TODO: rm once optparse-applicative has relaxed its constraint
-allow-newer:
-  optparse-applicative:transformers-compat
