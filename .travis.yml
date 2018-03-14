@@ -11,65 +11,38 @@ branches:
 matrix:
   fast_finish: true
   include:
-    - env: CMD=stack OPTIONS=--ghc-options=-Werror
-    - env: CMD=stack OPTIONS="--resolver nightly"
-    - env: CMD=cabal-new-test OPTIONS="--project-file=cabal/ghc-8.0.project"
+    - env: CMD=stack-werror
+    - env: CMD=stack-nightly
+    - env: CMD=cabal-new-build GHCSERIES=8.0
       addons: {apt: {packages: [ghc-8.0.2,cabal-install-2.0], sources: [hvr-ghc]}}
-    - env: CMD=cabal-new-test OPTIONS="--project-file=cabal/ghc-8.2.project"
+    - env: CMD=cabal-new-build GHCSERIES=8.2
       addons: {apt: {packages: [ghc-8.2.2,cabal-install-2.0], sources: [hvr-ghc]}}
-    - env: CMD=cabal-new-test OPTIONS="--project-file=cabal/ghc-8.4.project"
+    - env: CMD=cabal-new-build GHCSERIES=8.4
       addons: {apt: {packages: [ghc-8.4.1,cabal-install-2.2], sources: [hvr-ghc]}}
-    - env: CMD=cabal-new-test OPTIONS="--project-file=cabal/ghc-head.project --allow-newer" GHCHEAD=true
+    - env: CMD=cabal-new-build GHCSERIES=head
       addons: {apt: {packages: [ghc-head,cabal-install-head], sources: [hvr-ghc]}}
   allow_failures:
     #TODO: https://github.com/fpco/stackage/issues/3365; however, we possibly don't want to be beholden to nightly's whims anyway, so maybe this should be an allowed failure.
-    - env: CMD=stack OPTIONS="--resolver nightly"
+    - env: CMD=stack-nightly
     #TODO: allowable once cabal-install 2.2 is out
-    - env: CMD=cabal-new-test OPTIONS="--project-file=cabal/ghc-8.4.project"
-    - env: CMD=cabal-new-test OPTIONS="--project-file=cabal/ghc-head.project --allow-newer" GHCHEAD=true
+    - env: CMD=cabal-new-build GHCSERIES=8.4
+    - env: CMD=cabal-new-build GHCSERIES=head
 
 before_install:
   - mkdir -p "$HOME/.local/bin"
-  - PATH=$HOME/.local/bin:/opt/ghc/bin:$PATH
+  - export PATH=$HOME/.local/bin:/opt/ghc/bin:$PATH
   - export HPACKVER=0.27.0
   - curl -sL https://github.com/sol/hpack/releases/download/"$HPACKVER"/hpack_linux.gz | gunzip > ~/.local/bin/hpack
   - chmod +x ~/.local/bin/hpack
   #Note order: have to generate .cabal files before new-update! See https://github.com/haskell/cabal/issues/5096, though we have to do this at *some* point and it might as well be now.
   - find packages/ -path 'packages/*/package.yaml' -exec "$HOME/.local/bin/hpack" '{}' ';'
-  #TODO: remove the condition once we can use cabal-install 2.2 and hence new-update in all configurations
-  - |
-    case "$CMD" in
-    stack)
-      curl -sL https://www.stackage.org/stack/linux-x86_64 | tar xz --wildcards --strip-components=1 -C ~/.local/bin '*/stack';
-      stack setup
-      ;;
-    cabal-new-test)
-      if ${GHCHEAD-false} ; then cabal new-update $OPTIONS; else cabal update; fi
-      ;;
-    esac
+  - ./travis/before_install."$CMD".sh
 
 install:
-  - |
-    case "$CMD" in
-    stack)
-      stack --no-terminal test $OPTIONS --only-dependencies --fast
-      ;;
-    cabal-new-test)
-      cabal new-build all --enable-tests --only-dependencies $OPTIONS
-      ;;
-    esac
+  - ./travis/install."$CMD".sh
 
 script:
-  - |
-    case "$CMD" in
-    stack)
-      stack --no-terminal test $OPTIONS --haddock --no-haddock-deps --fast
-      ;;
-    cabal-new-test)
-      cabal new-build all --enable-tests $OPTIONS
-      cabal new-test all --enable-tests $OPTIONS
-      ;;
-    esac
+  - ./travis/script."$CMD".sh
 
 notifications:
   email: false
