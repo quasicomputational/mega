@@ -8,7 +8,3 @@ packages:
   ./packages/hlist
   ./packages/position
 extra-packages:
-
-allow-newer:
-  -- TODO: remove when released; https://github.com/haskell-hvr/base-noprelude/issues/8
-  base-noprelude:base
