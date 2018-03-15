@@ -1,10 +1,13 @@
 {-# LANGUAGE GADTs #-}
+{-# LANGUAGE PolyKinds #-}
 {-# LANGUAGE RankNTypes #-}
 module Q4C12.HList
   ( HSum (HSumHere, HSumThere)
   , absurdHSum, eliminateHSum, partitionHSum
   , eitherSum
   , _HSumHere, _HSumThere
+  , HSumF (HSumFHere, HSumFThere)
+  , absurdHSumF, eliminateHSumF
   , HProd (HProdNil, HProdCons)
   , headL, tailL
   , doubleProd, singleProd, unitProd, dropUnit
@@ -48,6 +51,18 @@ partitionHSum (a : as) = go a $ partitionHSum as
 
 eitherSum :: Iso (Either a b) (Either a' b') (HSum '[a, b]) (HSum '[a', b'])
 eitherSum = iso (either HSumHere (HSumThere . HSumHere)) (eliminateHSum Left $ eliminateHSum Right absurdHSum)
+
+--TODO: unify with HSum.
+data HSumF :: (k -> *) -> [k] -> * where
+  HSumFHere :: f a -> HSumF f (a ': as)
+  HSumFThere :: HSumF f as -> HSumF f (a ': as)
+
+absurdHSumF :: HSumF f '[] -> a
+absurdHSumF a = case a of {}
+
+eliminateHSumF :: (f a -> r) -> (HSumF f as -> r) -> HSumF f (a ': as) -> r
+eliminateHSumF f _ (HSumFHere a) = f a
+eliminateHSumF _ g (HSumFThere as) = g as
 
 --TODO: an unzip operation? [HProd as] -> HProdList as?
 data HProd :: [*] -> * where

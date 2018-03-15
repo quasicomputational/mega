@@ -69,6 +69,8 @@ import Data.Monoid as Export
   (Monoid (mempty, mappend), Endo (Endo), appEndo, Dual (Dual), getDual)
 import Data.Ord as Export
   (Ord, (>=), (<=), (>), (<), min, max)
+import Data.Proxy as Export
+  (Proxy (Proxy))
 --TODO: get rid of Option once Maybe's Monoid instance changes
 import Data.Semigroup as Export
   ( Semigroup ((<>)), All (All), getAll, Any (Any), getAny, Option (Option), option
@@ -81,7 +83,7 @@ import Data.Type.Equality as Export
 import Data.Tuple as Export
   (uncurry, swap, fst, snd)
 import Data.Void as Export
-  (Void)
+  (Void, absurd)
 import Data.Word as Export
   (Word, Word8, Word64)
 --TODO: is there really no other place but GHC.* to get these from? Should probably file an upstream bug...
@@ -159,7 +161,7 @@ import Data.DList.NonEmpty as Export
 
 -- lens imports for re-export
 import Control.Lens as Export
-  (Lens', set, over, view, (<>~), Iso, Iso', from, iso, Prism, Prism', APrism, APrism', preview, matching, review, withPrism)
+  (Lens', Lens, set, over, view, (<>~), Iso, Iso', from, iso, Prism, Prism', APrism, APrism', preview, matching, review, withPrism)
 
 -- profunctors imports for re-export
 import Data.Profunctor as Export
@@ -177,7 +179,7 @@ import Q4C12.FoldableUtils as Export
   , unfoldr'
   )
 import Q4C12.HList as Export
-  (HSum (HSumHere, HSumThere), absurdHSum, eliminateHSum, partitionHSum, _HSumHere, _HSumThere, eitherSum, HProd (HProdCons, HProdNil), headL, tailL, unitProd, singleProd, doubleProd, dropUnit, HProdList (HProdListCons, HProdListNil))
+  (HSum (HSumHere, HSumThere), absurdHSum, eliminateHSum, partitionHSum, _HSumHere, _HSumThere, eitherSum, HSumF (HSumFHere, HSumFThere), eliminateHSumF, absurdHSumF, HProd (HProdCons, HProdNil), headL, tailL, unitProd, singleProd, doubleProd, dropUnit, HProdList (HProdListCons, HProdListNil))
 import Q4C12.TwoFinger as Export
   (TwoFingerOddA, TwoFingerOddE, TwoFingerEvenA, TwoFingerEvenE)
 
