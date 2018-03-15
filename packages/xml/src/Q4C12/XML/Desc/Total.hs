@@ -47,7 +47,7 @@ extractVarFromBinder (KindedTV name _) = name
 snd4L :: Lens (a, x, b, c) (a, x', b, c) x x'
 snd4L f (a, x, b, c) = f x <&> \x' -> (a, x', b, c)
 
---Generates things of the shape _Foo :: Iso' Foo (HSumF Voidable ['Just FooA, 'Just 'FooB])
+--Generates things of the shape _Foo :: Iso' Foo (HSumF Voidable ['Just Bar, 'Just Baz])
 makeToGeneric :: Name -> [Name] -> [(a, Q Type, Q Pat, Q Pat)] -> Q [Dec]
 makeToGeneric typeName varNames genericData = do
   let genericType = [t| HSumF Voidable $(foldr (\h t -> [t| 'Just $h ': $t |]) TH.promotedNilT (view snd4L <$> genericData)) |]
@@ -62,6 +62,7 @@ makeToGeneric typeName varNames genericData = do
     , TH.funD genericName [TH.clause [] (TH.normalB [e| iso $genericFrom $genericTo |]) []]
     ]
 
+--Generates things of the shape _FooA :: Iso (HSumF Voidable ['Just Bar, a]) (Either (HSumF Voidable ['Nothing, a]) ('Just Bar))
 makeSelectors :: [(Name, Q Type, a, b)] -> Q [Dec]
 makeSelectors = _
 
