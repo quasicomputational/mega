@@ -1,4 +1,4 @@
-resolver: nightly-2018-02-28
+resolver: nightly-2018-03-15
 packages:
   - location: ./packages/xml
   - location: ./packages/mappend
@@ -10,6 +10,4 @@ packages:
   - location: ./packages/position
 extra-deps:
   #TODO: remove base-prelude extra-dep once it makes it back into Stackage. https://github.com/fpco/stackage/issues/3202 is part of it.
-  - base-noprelude-4.10.1.0@rev:0
-  #TODO: https://github.com/fpco/stackage/issues/3312
-  - transformers-compat-0.6.0.5@rev:0
+  - base-noprelude-4.11.0.0@rev:0
