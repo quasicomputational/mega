@@ -1,9 +1,5 @@
-{-# LANGUAGE CPP #-}
 {-# OPTIONS_HADDOCK not-home #-}
---TODO: de-CPP-ify once 8.2 is out of the window (or, alternatively, once we switch the -Werror build to 8.4 rather than 8.2)
-#if __GLASGOW_HASKELL__ >= 804
 {-# OPTIONS_GHC -Wno-missing-export-lists #-}
-#endif
 -- |
 -- Stability: unstable
 --
