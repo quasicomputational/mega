@@ -57,6 +57,7 @@ _common-dependencies:
 custom-setup:
   dependencies:
     #TODO: remove Cabal dep once https://github.com/haskell/cabal/issues/4288 is fixed
+    #TODO: we don't have to share dep versions with the other components here, thinking about it; is that worth changing??
     - "Cabal"
     - *d-base
     - *d-cabal-doctest
