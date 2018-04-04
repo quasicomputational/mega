@@ -24,8 +24,6 @@ matrix:
   allow_failures:
     #TODO: https://github.com/fpco/stackage/issues/3365; however, we possibly don't want to be beholden to nightly's whims anyway, so maybe this should be an allowed failure.
     - env: CMD=stack-nightly
-    #TODO: allowable once cabal-install 2.2 is out
-    - env: CMD=cabal-new-build GHCSERIES=8.4
     - env: CMD=cabal-new-build GHCSERIES=head
 
 before_install:
