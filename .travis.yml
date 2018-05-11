@@ -18,7 +18,7 @@ matrix:
     - env: CMD=cabal-new-build GHCSERIES=8.2
       addons: {apt: {packages: [ghc-8.2.2,cabal-install-2.2], sources: [hvr-ghc]}}
     - env: CMD=cabal-new-build GHCSERIES=8.4
-      addons: {apt: {packages: [ghc-8.4.1,cabal-install-2.2], sources: [hvr-ghc]}}
+      addons: {apt: {packages: [ghc-8.4.2,cabal-install-2.2], sources: [hvr-ghc]}}
     - env: CMD=cabal-new-build GHCSERIES=head
       addons: {apt: {packages: [ghc-head,cabal-install-head], sources: [hvr-ghc]}}
   allow_failures:
