@@ -7,4 +7,3 @@ packages:
   ./packages/foldable-utils
   ./packages/hlist
   ./packages/position
-extra-packages:
