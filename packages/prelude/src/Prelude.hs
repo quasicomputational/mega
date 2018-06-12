@@ -59,6 +59,8 @@ import Data.Functor.Identity as Export
   (runIdentity, Identity (Identity))
 import Data.Int as Export
   (Int)
+import Data.Kind as Export
+  (Type)
 import Data.List as Export
   (iterate)
 import Data.List.NonEmpty as Export
