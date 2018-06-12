@@ -115,11 +115,11 @@ stringTokenDT = datatypeDT $ Datatype Right id "" "token"
 class (RAlternative (EvenFlow tag), RPlus (El tag), RAlternative (DT tag),
        RPlusApplyR (OddFlow tag), ActionR (OddFlow tag) ~ EvenFlow tag)
    => Desc tag where
-  data EvenFlow tag :: * -> *
-  data OddFlow tag :: * -> *
-  data El tag :: * -> *
-  data DT tag :: * -> *
-  type Pos tag :: *
+  data EvenFlow tag :: Type -> Type
+  data OddFlow tag :: Type -> Type
+  data El tag :: Type -> Type
+  data DT tag :: Type -> Type
+  type Pos tag :: Type
 
   evenUp
     :: OddFlow tag a

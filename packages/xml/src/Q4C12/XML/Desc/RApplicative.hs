@@ -47,7 +47,7 @@ rchoice p fa ft = rfmap (from eitherSum . from p) $ rplus ft $ rplus fa rempty
 --   6. rconsR a rempty ~~~ rempty
 --TODO: skipped nodes in the hierarchy!
 class (RAlternative (ActionR f), RPlus f) => RPlusApplyR f where
-  type ActionR f :: * -> *
+  type ActionR f :: Type -> Type
   rconsR :: ActionR f a -> f (HProd as) -> f (HProd (a ': as))
 
 rcons :: (RAlternative f) => f a -> f (HProd as) -> f (HProd (a ': as))

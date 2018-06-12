@@ -15,12 +15,13 @@ module Q4C12.HList
   where
 
 import Data.Bifunctor (bimap)
+import Data.Kind (Type)
 import Control.Lens (over, Iso, Iso', AnIso, withIso, iso, Prism, prism)
 
 --TODO: consider replacing this module with generics-sop or similar.
 
 --TODO: think about syntactic sugar for these, esp. low-order ones.
-data HSum :: [*] -> * where
+data HSum :: [Type] -> Type where
   HSumHere :: a -> HSum (a ': as)
   HSumThere :: HSum as -> HSum (a ': as)
 
@@ -50,7 +51,7 @@ eitherSum :: Iso (Either a b) (Either a' b') (HSum '[a, b]) (HSum '[a', b'])
 eitherSum = iso (either HSumHere (HSumThere . HSumHere)) (eliminateHSum Left $ eliminateHSum Right absurdHSum)
 
 --TODO: an unzip operation? [HProd as] -> HProdList as?
-data HProd :: [*] -> * where
+data HProd :: [Type] -> Type where
   HProdNil :: HProd '[]
   HProdCons :: a -> HProd as -> HProd (a ': as)
 
@@ -108,7 +109,7 @@ distributeTail i = withIso i $ \fr to -> iso
   (either (over tailL $ to . Left) (over tailL $ to . Right))
 
 --TODO: We could unify this with HProd, as HProdF :: (k -> *) -> [k] -> *. I tried that on a branch and GHC got very, very slow though, so...
-data HProdList :: [*] -> * where
+data HProdList :: [Type] -> Type where
   HProdListNil :: HProdList '[]
   HProdListCons :: [a] -> HProdList as -> HProdList (a ': as)
 
