@@ -89,7 +89,7 @@ instance (pos ~ ()) => IsString (Markup pos) where
   fromString = markupText . fromString
 
 markupNull :: Markup pos -> Bool
-markupNull (Markup tree) = maybe False null (onlyOddA tree)
+markupNull (Markup tree) = maybe False (all (LT.null . snd)) (onlyOddA tree)
 
 --TODO: shouldn't attr values be strict?
 data Element pos = Element
