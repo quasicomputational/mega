@@ -29,7 +29,7 @@ import Formatting (bprint, stext, Format, later, int, builder)
 import Q4C12.MapPend (MapPend, getMapPend)
 import qualified Q4C12.MapPend as MapPend
 import Q4C12.Position (Position, startPosition, PositionRange (PositionRange), updatePosition, position, positionRange)
-import Q4C12.TwoFinger (singletonOddA, onlyOddA, unitOddA, consOddA)
+import Q4C12.TwoFinger (singletonOddA, unitOddA, consOddA)
 import Safe (toEnumMay)
 
 --TODO: split text chunks by XML newline and give each chunk its own PositionRange, to make tracking locations in files where end-of-line normalisation has been applied easier.
@@ -89,7 +89,7 @@ instance (pos ~ ()) => IsString (Markup pos) where
   fromString = markupText . fromString
 
 markupNull :: Markup pos -> Bool
-markupNull (Markup tree) = maybe False (all (LT.null . snd)) (onlyOddA tree)
+markupNull (Markup tree) = biall (const False) (all (LT.null . snd)) tree
 
 --TODO: shouldn't attr values be strict?
 data Element pos = Element
