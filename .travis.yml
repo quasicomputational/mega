@@ -19,11 +19,15 @@ matrix:
       addons: {apt: {packages: [ghc-8.2.2,cabal-install-2.2], sources: [hvr-ghc]}}
     - env: CMD=cabal-new-build GHCSERIES=8.4
       addons: {apt: {packages: [ghc-8.4.2,cabal-install-2.2], sources: [hvr-ghc]}}
+    #TODO: regularlise once cabal-install 2.4 is out, and move out of allow-failures
+    - env: CMD=cabal-new-build GHCSERIES=8.6
+      addons: {apt: {packages: [ghc-8.6.1,cabal-install-head], sources: [hvr-ghc]}} 
     - env: CMD=cabal-new-build GHCSERIES=head
       addons: {apt: {packages: [ghc-head,cabal-install-head], sources: [hvr-ghc]}}
   allow_failures:
     #TODO: https://github.com/fpco/stackage/issues/3365; however, we possibly don't want to be beholden to nightly's whims anyway, so maybe this should be an allowed failure.
     - env: CMD=stack-nightly
+    - env: CMD=cabal-new-build GHCSERIES=8.6
     - env: CMD=cabal-new-build GHCSERIES=head
 
 before_install:
