@@ -551,6 +551,7 @@ singletonOddA = TwoFingerOddA mempty
 unitOddA :: (Monoid a, Semigroup a) => e -> TwoFingerOddA e a
 unitOddA a = consOddA mempty a mempty
 
+--TODO: this isn't needed any more in q4c12-xml; remove?
 -- |
 -- >>> onlyOddA (singletonOddA "Hello!")
 -- Just "Hello!"
