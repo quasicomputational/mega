@@ -24,6 +24,7 @@ asciiUppercaseRomanNumeralStyle = RomanNumeralStyle
   "I" "V" "X" "L" "C" "D" "M"
 
 --TODO: extend to the really big numerals?
+-- | Note: since 0 is unrepresentable in roman numerals, this function's input is offset by 1.
 buildRomNum :: RomanNumeralStyle -> Natural -> TBuilder
 buildRomNum style = go . (+ 1)
   where

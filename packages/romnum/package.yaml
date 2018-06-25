@@ -9,6 +9,17 @@ license-file:
 defaults:
   local: ../../hpack/defaults.rolling.yaml
 
+_common-dependencies:
+  # Define version ranges once and only once across components.
+  - &d-q4c12-prelude
+    "q4c12-prelude >= 0 && < 0.0.1"
+  - &d-tasty
+    "tasty >= 1.0 && < 1.1"
+  - &d-tasty-hunit
+    "tasty-hunit >= 0.10 && < 0.11"
+  - &d-text
+    "text >= 1.2.3.0 && < 1.3"
+
 library:
   source-dirs:
     - src
@@ -17,6 +28,18 @@ library:
   # Suppress Paths_*
   other-modules: []
   dependencies:
-    - "q4c12-prelude >= 0 && < 0.0.1"
+    - *d-q4c12-prelude
 
-#TODO: write/port over some tests
+tests:
+  unit-tests:
+    source-dirs:
+      - test
+    main:
+      UnitTests.hs
+    other-modules: []
+    dependencies:
+      - "q4c12-romnum"
+      - *d-q4c12-prelude
+      - *d-tasty
+      - *d-tasty-hunit
+      - *d-text
