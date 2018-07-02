@@ -113,7 +113,7 @@ data HProdList :: [Type] -> Type where
   HProdListNil :: HProdList '[]
   HProdListCons :: [a] -> HProdList as -> HProdList (a ': as)
 
-class EmptyHProdList (as :: [*]) where
+class EmptyHProdList (as :: [Type]) where
   emptyHProdList :: HProdList as
 
 instance EmptyHProdList '[] where
