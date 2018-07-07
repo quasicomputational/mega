@@ -9,8 +9,8 @@ import qualified Data.Text.Lazy.Builder as LTB
 
 import Q4C12.XML (parseXML, noEntities)
 
-input :: Integer -> SText
-input n = LT.toStrict $ LTB.toLazyText $ "<foo>" <> mtimes n "<spam>Hello! This gets repeated a lot!</spam>" <> "</foo>"
+input :: Natural -> SText
+input n = LT.toStrict $ LTB.toLazyText $ "<foo>" <> mtimesSafe n "<spam>Hello! This gets repeated a lot!</spam>" <> "</foo>"
 
 main :: IO ()
 main = defaultMain
