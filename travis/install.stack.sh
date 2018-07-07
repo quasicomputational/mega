@@ -2,4 +2,4 @@
 
 set -euxo pipefail
 
-stack --no-terminal test --only-dependencies --fast $@
+stack --no-terminal build --test --bench --only-dependencies --fast $@

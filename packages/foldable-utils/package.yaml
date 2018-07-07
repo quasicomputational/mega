@@ -18,7 +18,7 @@ _common-dependencies:
   - &d-cabal-doctest
     "cabal-doctest >= 1.0.5 && < 1.1"
   - &d-doctest
-    "doctest >= 0.11.4 && < 0.16"
+    "doctest >= 0.11.4 && < 0.17"
   - &d-transformers
     "transformers >= 0.5 && < 0.6"
 

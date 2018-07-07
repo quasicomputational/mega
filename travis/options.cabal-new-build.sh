@@ -2,4 +2,5 @@
 
 set -euxo pipefail
 
-printf -- '--project-file=cabal/ghc-%s.project' "$GHCSERIES"
+printf -- '--project-file=cabal/ghc-%s.project\n' "$GHCSERIES"
+printf -- '--enable-tests --enable-benchmarks\n'
