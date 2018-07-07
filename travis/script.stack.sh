@@ -2,4 +2,4 @@
 
 set -euxo pipefail
 
-stack --no-terminal test --haddock --no-haddock-deps --fast $@
+stack --no-terminal build --test --bench --haddock --no-haddock-deps --fast $@
