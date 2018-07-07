@@ -14,7 +14,7 @@ _common-dependencies:
   - &d-q4c12-prelude
     "q4c12-prelude >= 0 && < 0.0.1"
   - &d-tasty
-    "tasty >= 1.0 && < 1.1"
+    "tasty >= 1.0 && < 1.2"
   - &d-tasty-hunit
     "tasty-hunit >= 0.10 && < 0.11"
   - &d-text

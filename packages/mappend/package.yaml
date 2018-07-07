@@ -18,5 +18,5 @@ library:
   other-modules: []
   dependencies:
     - "base >= 4.8.2.0 && < 4.12"
-    - "containers >= 0.5.7.1 && < 0.6"
-    - "lens >= 4.15.4 && < 4.17"
+    - "containers >= 0.5.7.1 && < 0.7"
+    - "lens >= 4.15.4 && < 4.18"

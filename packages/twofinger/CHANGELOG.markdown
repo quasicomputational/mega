@@ -1,11 +1,9 @@
 Next
 ====
 
-* Allow `deepseq` 1.4.2.0 and `containers` 0.5.7.1, which are boot libraries for GHC 8.0.
-* Allow new releases of `lens`, `doctest` and `tasty-doctest`.
 * Added `SUPPORT.markdown`, documenting which GHCs this package will build on.
 * Packaging: requiring `cabal-doctest` 1.0.5 cleans up some ugliness, and lets us DTRT.
-* GHC 8.4 compatibility (bounds).
+* GHC 8.4 compatibility (bounds) and various dependency bumps.
 
 q4c12-twofinger 0.2 (2018-01-17)
 ================================

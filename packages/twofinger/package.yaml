@@ -36,21 +36,21 @@ _common-dependencies:
   - &d-cabal-doctest
     "cabal-doctest >= 1.0.5 && < 1.1"
   - &d-containers
-    "containers >= 0.5.7.1 && < 0.6"
+    "containers >= 0.5.7.1 && < 0.7"
   - &d-deepseq
     "deepseq >= 1.4.2.0 && < 1.5"
   - &d-doctest
-    "doctest >= 0.11.4 && < 0.16"
+    "doctest >= 0.11.4 && < 0.17"
   - &d-lens
-    "lens >= 4.15.4 && < 4.17"
+    "lens >= 4.15.4 && < 4.18"
   - &d-lens-properties
     "lens-properties >= 4.11.1 && < 4.12"
   - &d-QuickCheck
     "QuickCheck >= 2.10.1 && < 2.11 || >= 2.11.3 && < 2.12"
   - &d-semigroupoids
-    "semigroupoids >= 5.2.1 && < 5.3"
+    "semigroupoids >= 5.2.1 && < 5.4"
   - &d-tasty
-    "tasty >= 0.12 && < 0.13 || >= 1.0 && < 1.1"
+    "tasty >= 0.12 && < 0.13 || >= 1.0 && < 1.2"
   - &d-tasty-quickcheck
     "tasty-quickcheck >= 0.9.1 && < 0.11"
 
