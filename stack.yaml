@@ -1,4 +1,4 @@
-resolver: nightly-2018-05-11
+resolver: nightly-2018-07-09
 packages:
   - location: ./packages/xml
   - location: ./packages/mappend
@@ -8,7 +8,10 @@ packages:
   - location: ./packages/foldable-utils
   - location: ./packages/hlist
   - location: ./packages/position
+  - location: ./packages/d2cpack
 extra-deps:
+  #TODO: https://github.com/dhall-lang/dhall-to-cabal/issues/111
+  - dhall-to-cabal-1.2.0.0@rev:0
   #TODO: remove base-prelude extra-dep once it makes it back into Stackage.
   - base-noprelude-4.11.1.0@rev:0
   #TODO: https://github.com/commercialhaskell/stackage/issues/3783 (both of these)

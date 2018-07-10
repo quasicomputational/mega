@@ -7,6 +7,7 @@ packages:
   ./packages/foldable-utils
   ./packages/hlist
   ./packages/position
+  ./packages/d2cpack
 
 repository head.hackage
    url: http://head.hackage.haskell.org/
