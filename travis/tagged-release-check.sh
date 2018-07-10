@@ -10,5 +10,7 @@ shift
 # Gracefully handle TRAVIS_TAG being either absent or the empty string
 if [ "x${TRAVIS_TAG:-}" = x -o "${RELEASE:-false}" = true ]
 then
-    "$CMD" "$@"
+    exec "$CMD" "$@"
+else
+    echo "There is a tag but we're not a RELEASE=true build. Stopping here with honour."
 fi
