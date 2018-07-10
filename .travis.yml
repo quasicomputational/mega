@@ -36,17 +36,16 @@ before_install:
   - mkdir -p "$HOME/.local/bin"
   - export PATH=$HOME/.local/bin:/opt/ghc/bin:$PATH
   - export HPACKVER=0.27.0
-  - curl -sL https://github.com/sol/hpack/releases/download/"$HPACKVER"/hpack_linux.gz | gunzip > ~/.local/bin/hpack
-  - chmod +x ~/.local/bin/hpack
   #Note order: have to generate .cabal files before new-update! See https://github.com/haskell/cabal/issues/5096, though we have to do this at *some* point and it might as well be now.
-  - find packages/ -path 'packages/*/package.yaml' -exec "$HOME/.local/bin/hpack" '{}' ';'
-  - ./travis/before_install."$CMD".sh
+  # Also, this is quick, so don't bother guarding it behind the tag/release check
+  - ./travis/hpack-setup.sh
+  - ./travis/tagged-release-check.sh ./travis/before_install."$CMD".sh
 
 install:
-  - ./travis/install."$CMD".sh
+  - ./travis/tagged-release-check.sh ./travis/install."$CMD".sh
 
 script:
-  - ./travis/script."$CMD".sh
+  - ./travis/tagged-release-check.sh ./travis/script."$CMD".sh
 
 before_deploy:
   - ./travis/before_deploy.sh
