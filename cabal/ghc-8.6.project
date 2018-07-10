@@ -8,7 +8,7 @@ packages:
   ./packages/foldable-utils
   ./packages/hlist
 --  ./packages/position
-  ./packages/d2cpack
+--  ./packages/d2cpack
 
 -- TODO: remove once regularised
 repository head.hackage

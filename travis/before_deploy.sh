@@ -7,11 +7,11 @@ set -euxo pipefail
 
 # Example tag name: release/q4c12-twofinger-0.1
 # We wish to transform that to q4c12-twofinger
-PACKAGE=$( printf -- "$TRAVIS_TAG"
-         | sed 's#^release/#'
-         | rev
-         | cut -d- -f2-
-         | rev
+PACKAGE=$( printf '%s' "$TRAVIS_TAG" \
+         | sed 's#^release/##' \
+         | rev \
+         | cut -d- -f2- \
+         | rev \
          )
 
 mkdir bin/
@@ -20,4 +20,4 @@ stack install "$PACKAGE" --local-bin-path bin/
 
 ARCH=$(uname -m)
 
-find bin/ -type f mv {} {}."$TRAVIS_OS_NAME-$ARCH" \;
+find bin/ -type f -exec mv {} {}."$TRAVIS_OS_NAME-$ARCH" \;
