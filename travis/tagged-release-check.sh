@@ -7,7 +7,8 @@ set -euxo pipefail
 CMD=$1
 shift
 
-if [ -z "${TRAVIS_TAG+x}" -o "${RELEASE:-false}" = true ]
+# Gracefully handle TRAVIS_TAG being either absent or the empty string
+if [ "x${TRAVIS_TAG:-}" = x -o "${RELEASE:-false}" = true ]
 then
     "$CMD" "$@"
 fi
