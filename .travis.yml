@@ -6,12 +6,14 @@ branches:
   only:
     - staging
     - trying
+    #Let Travis trigger on tag pushes matching this pattern, so that the deploy stuff works
+    - "/^release\\/"
 
 #TODO: hlint, cabal check, building a sdist then testing the sdist, checking the sdist isn't missing files, packunused, maybe packdeps?
 matrix:
   fast_finish: true
   include:
-    - env: CMD=stack-werror
+    - env: CMD=stack-werror RELEASE=true
     - env: CMD=stack-nightly
     - env: CMD=cabal-new-build GHCSERIES=8.0
       addons: {apt: {packages: [ghc-8.0.2,cabal-install-2.2], sources: [hvr-ghc]}}
@@ -45,6 +47,21 @@ install:
 
 script:
   - ./travis/script."$CMD".sh
+
+before_deploy:
+  - ./travis/before_deploy.sh
+
+deploy:
+  provider: releases
+  api_key:
+    secure: "EaKcfoWeuoZFXNE1JM9Cgq/T5e6by/udjWo+CDEuNSk0PQ1aLatotJecFGM3Rq2JqNE1VWLIMDukj9zpNw1QtAudalsySBulYK1Jz9G8AAXuKU2E1iQKdaPnivPCpRxnxMMDlscJObUc3W+oyZrdjO8mtpzVx6Y8sZl4oZRYhep03yV0B6H+pJEfKN0ixy2E/4ijx5N53+n7j8gzF2kF2BRqjoqoY2R2jIMDM0gzKrP8/Wuwz5/BPC4zUB4eRJym5mRE9ndCuEiwNYMWcdJ1nwVxYzfNu3KSJ55Fs8kp+AHQdvB5CJwQr+JWXrElNxWtOfJW7FEQF0DclxoDv/dWABsoxsm3Fk81kywaxBKoE9jgmVZSm6f+k2JRHMgZNgEvZLFg6u0KCeT/DczCO9wV3mXbydi1VqEiS1X5tkzGl53GQS2rfSAVAM61Iml/oK3EmD5Bfiv9cyLAItQa58KzhJdiTRGOlPEBDPrkeniCl/1mv2JDGfCEXAZWvjP0wCxLd6osnsZRMbir0uBizuCRsG70vn4LlwT12umdDvOurQzwqIeCl4hGZHM5PYEr2bAMiWXUltt+L9cB+LWLg6tnggmSZOt94tEyLT5Wb5J2xYZxUp5JmfmOW0nT9kanAUTR6gza7qfIntMbklECPhqnH5V4hvV3tgE6JT2tKahMP6k="
+  file-glob: true
+  file: "bin/*"
+  skip-cleanup: true
+  on:
+    repo: quasicomputational/mega
+    tags: true
+    condition: "$RELEASE = true"
 
 notifications:
   email: false
