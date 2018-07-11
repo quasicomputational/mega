@@ -1,4 +1,4 @@
-resolver: nightly-2018-07-09
+resolver: nightly-2018-07-11
 packages:
   - location: ./packages/xml
   - location: ./packages/mappend
@@ -14,6 +14,3 @@ extra-deps:
   - dhall-to-cabal-1.2.0.0@rev:0
   #TODO: remove base-prelude extra-dep once it makes it back into Stackage.
   - base-noprelude-4.11.1.0@rev:0
-  #TODO: https://github.com/commercialhaskell/stackage/issues/3783 (both of these)
-  - criterion-1.5.0.0@rev:0
-  - criterion-measurement-0.1.0.0@rev:0
