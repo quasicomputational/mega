@@ -19,5 +19,3 @@ In roughly decreasing order of likelihood of being useful to anyone else, they a
 * [q4c12-prelude](packages/prelude) is that hippest thing, an alternative `Prelude`. Its module is actually called `Prelude`; use it with `base-noprelude`.
 
   It's not very comprehensive: I'm adding things as I find I need them.
-
-* [q4c12-d2cpack](packages/d2cpack) is an opinionated wrapper around [`dhall-to-cabal`](https://github.com/dhall-lang/dhall-to-cabal) which makes it more like [`hpack`](https://github.com/sol/hpack): it reads its input from a well-known location and auto-determines the output file name.
