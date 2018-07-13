@@ -52,9 +52,7 @@ library:
 
 tests:
   doctests:
-    source-dirs:
-      - test
-    main: Doctest.hs
+    main: test/Doctest.hs
     #Suppress Paths_*
     other-modules: []
     when:
