@@ -100,9 +100,7 @@ library:
 
 executables:
   xhtml2html:
-    source-dirs:
-      - driver/
-    main: xhtml2html.hs
+    main: driver/xhtml2html.hs
     # Suppress Paths_*
     other-modules: []
     dependencies:
@@ -111,9 +109,7 @@ executables:
       - *d-text
 
   gen-entity-set-schema:
-    source-dirs:
-      - driver/
-    main: gen-entity-set-schema.hs
+    main: driver/gen-entity-set-schema.hs
     # Suppress Paths_*
     other-modules: []
     dependencies:
@@ -122,9 +118,7 @@ executables:
       - *d-text
 
   entity-set2dtd:
-    source-dirs:
-      - driver/
-    main: entity-set2dtd.hs
+    main: driver/entity-set2dtd.hs
     # Suppress Paths_*
     other-modules: []
     dependencies:
@@ -134,9 +128,7 @@ executables:
 
 tests:
   golden-tests:
-    source-dirs:
-      - test
-    main: Test.hs
+    main: test/Test.hs
     other-modules: []
     #TODO: clean up these warnings
     ghc-options:
@@ -155,9 +147,7 @@ tests:
 
 benchmarks:
   parse-xml:
-    source-dirs:
-      - bench
-    main: parse-xml.hs
+    main: bench/parse-xml.hs
     other-modules: []
     dependencies:
       - q4c12-xml

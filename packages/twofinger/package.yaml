@@ -89,9 +89,7 @@ library:
 #TODO: cabal-doctest (or perhaps doctest itself) doesn't play nicely with coverage reports.
 tests:
   properties:
-    source-dirs:
-      - test
-    main: Properties.hs
+    main: test/Properties.hs
     other-modules: []
     dependencies:
       - q4c12-twofinger
@@ -102,9 +100,7 @@ tests:
       - *d-tasty
       - *d-tasty-quickcheck
   doctests:
-    source-dirs:
-      - test
-    main: Doctest.hs
+    main: test/Doctest.hs
     other-modules: []
     when:
       #Have to specify this in a conditional because of https://github.com/sol/hpack/issues/255 TODO remove once fixed
