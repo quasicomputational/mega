@@ -37,6 +37,8 @@ End-of-line normalisation is performed. Attribute value normalisation is also pe
 
 `>` is forbidden from appearing as a literal; it must appear as a reference. This is because of the silly `]]>` special-case.
 
+Comments cannot appear inside the doctype. (This is for implementation simplicity. It is not a fundamental limitation and could be lifted.)
+
 What's not in the profile
 -------------------------
 
