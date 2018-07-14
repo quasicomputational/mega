@@ -32,8 +32,6 @@ import Q4C12.Position (Position, startPosition, PositionRange (PositionRange), u
 import Q4C12.TwoFinger (singletonOddA, unitOddA, consOddA)
 import Safe (toEnumMay)
 
---TODO: split text chunks by XML newline and give each chunk its own PositionRange, to make tracking locations in files where end-of-line normalisation has been applied easier.
-
 data QName = QName !(Maybe SText) !SText
   deriving (Show, Eq, Ord, Generic)
 
