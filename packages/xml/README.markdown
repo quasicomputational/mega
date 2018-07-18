@@ -60,6 +60,8 @@ xhtml2html
 
 `xhtml2html` is a utility that does what it says: it takes HTML written in the XML syntax (specifically, in the limited profile of XML defined above) and outputs HTML written in the HTML syntax.
 
+It does not know about XHTML's entities. Pre-process the input to replace them with their equivalent text.
+
 Why?
 ----
 
