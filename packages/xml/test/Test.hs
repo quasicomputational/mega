@@ -14,8 +14,6 @@ import Test.Tasty.ExpectedFailure (expectFail, ignoreTest)
 import Test.Tasty.Golden (goldenVsStringDiff, findByExtension)
 
 import Q4C12.XML (parseXML, renderXML, DoctypeResolver, systemResolver, noEntities)
-import Q4C12.XML.Desc.Parse (parse)
-import Q4C12.XML.Entity (htmlResolver, entitySetSchema, generateDTD)
 import Q4C12.XML.XHTML2HTML (htmlDocument, displayHTMLExceptionPos)
 import qualified Q4C12.XML as XML
 
@@ -29,14 +27,6 @@ main = do
     findByExtension [".in"] "test/golden/parse-render"
   xmlFailTests <- fmap dropExtension <$>
     findByExtension [".fails"] "test/golden/parse-render"
-  htmlTests <- fmap dropExtension <$>
-    findByExtension [".in"] "test/golden/html-entities"
-  htmlTestsWithStdErr <- fmap dropExtension <$>
-    findByExtension [".in"] "test/golden/html-entities"
-  htmlFailTests <- fmap dropExtension <$>
-    findByExtension [".fails"] "test/golden/html-entities"
-  dtdGenerationTests <- fmap dropExtension <$>
-    findByExtension [".in"] "test/golden/dtd-generation"
   x2hTests <- fmap dropExtension <$>
     findByExtension [".in"] "test/golden/xhtml2html"
   x2hFailTests <- fmap dropExtension <$>
@@ -45,12 +35,6 @@ main = do
     [ testGroup "should work" $ testXML exampleResolver <$> xmlTests
     , testGroup "should work with stderr" $ testXMLStderr exampleResolver <$> xmlTestsWithStdErr
     , testGroup "should fail" $ testXMLShouldFail exampleResolver <$> xmlFailTests
-    , testGroup "with HTML entities"
-      [ testGroup "should work" $ testXML htmlResolver <$> htmlTests
-      , testGroup "should work with stderr" $ testXMLStderr htmlResolver <$> htmlTestsWithStdErr
-      , testGroup "should fail" $ testXMLShouldFail htmlResolver <$> htmlFailTests
-      ]
-    , testGroup "DTD generation" $ testDTDGeneration <$> dtdGenerationTests
     , testGroup "xhtml2html" $
         [ testGroup "should work" $ testXHTML2HTML <$> x2hTests
         , testGroup "should fail" $ testXHTML2HTMLShouldFail <$> x2hFailTests
@@ -112,24 +96,10 @@ testXMLStderr resolver baseName = checkExpectancy $
       then ignoreTest
       else id
 
-testDTDGeneration :: TestName -> TestTree
-testDTDGeneration baseName =
-  goldenVsStringDiff baseName (\ref new -> ["diff", "-u", ref, new]) (addExtension baseName "out") $ do
-    xmlMay <- parseXML noEntities <$> STIO.readFile (addExtension baseName "in")
-    case xmlMay of
-      (Left err, warns) -> fail $ LT.unpack $ LTB.toLazyText $ XML.displayError err <> "\n" <> XML.displayWarnings warns
-      (Right xml, warns) -> do
-        unless (null warns) $
-          fail $ LT.unpack $ LTB.toLazyText $ XML.displayWarnings warns
-        case parse entitySetSchema xml of
-          Nothing -> fail "Could not parse the entity set."
-          Just entities ->
-            pure $ LTEnc.encodeUtf8 $ LTB.toLazyText $ generateDTD entities
-
 testXHTML2HTML :: TestName -> TestTree
 testXHTML2HTML baseName =
   goldenVsStringDiff baseName (\ref new -> ["diff", "-u", ref, new]) (addExtension baseName "out") $ do
-    xmlMay <- parseXML htmlResolver <$> STIO.readFile (addExtension baseName "in")
+    xmlMay <- parseXML noEntities <$> STIO.readFile (addExtension baseName "in")
     case xmlMay of
       (Left err, warns) -> fail $ LT.unpack $ LTB.toLazyText $ XML.displayError err <> "\n" <> XML.displayWarnings warns
       (Right xml, warns) -> do
@@ -143,7 +113,7 @@ testXHTML2HTML baseName =
 testXHTML2HTMLShouldFail :: TestName -> TestTree
 testXHTML2HTMLShouldFail baseName =
   goldenVsStringDiff baseName (\ref new -> ["diff", "-u", ref, new]) (addExtension baseName "out") $ do
-    xmlMay <- parseXML htmlResolver <$> STIO.readFile (addExtension baseName "fails")
+    xmlMay <- parseXML noEntities <$> STIO.readFile (addExtension baseName "fails")
     case xmlMay of
       (Left err, warns) -> fail $ LT.unpack $ LTB.toLazyText $ XML.displayError err <> "\n" <> XML.displayWarnings warns
       (Right xml, warns) -> do

@@ -11,7 +11,6 @@ license-file:
 extra-doc-files:
   - README.markdown
 extra-source-files:
-  - data/html.xml
   - test/golden/**/*.in
   - test/golden/**/*.out
   - test/golden/**/*.errout
@@ -75,9 +74,7 @@ library:
     - Q4C12.XML.Desc.RApplicative
     - Q4C12.XML.Desc.RELAX
     - Q4C12.XML.Desc.TH
-    - Q4C12.XML.Entity
     - Q4C12.XML.Internal
-    - Q4C12.XML.TH
     - Q4C12.XML.XHTML2HTML
   # Suppress Paths_*
   other-modules: []
@@ -101,24 +98,6 @@ library:
 executables:
   xhtml2html:
     main: driver/xhtml2html.hs
-    # Suppress Paths_*
-    other-modules: []
-    dependencies:
-      - q4c12-xml
-      - *d-q4c12-prelude
-      - *d-text
-
-  gen-entity-set-schema:
-    main: driver/gen-entity-set-schema.hs
-    # Suppress Paths_*
-    other-modules: []
-    dependencies:
-      - q4c12-xml
-      - *d-q4c12-prelude
-      - *d-text
-
-  entity-set2dtd:
-    main: driver/entity-set2dtd.hs
     # Suppress Paths_*
     other-modules: []
     dependencies:
