@@ -1,4 +1,4 @@
-module Q4C12.XML.XHTML2HTML
+module Q4C12.XHTML2HTML
   ( htmlDocument
   , HTMLException
   , displayHTMLExceptionPos

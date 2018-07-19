@@ -1,5 +1,7 @@
 packages:
-  ./packages/xml
+  ./packages/xml-core
+  ./packages/xml-desc
+  ./packages/xhtml2html
   ./packages/mappend
   ./packages/twofinger
   ./packages/prelude

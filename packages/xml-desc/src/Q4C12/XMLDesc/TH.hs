@@ -2,7 +2,7 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE TypeFamilies #-}
 --TODO: we don't need the full weight of TemplateHaskell, surely---we could get away with just TemplateHaskellQuotes? Except GHC doesn't like splices inside quotes, despite that still only being sugar...
-module Q4C12.XML.Desc.TH
+module Q4C12.XMLDesc.TH
   ( pat, patGroup, imposs
   , makeRPlus
   , fromPatToExp
@@ -17,7 +17,7 @@ import qualified Data.List as List
 import Language.Haskell.TH (Q, Exp, Pat, Name)
 import qualified Language.Haskell.TH as TH
 
-import Q4C12.XML.Desc.RApplicative (rfmap, rplus, rempty)
+import Q4C12.XMLDesc.RApplicative (rfmap, rplus, rempty)
 
 --TODO: separate this code's two functions: one, the iso generation; and two, the rplus generation. This will come in handy for {unit, single, double}Prod, adding tuples to the left/right side of things, etc. (Note to self: that will likely require renaming imposs to impossR, and adding an impossL.)
 

@@ -3,7 +3,7 @@
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE UndecidableSuperClasses #-}
-module Q4C12.XML.Desc.RApplicative
+module Q4C12.XMLDesc.RApplicative
   ( RFunctor (rfmap)
   , RPlus (rempty, rplus), rchoice
   , RPlusApplyR (ActionR, rconsR), rright

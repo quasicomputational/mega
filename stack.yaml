@@ -1,6 +1,8 @@
 resolver: nightly-2018-07-11
 packages:
-  - location: ./packages/xml
+  - location: ./packages/xml-core
+  - location: ./packages/xml-desc
+  - location: ./packages/xhtml2html
   - location: ./packages/mappend
   - location: ./packages/twofinger
   - location: ./packages/prelude

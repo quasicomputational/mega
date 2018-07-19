@@ -1,4 +1,4 @@
-module Q4C12.XML.Desc
+module Q4C12.XMLDesc
   ( module Export
   , interleave
   , oddWSDropComments
@@ -9,7 +9,7 @@ module Q4C12.XML.Desc
 
 import Q4C12.TwoFinger (unconsOddA, consOddA, singletonOddA)
 
-import Q4C12.XML.Desc.Class as Export
+import Q4C12.XMLDesc.Class as Export
   ( Desc, Pos, Cmt, El, OddFlow, EvenFlow, DT
   , evenUp, attrF, oddWS, oddTxPos, oddTxNoPos, nonTerminalEven, nonTerminalOdd
   , datatypeDT, tokenDT, nonTerminalE
@@ -17,14 +17,14 @@ import Q4C12.XML.Desc.Class as Export
   , elementPosMixed, elementMixed, elementDT
   , naturalZeroDT, naturalOneDT, langDT, ncNameDT, stringTokenDT
   )
-import Q4C12.XML.Desc.RApplicative as Export
+import Q4C12.XMLDesc.RApplicative as Export
   ( RFunctor (rfmap)
   , RPlus (rplus, rempty)
   , RPlusApplyR (ActionR, rconsR), rright
   , RAlternative (rnil, rmany, rsome), rcons
   , roptional
   )
-import Q4C12.XML.Desc.TH as Export
+import Q4C12.XMLDesc.TH as Export
   ( pat, patGroup, imposs, makeRPlus )
 
 interleave
