@@ -1,18 +1,20 @@
 module Q4C12.XML.Desc
   ( module Export
   , interleave
+  , oddWSDropComments
+  , flowEvenPreWSDropComments
+  , flowWSEDropComments
   )
   where
 
 import Q4C12.TwoFinger (unconsOddA, consOddA, singletonOddA)
 
 import Q4C12.XML.Desc.Class as Export
-  ( Desc, Pos, El, OddFlow, EvenFlow, DT
-  , evenUp, attrF, oddWS, oddTx, oddTxPos, nonTerminalEven, nonTerminalOdd
+  ( Desc, Pos, Cmt, El, OddFlow, EvenFlow, DT
+  , evenUp, attrF, oddWS, oddTxPos, oddTxNoPos, nonTerminalEven, nonTerminalOdd
   , datatypeDT, tokenDT, nonTerminalE
   , uattrF
   , elementPosMixed, elementMixed, elementDT
-  , flowEvenPreWS, flowWSE
   , naturalZeroDT, naturalOneDT, langDT, ncNameDT, stringTokenDT
   )
 import Q4C12.XML.Desc.RApplicative as Export
@@ -38,3 +40,27 @@ interleave el tx = rfmap (from doubleProd . iso f g) $ rconsR
     f (pairs, a) = foldr (uncurry consOddA) (singletonOddA a) pairs
     g :: TwoFingerOddA e a -> ([(a, e)], a)
     g = unfoldr' unconsOddA
+
+oddWSDropComments
+  :: (Desc tag)
+  => OddFlow tag ()
+oddWSDropComments =
+  rfmap (iso (const ()) (const mempty)) oddWS
+
+flowWSEDropComments
+  :: (Desc tag)
+  => El tag a
+  -> EvenFlow tag a
+flowWSEDropComments
+  = rfmap (dropUnit . from singleProd)
+  . evenUp oddWSDropComments
+  . rfmap singleProd
+
+flowEvenPreWSDropComments
+  :: (Desc tag)
+  => EvenFlow tag a
+  -> OddFlow tag a
+flowEvenPreWSDropComments p
+  = rfmap (from singleProd)
+  $ rconsR p
+  $ rfmap unitProd oddWSDropComments

@@ -68,93 +68,150 @@ isXMLSpace '\n' = True
 isXMLSpace '\r' = True
 isXMLSpace _ = False
 
-newtype Markup pos = Markup { getMarkup :: TwoFingerOddA (Element pos) (Seq (pos, LText)) }
+newtype Comment pos = Comment { getComment :: Seq (pos, LText) }
   deriving (Show, Generic)
 
-instance (NFData pos) => NFData (Markup pos)
+instance (NFData pos) => NFData (Comment pos)
 
-instance Functor Markup where
-  fmap f (Markup ilv) = Markup $ bimap (fmap f) (fmap $ first f) ilv
+-- Comments (of type cmt) and text.
+newtype Content cmt pos = Content { getContent :: TwoFingerOddA cmt (Seq (pos, LText)) }
+  deriving (Show, Generic)
 
-instance Semigroup (Markup pos) where
+instance (NFData cmt, NFData pos) => NFData (Content cmt pos)
+
+instance Bifunctor Content where
+  bimap f g (Content tree) =
+    Content $ bimap f (fmap $ first g) tree
+
+instance Functor (Content cmt) where
+  fmap = bimap id
+
+instance Semigroup (Content cmt pos) where
+  Content a <> Content b = Content $ a <> b
+
+instance Monoid (Content cmd pos) where
+  mempty = Content mempty
+  mappend = (<>)
+
+instance (pos ~ ()) => IsString (Content cmt pos) where
+  fromString = contentText . fromString
+
+-- | Note: treats comment-only nodes as null.
+contentNull :: Content cmt pos -> Bool
+contentNull = all (all (LT.null . snd)) . getContent
+
+contentTextPos :: pos -> LText -> Content cmt pos
+contentTextPos pos t = Content $ singletonOddA $ pure (pos, t)
+
+-- This is a monoid homomorphism:
+--   contentText (a <> b) = contentText a <> contentText b
+-- (up to internal implementation details)
+contentText :: LText -> Content cmt ()
+contentText = contentTextPos ()
+
+contentComment :: cmt -> Content cmt pos
+contentComment = Content . unitOddA
+
+newtype Markup cmt pos = Markup { getMarkup :: TwoFingerOddA (Element cmt pos) (Content cmt pos)  }
+  deriving (Show, Generic)
+
+instance (NFData cmt, NFData pos) => NFData (Markup cmt pos)
+
+instance Bifunctor Markup where
+  bimap f g (Markup ilv) =
+    Markup $ bimap (bimap f g) (bimap f g) ilv
+
+instance Functor (Markup cmt) where
+  fmap = bimap id
+
+instance Semigroup (Markup cmt pos) where
   Markup a <> Markup b = Markup $ a <> b
 
-instance Monoid (Markup pos) where
+instance Monoid (Markup cmt pos) where
   mempty = Markup mempty
   mappend = (<>)
 
-instance (pos ~ ()) => IsString (Markup pos) where
+instance (pos ~ ()) => IsString (Markup cmt pos) where
   fromString = markupText . fromString
 
-markupNull :: Markup pos -> Bool
-markupNull (Markup tree) = biall (const False) (all (LT.null . snd)) tree
+-- | Note: treats comment-only nodes as null.
+markupNull :: Markup cmt pos -> Bool
+markupNull (Markup tree) = biall (const False) contentNull tree
 
 --TODO: shouldn't attr values be strict?
-data Element pos = Element
+data Element cmt pos = Element
   { _ename :: QName
   , _eattrs :: Map QName (pos, Seq (pos, LText))
-  , _ebody :: Markup pos
+  , _ebody :: Markup cmt pos
   , elementPosition :: pos
   }
   deriving (Show, Functor, Generic)
 
-instance (NFData pos) => NFData (Element pos)
+instance Bifunctor Element where
+  bimap f g (Element name attrs body pos) =
+    Element name (fmap (bimap g (fmap (first g))) attrs) (bimap f g body) (g pos)
 
-eattrs :: Lens' (Element pos) (Map QName (pos, Seq (pos, LText)))
+instance (NFData cmt, NFData pos) => NFData (Element cmt pos)
+
+eattrs :: Lens' (Element cmt pos) (Map QName (pos, Seq (pos, LText)))
 eattrs f (Element n attrs body pos) = f attrs <&>
   \attrs' -> Element n attrs' body pos
 
-markupElement :: Element pos -> Markup pos
+markupElement :: Element cmt pos -> Markup cmt pos
 markupElement = Markup . unitOddA
 
-markupTextPos :: pos -> LText -> Markup pos
-markupTextPos pos t = Markup $ singletonOddA $ Seq.singleton (pos, t)
+markupTextPos :: pos -> LText -> Markup cmt pos
+markupTextPos pos t = Markup $ singletonOddA $ contentTextPos pos t
 
-markupText :: LText -> Markup ()
+markupText :: LText -> Markup cmt ()
 markupText = markupTextPos ()
 
-markupBuilder :: TBuilder -> Markup ()
+markupBuilder :: TBuilder -> Markup cmt ()
 markupBuilder = markupText . LTB.toLazyText
 
-markupSText :: SText -> Markup ()
+markupSText :: SText -> Markup cmt ()
 markupSText = markupSTextPos ()
 
-markupSTextPos :: pos -> SText -> Markup pos
+markupSTextPos :: pos -> SText -> Markup cmt pos
 markupSTextPos pos = markupTextPos pos . LT.fromStrict
 
-element :: QName -> Markup () -> Element ()
+element :: QName -> Markup cmt () -> Element cmt ()
 element qname markup = Element qname mempty markup ()
 
 --mappends on the left, to take priority
-addAttrs :: Map QName LText -> Element () -> Element ()
+addAttrs :: Map QName LText -> Element cmt () -> Element cmt ()
 addAttrs attrs = eattrs <>~ (attrs <&> \a -> ((), Seq.singleton ((), a)))
 
 at :: (Ord k, Functor f) => k -> (Maybe v -> f (Maybe v)) -> Map k v -> f (Map k v)
 at = flip Map.alterF
 
-addAttr :: QName -> LText -> Element () -> Element ()
+addAttr :: QName -> LText -> Element cmt () -> Element cmt ()
 addAttr qname val = set (eattrs . at qname) (Just ((), Seq.singleton ((), val)))
 
-addAttrS :: QName -> SText -> Element () -> Element ()
+addAttrS :: QName -> SText -> Element cmt () -> Element cmt ()
 addAttrS qname = addAttr qname . LT.fromStrict
 
-addUAttrS :: SText -> SText -> Element () -> Element ()
+addUAttrS :: SText -> SText -> Element cmt () -> Element cmt ()
 addUAttrS name = addUAttr name . LT.fromStrict
 
-addUAttr :: SText -> LText -> Element () -> Element ()
+addUAttr :: SText -> LText -> Element cmt () -> Element cmt ()
 addUAttr = addAttr . uname
 
-rngelem :: SText -> Markup () -> Element ()
+rngelem :: SText -> Markup cmt () -> Element cmt ()
 rngelem = element . rngname
 
-helem :: SText -> Markup () -> Element ()
+helem :: SText -> Markup cmt () -> Element cmt ()
 helem = element . hname
 
-renderXML :: Element pos -> TBuilder
+-- | Note: this assumes that the comments are well-formed: they must
+-- not contain a final '-' or '--' anywhere. Also note that
+-- end-of-line conversion will mean that the distinction between CRLF,
+-- CR and LF will be lost upon re-parsing.
+renderXML :: Element (Comment pos) pos' -> TBuilder
 renderXML = execWriter . renderElement
 
-renderElement :: Element pos -> Writer TBuilder ()
-renderElement (Element name attrs (Markup body) _) = flip evalStateT 1 $ do
+renderElement :: Element (Comment pos) pos' -> Writer TBuilder ()
+renderElement (Element name attrs markup _) = flip evalStateT 1 $ do
   lift $ tell "<"
   cur <- get
   lift $ renderQName cur name
@@ -164,11 +221,11 @@ renderElement (Element name attrs (Markup body) _) = flip evalStateT 1 $ do
     n <- get
     lift $ renderQName n attrName
     lift $ tell "=\""
-    lift $ traverse_ (renderAttrValue . snd) chunks
+    lift $ traverse_ (renderAttrText . snd) chunks
     lift $ tell "\""
     renderNamespaceFor attrName
   lift $ tell ">"
-  lift $ bitraverse_ renderElement (traverse_ $ traverse_ renderContent) body
+  lift $ renderMarkup markup
   lift $ tell "</"
   lift $ renderQName cur name
   lift $ tell ">"
@@ -187,15 +244,30 @@ renderElement (Element name attrs (Markup body) _) = flip evalStateT 1 $ do
     renderNamespaceFor (QName (Just ns) _) = do
       cur <- get
       lift $ tell $ bprint (" xmlns:n" . int . "=\"") cur
-      lift $ renderAttrValue $ LT.fromStrict ns
+      lift $ renderAttrText $ LT.fromStrict ns
       lift $ tell "\""
       modify (+ 1)
 
-renderContent :: LText -> Writer TBuilder ()
-renderContent = tell . LTB.fromText . ST.replace "\r" "&#xD;" . ST.replace "<" "&lt;" . ST.replace ">" "&gt;" . ST.replace "&" "&amp;" . LT.toStrict
+renderMarkup :: Markup (Comment pos) pos' -> Writer TBuilder ()
+renderMarkup (Markup tree) =
+  bitraverse_ renderElement renderContent tree
 
-renderAttrValue :: LText -> Writer TBuilder ()
-renderAttrValue = tell . LTB.fromText . ST.replace "\n" "&#xA;" . ST.replace "\r" "&#xD;" . ST.replace "\t" "&#x9;" . ST.replace "\"" "&quot;" . ST.replace "<" "&lt;" . ST.replace ">" "&gt;" . ST.replace "&" "&amp;" . LT.toStrict
+renderContent :: Content (Comment pos) pos' -> Writer TBuilder ()
+renderContent (Content tree) =
+  bitraverse_ renderComment (traverse (renderBodyText . snd)) tree
+
+renderComment :: Comment pos -> Writer TBuilder ()
+renderComment (Comment parts) = do
+  tell "<!--"
+  for_ parts $ \ (_, cmt) ->
+    tell $ LTB.fromLazyText cmt
+  tell "-->"
+
+renderBodyText :: LText -> Writer TBuilder ()
+renderBodyText = tell . LTB.fromText . ST.replace "\r" "&#xD;" . ST.replace "<" "&lt;" . ST.replace ">" "&gt;" . ST.replace "&" "&amp;" . LT.toStrict
+
+renderAttrText :: LText -> Writer TBuilder ()
+renderAttrText = tell . LTB.fromText . ST.replace "\n" "&#xA;" . ST.replace "\r" "&#xD;" . ST.replace "\t" "&#x9;" . ST.replace "\"" "&quot;" . ST.replace "<" "&lt;" . ST.replace ">" "&gt;" . ST.replace "&" "&amp;" . LT.toStrict
 
 --(prefix, local); this is used before we have mapped prefices to namespaces.
 data RawQName = RawQName (Maybe SText) SText
@@ -354,9 +426,27 @@ displayWarning (AttributeNormalisation pos) = bprint
   ("Warning: Performing attribute normalisation at " . position . ".")
   pos
 
-data UElement = UElement RawQName [(RawQName, PositionRange, UContent)] (TwoFingerOddA UElement UContent) PositionRange
+data UElement = UElement
+  RawQName
+  [(RawQName, PositionRange, UText)]
+  UMarkup
+  PositionRange
 
-newtype UContent = UContent (TwoFingerOddA (PositionRange, SText) (Seq (PositionRange, SText)))
+newtype UMarkup =
+  UMarkup { getUMarkup :: TwoFingerOddA UElement UContent }
+
+instance Semigroup UMarkup where
+  UMarkup a <> UMarkup b = UMarkup (a <> b)
+
+instance Monoid UMarkup where
+  mempty = UMarkup mempty
+  mappend = (<>)
+
+umarkupText :: PositionRange -> SText -> UMarkup
+umarkupText pos t = UMarkup $ singletonOddA $ ucontentText pos t
+
+newtype UContent =
+  UContent (TwoFingerOddA (Comment PositionRange) UText)
 
 instance Semigroup UContent where
   UContent a <> UContent b = UContent (a <> b)
@@ -365,8 +455,31 @@ instance Monoid UContent where
   mempty = UContent mempty
   mappend = (<>)
 
-resolveContent :: (SText -> Maybe LText) -> UContent -> Validation (NonEmptyDList ResolveError) (Seq (PositionRange, LText))
-resolveContent entity (UContent parts) = bifoldMapM resolveEntity (pure . fmap (fmap LT.fromStrict)) parts
+ucontentText :: PositionRange -> SText -> UContent
+ucontentText pos t = UContent $ singletonOddA $ utext pos t
+
+ucontentComment :: Comment PositionRange -> UContent
+ucontentComment = UContent . unitOddA
+
+-- Straightforwards text interspersed with unresolved entity references.
+newtype UText =
+  UText (TwoFingerOddA (PositionRange, SText) (Seq (PositionRange, SText)))
+
+instance Semigroup UText where
+  UText a <> UText b = UText (a <> b)
+
+instance Monoid UText where
+  mempty = UText mempty
+  mappend = (<>)
+
+utext :: PositionRange -> SText -> UText
+utext pos t = UText $ singletonOddA $ Seq.singleton (pos, t)
+
+resolveText
+  :: (SText -> Maybe LText)
+  -> UText
+  -> Validation (NonEmptyDList ResolveError) (Seq (PositionRange, LText))
+resolveText entity (UText parts) = bifoldMapM resolveEntity (pure . fmap (fmap LT.fromStrict)) parts
   where
     resolveEntity (pos, "amp") = pure $ Seq.singleton (pos, "&")
     resolveEntity (pos, "gt") = pure $ Seq.singleton (pos, ">")
@@ -377,17 +490,47 @@ resolveContent entity (UContent parts) = bifoldMapM resolveEntity (pure . fmap (
       Nothing -> failure $ NEDList.singleton $ UnknownEntity pos name
       Just ent -> pure $ Seq.singleton (pos, ent)
 
-resolveElement :: (SText -> Maybe LText) -> Maybe SText -> Map SText SText -> UElement -> Validation (NonEmptyDList ResolveError) (Element PositionRange)
+resolveContent
+  :: (SText -> Maybe LText)
+  -> UContent
+  -> Validation (NonEmptyDList ResolveError) (Content (Comment PositionRange) PositionRange)
+resolveContent entity (UContent tree) = fmap Content $
+  traverse (resolveText entity) tree
+
+resolveMarkup
+  :: (SText -> Maybe LText)
+  -> Maybe SText
+  -> Map SText SText
+  -> UMarkup
+  -> Validation (NonEmptyDList ResolveError) (Markup (Comment PositionRange) PositionRange)
+resolveMarkup entity defaultNamespace namespaces (UMarkup tree) = fmap Markup $
+  bitraverse (resolveElement entity defaultNamespace namespaces) (resolveContent entity) tree
+
+resolveElement
+  :: (SText -> Maybe LText)
+  -> Maybe SText
+  -> Map SText SText
+  -> UElement
+  -> Validation (NonEmptyDList ResolveError) (Element (Comment PositionRange) PositionRange)
 resolveElement entity defaultNamespace namespaces (UElement rawName rawAttrs rawBody pos) = exceptToValidation $ do
   --TODO: can do more of this in parallel and report more errors at once than we currently are.
-  rawAttrs' <- validationToExcept $ for rawAttrs $ \(rawAttrName, attrPos, rawContent) ->
-    (,,) rawAttrName attrPos <$> resolveContent entity rawContent
-  let prepartitioned :: [HSum '[(PositionRange, SText), MapPend SText (NonEmpty (PositionRange, SText)), (PositionRange, RawQName, Seq (PositionRange, LText))]]
+  -- Attribute checking and namespace definition extraction.
+  -- First, we go over the attributes and split them into three categories: default namespace declarations, named namespace declarations, and content-bearing attributes.
+  rawAttrs' <- validationToExcept $ for rawAttrs $ \(rawAttrName, attrPos, rawText) ->
+    (,,) rawAttrName attrPos <$> resolveText entity rawText
+  let prepartitioned
+        :: [ HSum
+             '[ (PositionRange, SText)
+              , MapPend SText (NonEmpty (PositionRange, SText))
+              , (PositionRange, RawQName, Seq (PositionRange, LText))
+              ]
+           ]
       prepartitioned = flip fmap rawAttrs' $ \(RawQName mpref local, nameRange, value) ->
         case mpref of
           Nothing | local == "xmlns" -> HSumHere (nameRange, LT.toStrict $ foldMap snd value)
           Just "xmlns" -> HSumThere $ HSumHere $ MapPend.singleton local $ pure (nameRange, LT.toStrict $ foldMap snd value)
           _ -> HSumThere $ HSumThere $ HSumHere (nameRange, RawQName mpref local, value)
+  -- Go over our three lists of attribute types and verify appropriate uniqueness and well-formedness for each of them.
   case partitionHSum prepartitioned of
     HProdListCons defaultNamespaces (HProdListCons collatedNamespaceBindings (HProdListCons otherAttrs HProdListNil)) -> do
       defaultNamespace' <- validationToExcept $ case defaultNamespaces of
@@ -417,9 +560,10 @@ resolveElement entity defaultNamespace namespaces (UElement rawName rawAttrs raw
       attrs <- validationToExcept $ for attrSets $ \case
         (r, value) :| [] -> pure (r, value)
         (r0, _) :| ((r1, _) : rest) -> failure $ NEDList.singleton $ DuplicateAttrs r0 (r1 :| fmap fst rest)
+      -- Finally, recurse into our children.
       body <- validationToExcept $
-        bitraverse (resolveElement entity defaultNamespace' namespaces') (resolveContent entity) rawBody
-      pure $ Element qname attrs (Markup body) pos
+        resolveMarkup entity defaultNamespace' namespaces' rawBody
+      pure $ Element qname attrs body pos
 
 --TODO: this is very simplistic, but it should do the job. Might think about maybe branching out to XML catalogs, but this is fine.
 data DoctypeResolver
@@ -435,11 +579,56 @@ publicResolver = DoctypeResolverPublic
 noEntities :: DoctypeResolver
 noEntities = DoctypeResolverSystem mempty
 
-parseXML :: DoctypeResolver -> SText -> (Either XMLError (Element PositionRange), [XMLWarning])
-parseXML doctypeResolver input = fmap toList $ runWriter $ runExceptT $ evalStateT (toplevel doctypeResolver) (input, startPosition)
+data Parsed = Parsed
+  { _preRootComments :: Seq (Comment PositionRange)
+  , _rootElement :: Element (Comment PositionRange) PositionRange
+  , _postRootComments :: Seq (Comment PositionRange)
+  }
+  deriving (Show)
 
-toplevel :: DoctypeResolver -> Parser (Element PositionRange)
-toplevel doctypeResolver = do
+preRootComments :: Lens' Parsed (Seq (Comment PositionRange))
+preRootComments k p =
+  (\ x -> p { _preRootComments = x }) <$> k (_preRootComments p)
+
+rootElement :: Lens' Parsed (Element (Comment PositionRange) PositionRange)
+rootElement k p =
+  (\ x -> p { _rootElement = x }) <$> k (_rootElement p)
+
+postRootComments :: Lens' Parsed (Seq (Comment PositionRange))
+postRootComments k p =
+  (\ x -> p { _postRootComments = x }) <$> k (_postRootComments p)
+
+stripCommentsContent :: Content cmt pos -> Content cmt' pos
+stripCommentsContent (Content tree) =
+  Content $ singletonOddA $ fold tree
+
+stripCommentsMarkup :: Markup cmt pos -> Markup cmt' pos
+stripCommentsMarkup (Markup tree) =
+  Markup (bimap stripComments stripCommentsContent tree)
+
+stripComments :: Element cmt pos -> Element cmt' pos
+stripComments (Element qn attrs markup pos) =
+  Element qn attrs (stripCommentsMarkup markup) pos
+
+parseXML
+  :: DoctypeResolver
+  -> SText
+  -> (Either XMLError (Element cmt PositionRange), [XMLWarning])
+parseXML doctypeResolver input =
+  first (fmap $ stripComments . view rootElement) $
+    parseXMLCommented doctypeResolver input
+
+parseXMLCommented
+  :: DoctypeResolver
+  -> SText
+  -> (Either XMLError Parsed, [XMLWarning])
+parseXMLCommented doctypeResolver input = fmap toList $ runWriter $ runExceptT $ evalStateT (toplevel doctypeResolver mempty) (input, startPosition)
+
+toplevel
+  :: DoctypeResolver
+  -> Seq (Comment PositionRange)
+  -> Parser Parsed
+toplevel doctypeResolver preCmts = do
   void xmlSpaces
   (input, pos) <- get
   when (ST.null input) $
@@ -451,9 +640,12 @@ toplevel doctypeResolver = do
         case res of
           SeenLTElement e -> do
             endPos <- gets snd
-            finish endPos
-            lift $ withExceptT (ResolveError . toNonEmpty) $ validationToExcept $ resolveElement (const Nothing) Nothing defaultNamespaces e
-          SeenLTComment -> toplevel doctypeResolver
+            postCmts <- finish endPos mempty
+            e' <- lift $ withExceptT (ResolveError . toNonEmpty) $ validationToExcept $
+              resolveElement (const Nothing) Nothing defaultNamespaces e
+            pure $ Parsed preCmts e' postCmts
+          SeenLTComment cmt ->
+            toplevel doctypeResolver (preCmts Seq.|> cmt)
           SeenLTSlash -> lift $ throwE $ PreDoctypeEndTag pos
           SeenLTDOCTYPE rootName Nothing -> seenDoctype pos rootName (const Nothing)
           SeenLTDOCTYPE rootName (Just doctype) -> case doctypeResolver of
@@ -487,23 +679,27 @@ toplevel doctypeResolver = do
                 case e of
                   UElement name _ _ posRange -> unless (rootName == name) $
                     lift $ throwE $ DoctypeRootNameMismatch doctypePos posRange
-                finish pos
-                lift $ withExceptT (ResolveError . toNonEmpty) $ validationToExcept $ resolveElement entityFunc Nothing defaultNamespaces e
-              SeenLTComment -> seenDoctype doctypePos rootName entityFunc
+                postCmts <- finish pos mempty
+                e' <- lift $ withExceptT (ResolveError . toNonEmpty) $
+                  validationToExcept $ resolveElement entityFunc Nothing defaultNamespaces e
+                pure $ Parsed preCmts e' postCmts
+              SeenLTComment _ ->
+                seenDoctype doctypePos rootName entityFunc
               SeenLTSlash -> lift $ throwE $ PostDoctypeEndTag pos
               SeenLTDOCTYPE _ _ -> lift $ throwE $ StrayDoctype pos)
         ]
-    finish rootPos = do
+    finish rootPos postCmts = do
       void xmlSpaces
       (input, pos) <- get
-      unless (ST.null input) $
-        chooseFrom (lift $ throwE $ TrailingText pos)
+      if (ST.null input)
+        then pure postCmts
+        else chooseFrom (lift $ throwE $ TrailingText pos)
           [ ("&", lift $ throwE $ TrailingRef pos)
           , ("<", do
               res <- xmlSeenLT pos
               case res of
                 SeenLTElement _ -> lift $ throwE $ TrailingStartTag rootPos pos
-                SeenLTComment -> finish rootPos
+                SeenLTComment cmt -> finish rootPos (postCmts Seq.|> cmt)
                 SeenLTSlash -> lift $ throwE $ TrailingEndTag rootPos pos
                 SeenLTDOCTYPE _ _ -> lift $ throwE $ StrayDoctype pos)
           ]
@@ -576,7 +772,7 @@ xmlRawQName = do
 
 data SeenLTRes
   = SeenLTElement UElement
-  | SeenLTComment
+  | SeenLTComment (Comment PositionRange)
   | SeenLTDOCTYPE RawQName (Maybe DOCTYPE)
   | SeenLTSlash
 
@@ -584,14 +780,54 @@ data TagStyle = OpenTag | SelfClosing
 
 xmlSeenLT :: Position -> Parser SeenLTRes
 xmlSeenLT startPos = chooseFrom (SeenLTElement <$> goElement)
-  [ ("!--", do
-        void $ charsUntil "--"
-        mandatory ">" $ XMLBadSyntax "Expected > to end a comment"
-        pure SeenLTComment)
+  [ ("!--", SeenLTComment . Comment <$> goComment)
   , ("!DOCTYPE", uncurry SeenLTDOCTYPE <$> xmlSeenDOCTYPE startPos)
   , ("/", pure SeenLTSlash)
   ]
   where
+    goComment :: Parser (Seq (PositionRange, LText))
+    goComment = do
+      valStartPos <- gets snd
+      chooseFrom commentNormalChunk
+        [ ("-", do
+            postDashPos <- gets snd
+            chooseFrom ((Seq.<|) (PositionRange valStartPos postDashPos, "-") <$> goComment)
+              [ ("-", do
+                  mandatory ">" $ XMLBadSyntax "Expected > to end a comment"
+                  pure mempty)
+              ])
+        --TODO issue warnings for comment lossiness?
+        , ("\r", do
+            postCRPos <- gets snd
+            chooseFrom ((Seq.<|) (PositionRange valStartPos postCRPos, "\n") <$> goComment)
+              [ ("\n", do
+                  postNLPos <-  gets snd
+                  (Seq.<|) (PositionRange valStartPos postNLPos, "\n") <$> goComment)
+              ])
+        , ("\n", do
+            postNLPos <- gets snd
+            (Seq.<|) (PositionRange valStartPos postNLPos, "\n") <$> goComment)
+        ]
+
+    commentNormalChunk :: Parser (Seq (PositionRange, LText))
+    commentNormalChunk = do
+      (input, chunkStartPos) <- get
+      let normalChar = \case
+            '-' -> False
+            '\r' -> False
+            '\n' -> False
+            _ -> True
+          (candidates, input') = ST.span normalChar input
+          endPos = updatePosition chunkStartPos candidates
+      put (input', endPos)
+      when (ST.null input') $
+        lift $ throwE $ XMLUnexpectedEoF "end of comment"
+      case ST.span isXMLChar candidates of
+        (valid, rest) -> unless (ST.null rest) $
+          lift $ throwE $ XMLNonChar $ updatePosition startPos valid
+      rest <- goComment
+      pure $ (PositionRange startPos endPos, LT.fromStrict candidates) Seq.<| rest
+
     goElement :: Parser UElement
     goElement = do
       oname <- xmlRawQName
@@ -609,12 +845,14 @@ xmlSeenLT startPos = chooseFrom (SeenLTElement <$> goElement)
           pure body
       endPos <- gets snd
       pure $ UElement oname attrs body (PositionRange startPos endPos)
+
     goAttrsAndGTOrSelfClose = do
       spaces <- xmlSpaces
       chooseFrom (goAttr spaces)
         [ ("/>", pure ([], SelfClosing))
         , (">", pure ([], OpenTag))
         ]
+
     goAttr spaces = do
       attrNameStartPos <- gets snd
       unless spaces $
@@ -629,7 +867,8 @@ xmlSeenLT startPos = chooseFrom (SeenLTElement <$> goElement)
         , ("'", attributeValue True)
         ]
       first ((:) (name, PositionRange attrNameStartPos attrNameEndPos, value)) <$> goAttrsAndGTOrSelfClose
-    attributeValue :: Bool -> Parser UContent
+
+    attributeValue :: Bool -> Parser UText
     attributeValue isSingleQuoted = do
       valStartPos <- gets snd
       chooseFrom (attributeValueNormalChunk isSingleQuoted)
@@ -642,21 +881,22 @@ xmlSeenLT startPos = chooseFrom (SeenLTElement <$> goElement)
         , ("\r", do
             lift $ lift $ tell $ DList.singleton $ AttributeNormalisation valStartPos
             postCRPos <- gets snd
-            chooseFrom ((<>) (UContent $ singletonOddA $ Seq.singleton (PositionRange valStartPos postCRPos, " ")) <$> attributeValue isSingleQuoted)
+            chooseFrom ((<>) (utext (PositionRange valStartPos postCRPos) " ") <$> attributeValue isSingleQuoted)
               [ ("\n", do
                   postNLPos <-  gets snd
-                  (<>) (UContent $ singletonOddA $ Seq.singleton (PositionRange valStartPos postNLPos, " ")) <$> attributeValue isSingleQuoted)
+                  (<>) (utext (PositionRange valStartPos postNLPos) " ") <$> attributeValue isSingleQuoted)
               ])
         , ("\n", do
             lift $ lift $ tell $ DList.singleton $ AttributeNormalisation valStartPos
             postNLPos <- gets snd
-            (<>) (UContent $ singletonOddA $ Seq.singleton (PositionRange valStartPos postNLPos, " ")) <$> attributeValue isSingleQuoted)
+            (<>) (utext (PositionRange valStartPos postNLPos) " ") <$> attributeValue isSingleQuoted)
         , ("\t", do
             lift $ lift $ tell $ DList.singleton $ AttributeNormalisation valStartPos
             postTabPos <- gets snd
-            (<>) (UContent $ singletonOddA $ Seq.singleton (PositionRange valStartPos postTabPos, " ")) <$> attributeValue isSingleQuoted)
+            (<>) (utext (PositionRange valStartPos postTabPos) " ") <$> attributeValue isSingleQuoted)
         ]
-    attributeValueNormalChunk :: Bool -> Parser UContent
+
+    attributeValueNormalChunk :: Bool -> Parser UText
     attributeValueNormalChunk isSingleQuoted = do
       (input, chunkStartPos) <- get
       let normalChar = \case
@@ -676,11 +916,11 @@ xmlSeenLT startPos = chooseFrom (SeenLTElement <$> goElement)
       case ST.span isXMLChar candidates of
         (valid, rest) -> unless (ST.null rest) $
           lift $ throwE $ XMLNonChar $ updatePosition startPos valid
-      let content = UContent $ singletonOddA $ Seq.singleton (PositionRange startPos endPos, candidates)
+      let content = utext (PositionRange startPos endPos) candidates
       rest <- attributeValue isSingleQuoted
       pure $ content <> rest
 
-xmlFlowToLTSlash :: Parser (TwoFingerOddA UElement UContent)
+xmlFlowToLTSlash :: Parser UMarkup
 xmlFlowToLTSlash = do
   (input, startPos) <- get
   when (ST.null input) $
@@ -689,25 +929,29 @@ xmlFlowToLTSlash = do
     [ ("<", do
         next <- xmlSeenLT startPos
         case next of
-          SeenLTElement e -> consOddA mempty e <$> xmlFlowToLTSlash
+          SeenLTElement e -> do
+            UMarkup tree <- xmlFlowToLTSlash
+            pure $ UMarkup $ consOddA mempty e tree
           SeenLTSlash -> pure mempty
-          SeenLTComment -> xmlFlowToLTSlash
+          SeenLTComment cmt -> do
+            UMarkup tree <- xmlFlowToLTSlash
+            pure $ UMarkup $ singletonOddA (ucontentComment cmt) <> tree
           SeenLTDOCTYPE _ _ -> lift $ throwE $ StrayDoctype startPos)
     , ("&", do
         content <- xmlReference
-        (<>) (singletonOddA content) <$> xmlFlowToLTSlash
+        (<>) (UMarkup $ singletonOddA $ UContent $ singletonOddA $ content) <$> xmlFlowToLTSlash
         )
     , (">", lift . throwE . XMLStrayGT =<< gets snd)
     , ("\r", do
         postCRPos <- gets snd
-        chooseFrom ((<>) (singletonOddA $ UContent $ singletonOddA $ Seq.singleton (PositionRange startPos postCRPos, "\n")) <$> xmlFlowToLTSlash)
+        chooseFrom ((<>) (umarkupText (PositionRange startPos postCRPos) "\n") <$> xmlFlowToLTSlash)
           [ ("\n", do
-              postNLPos <-  gets snd
-              (<>) (singletonOddA $ UContent $ singletonOddA $ Seq.singleton (PositionRange startPos postNLPos, "\n")) <$> xmlFlowToLTSlash)
+              postNLPos <- gets snd
+              (<>) (umarkupText (PositionRange startPos postNLPos) "\n") <$> xmlFlowToLTSlash)
           ])
     ]
   where
-    normalChunk :: Parser (TwoFingerOddA UElement UContent)
+    normalChunk :: Parser UMarkup
     normalChunk = do
       (input, startPos) <- get
       let normalChar = \case
@@ -723,9 +967,9 @@ xmlFlowToLTSlash = do
         (valid, rest) -> unless (ST.null rest) $
           lift $ throwE $ XMLNonChar $ updatePosition startPos valid
       rest <- xmlFlowToLTSlash
-      pure $ singletonOddA (UContent $ singletonOddA $ Seq.singleton (PositionRange startPos endPos, candidates)) <> rest
+      pure $ umarkupText (PositionRange startPos endPos) candidates <> rest
 
-xmlReference :: Parser UContent
+xmlReference :: Parser UText
 xmlReference = do
   res <- chooseFrom refEnt [("#", refChar)]
   mandatory ";" $ XMLBadSyntax "Expecting ';' to terminate an entity or a character reference"
@@ -735,7 +979,7 @@ xmlReference = do
       start <- gets snd
       name <- xmlNCName
       end <- gets snd
-      pure $ UContent $ unitOddA (PositionRange start end, name)
+      pure $ UText $ unitOddA (PositionRange start end, name)
     refChar = do
       start <- gets snd
       --Notes on magic numbers: max Char is 0x10FFFF = 114111. 7 digits are 24 bits, so Int is safe.
@@ -746,7 +990,7 @@ xmlReference = do
         Just c -> do
           unless (isXMLChar c) $
             lift $ throwE $ BadCharRef (PositionRange start end)
-          pure $ UContent $ singletonOddA $ Seq.singleton (PositionRange start end, ST.singleton c)
+          pure $ UText $ singletonOddA $ Seq.singleton (PositionRange start end, ST.singleton c)
     --TODO: wouldn't it be better to use Nat for the parameter??
     decimalRef :: Int -> Natural -> Parser Int
     decimalRef acc 0 = pure acc

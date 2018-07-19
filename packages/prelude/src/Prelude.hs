@@ -50,7 +50,7 @@ import Data.Foldable as Export
 import Data.Function as Export
   (($), const, flip, (&), fix)
 import Data.Functor as Export
-  (Functor (fmap), (<$>))
+  (Functor (fmap), (<$>), (<$))
 import Data.Functor.Compose as Export
   (Compose (Compose), getCompose)
 import Data.Functor.Const as Export
@@ -83,7 +83,7 @@ import Data.Type.Equality as Export
 import Data.Tuple as Export
   (uncurry, swap, fst, snd)
 import Data.Void as Export
-  (Void)
+  (Void, absurd)
 import Data.Word as Export
   (Word, Word8, Word64)
 --TODO: is there really no other place but GHC.* to get these from? Should probably file an upstream bug...
@@ -161,7 +161,7 @@ import Data.DList.NonEmpty as Export
 
 -- lens imports for re-export
 import Control.Lens as Export
-  (Lens', set, over, view, (<>~), Iso, Iso', from, iso, Prism, Prism', APrism, APrism', preview, matching, review, withPrism)
+  (Lens', set, over, view, (<>~), Iso, Iso', from, iso, Prism, Prism', APrism, APrism', preview, matching, review, withPrism, foldMapOf)
 
 -- profunctors imports for re-export
 import Data.Profunctor as Export

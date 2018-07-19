@@ -14,7 +14,7 @@ import Formatting (bprint, stext)
 import Q4C12.Position (PositionRange, positionRange)
 import Q4C12.TwoFinger (unconsOddA)
 
-import Q4C12.XML (Element (Element), Markup (Markup), QName (QName), htmlNS, xmlNS, mathmlNS, svgNS, markupNull, elementPosition, hname)
+import Q4C12.XML (Element (Element), Markup (Markup), Content (Content), getContent, QName (QName), htmlNS, xmlNS, mathmlNS, svgNS, markupNull, elementPosition, hname)
 
 --TODO: tag omission, especially </p>. Actually, no: if you want that, you can run a HTML minifier afterwards. Alternative TODO: remove the attribute value inspection and leave that to the minifier too.
 
@@ -58,7 +58,7 @@ displayHTMLException (ElementInRawText element _) = bprint
   ("Error while HTMLifying: <" . stext . "> can't have child elements.")
   element
 
-htmlDocument :: Element pos -> Either (HTMLException pos) TBuilder
+htmlDocument :: Element cmt pos -> Either (HTMLException pos) TBuilder
 htmlDocument el = foldSequence
   [ pure "<!DOCTYPE html>"
   , htmlElement el
@@ -71,7 +71,7 @@ rawTextElements :: Set QName
 rawTextElements = Set.fromList $ fmap hname
   [ "style", "script", "xmp", "iframe", "noembed", "noframes", "plaintext" ]
 
-htmlElement :: Element pos -> Either (HTMLException pos) TBuilder
+htmlElement :: Element cmt pos -> Either (HTMLException pos) TBuilder
 htmlElement (Element qn attrs body pos) = foldSequence
   [ pure "<"
   , case qn of
@@ -122,11 +122,13 @@ htmlElement (Element qn attrs body pos) = foldSequence
       ]
   ]
 
-htmlMarkup :: Maybe SText -> Markup pos -> Either (HTMLException pos) TBuilder
-htmlMarkup Nothing (Markup inl) = bifoldMapM htmlElement (pure . LTB.fromLazyText . escapeText . foldMap snd) inl
+htmlMarkup :: Maybe SText -> Markup cmt pos -> Either (HTMLException pos) TBuilder
+htmlMarkup Nothing (Markup inl) =
+  bifoldMapM htmlElement (pure . foldMap (foldMap $ LTB.fromLazyText . escapeText . snd) . getContent) inl
 htmlMarkup (Just element) (Markup inl) = case unconsOddA inl of
-  Right ((_, el), _) -> Left $ ElementInRawText element $ elementPosition el
-  Left chunks -> flip foldMapM chunks $ \case
+  Right ((_, el), _) ->
+    Left $ ElementInRawText element $ elementPosition el
+  Left (Content content) -> flip foldMapM content $ foldMapM $ \case
     (pos, t)
       | LT.any (== '<') t -> Left $ LTInRawText element pos
       | otherwise -> Right $ LTB.fromLazyText t

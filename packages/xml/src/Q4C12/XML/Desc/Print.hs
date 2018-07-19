@@ -8,13 +8,12 @@ module Q4C12.XML.Desc.Print
 
 import qualified Data.DList as DList
 import qualified Data.Map as Map
-import qualified Data.Sequence as Seq
 import Q4C12.TwoFinger (appendEvenAOddA, snocEvenA, singletonOddA, halfunsnocOddA)
 
-import Q4C12.XML (QName, Element, addAttrs, element, Markup (Markup), markupText)
+import Q4C12.XML (QName, Element, addAttrs, element, Markup (Markup), markupText, Comment, Content, contentComment)
 import Q4C12.XML.Desc.Class
-  ( Desc ( DT, El, OddFlow, EvenFlow, Pos, nonTerminalE, elementE, tokenDT
-         , nonTerminalOdd, oddTx, oddTxPos, oddWS, nonTerminalEven, attrF, evenUp
+  ( Desc ( DT, El, OddFlow, EvenFlow, Pos, Cmt, nonTerminalE, elementE, tokenDT
+         , nonTerminalOdd, oddTxPos, oddTxNoPos, oddWS, nonTerminalEven, attrF, evenUp
          , elementEPos, datatypeDT
          )
   , Datatype (Datatype)
@@ -32,12 +31,13 @@ data Print
 
 instance Desc Print where
   data EvenFlow Print a = PrintEF
-    { runPrintEF :: a -> (TwoFingerEvenA (Element ()) LText, Map QName LText) }
+    { runPrintEF :: a -> (TwoFingerEvenA (Element (Comment ()) ()) (Content (Comment ()) ()), Map QName LText) }
   data OddFlow Print a = PrintOF
-    { runPrintOF :: a -> (TwoFingerOddA (Element ()) LText, Map QName LText) }
-  data El Print a = PrintEl { runPrintEl :: a -> Element () }
+    { runPrintOF :: a -> (TwoFingerOddA (Element (Comment ()) ()) (Content (Comment ()) ()), Map QName LText) }
+  data El Print a = PrintEl { runPrintEl :: a -> Element (Comment ()) () }
   data DT Print a = PrintDT { runPrintDT :: a -> DList LText }
   type Pos Print = ()
+  type Cmt Print = Comment ()
 
   evenUp (PrintOF f) (PrintEl g) = PrintEF $
     \(HProdCons a as) ->
@@ -49,9 +49,9 @@ instance Desc Print where
   attrF name (PrintDT f) = PrintEF $ \a ->
     (mempty, Map.singleton name $ intercalate0 " " $ f a)
 
-  oddWS = PrintOF $ \() -> mempty
-  oddTx = PrintOF $ \a -> (singletonOddA a, mempty)
-  oddTxPos = PrintOF $ \as -> (singletonOddA $ foldMap snd as, mempty)
+  oddWS = PrintOF $ \ comments -> (singletonOddA $ foldMap contentComment comments, mempty)
+  oddTxPos = PrintOF $ \ a -> (singletonOddA a, mempty)
+  oddTxNoPos = oddTxPos
 
   nonTerminalEven _ = id
   nonTerminalOdd _ = id
@@ -65,7 +65,7 @@ instance Desc Print where
 
   elementE name (CompleteFlowMixed (PrintOF f)) = PrintEl $ \a ->
     let (ilv, attrs) = f a
-    in addAttrs attrs $ element name $ Markup $ Seq.singleton . (,) () <$> ilv
+    in addAttrs attrs $ element name $ Markup ilv
   elementE name (CompleteFlowDT (PrintDT f)) = PrintEl $
     element name . markupText . intercalate0 " " . f
 
@@ -129,5 +129,5 @@ instance RPlusApplyR (DT Print) where
 instance RAlternative (DT Print) where
   rnil = PrintDT $ \HProdNil -> mempty
 
-printEl :: El Print a -> a -> Element ()
+printEl :: El Print a -> a -> Element (Comment ()) ()
 printEl = runPrintEl
