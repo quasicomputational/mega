@@ -5,9 +5,7 @@ github: quasicomputational/mega
 author: quasicomputational <quasicomputational@gmail.com>
 license: BSD2
 license-file:
-  - LICENSE
   - LICENSE.BSD2
-  - LICENSE.W3C
 extra-doc-files:
   - README.markdown
 extra-source-files:

@@ -1,3 +1,0 @@
-This project is licensed under the two-clause BSD license. The license's text is included in the file `LICENSE.BSD2`.
-
-The file `data/html.xml` is derived from [this code produced by the W3C, copyright 2015 (MIT, ERCIM, Keio, Beihang)](https://www.w3.org/2003/entities/2007/htmlmathml.json), and is under the [W3C Software and Document Notice license](https://www.w3.org/Consortium/Legal/2015/copyright-software-and-document), available in the file `LICENSE.W3C`.
