@@ -1,4 +1,1 @@
-<!DOCTYPE   scene
-            SYSTEM
-            "example:entity-set"  >
-<scene   foo  =  "bar"   >&copy;</scene   >
+  <scene   foo  =  "bar"   ></scene   >  

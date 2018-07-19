@@ -3,7 +3,6 @@ module Main
   )
   where
 
-import qualified Data.Map as Map
 import qualified Data.Set as Set
 import qualified Data.Text.IO as STIO
 import qualified Data.Text.Lazy as LT
@@ -13,7 +12,7 @@ import Test.Tasty (TestTree, TestName, testGroup, defaultMain)
 import Test.Tasty.ExpectedFailure (expectFail, ignoreTest)
 import Test.Tasty.Golden (goldenVsStringDiff, findByExtension)
 
-import Q4C12.XML (parseXML, parseXML', parseXMLCommented, preRootComments, rootElement, postRootComments, renderXML, DoctypeResolver, systemResolver, noEntities, uname, element, markupElement, markupText, Comment (Comment))
+import Q4C12.XML (parseXML, parseXML', parseXMLCommented, preRootComments, rootElement, postRootComments, renderXML, uname, element, markupElement, markupText, Comment (Comment))
 import Q4C12.XML.XHTML2HTML (htmlDocument, displayHTMLExceptionPos)
 import qualified Q4C12.XML as XML
 
@@ -34,10 +33,10 @@ main = do
   x2hFailTests <- fmap dropExtension <$>
     findByExtension [".fails"] "test/golden/xhtml2html"
   defaultMain $ testGroup "xml parsing and re-rendering"
-    [ testGroup "should work" $ testXML exampleResolver <$> xmlTests
+    [ testGroup "should work" $ testXML <$> xmlTests
     , testGroup "comment preserving" $ testXMLPreserveComments <$> preserveCommentTests
-    , testGroup "should work with stderr" $ testXMLStderr exampleResolver <$> xmlTestsWithStdErr
-    , testGroup "should fail" $ testXMLShouldFail exampleResolver <$> xmlFailTests
+    , testGroup "should work with stderr" $ testXMLStderr <$> xmlTestsWithStdErr
+    , testGroup "should fail" $ testXMLShouldFail <$> xmlFailTests
     , testGroup "xhtml2html" $
         [ testGroup "should work" $ testXHTML2HTML <$> x2hTests
         , testGroup "should fail" $ testXHTML2HTMLShouldFail <$> x2hFailTests
@@ -54,16 +53,10 @@ expectXMLShouldFailBroken = Set.fromList
   [
   ]
 
-exampleResolver :: DoctypeResolver
-exampleResolver = systemResolver $ Map.singleton "example:entity-set" $ \case
-  "copy" -> Just "\xA9"
-  "NewLine" -> Just "\xA"
-  _ -> Nothing
-
-testXML :: DoctypeResolver -> TestName -> TestTree
-testXML resolver baseName = checkExpectancy $
+testXML :: TestName -> TestTree
+testXML baseName = checkExpectancy $
   goldenVsStringDiff baseName (\ref new -> ["diff", "-u", ref, new]) (addExtension baseName ".out") $ do
-    res <- parseXML resolver <$> STIO.readFile (addExtension baseName "in")
+    res <- parseXML <$> STIO.readFile (addExtension baseName "in")
     case res of
       (Left err, _) -> fail $ LT.unpack $ LTB.toLazyText $ XML.displayError err
       (Right el, _) ->
@@ -77,7 +70,7 @@ testXML resolver baseName = checkExpectancy $
 testXMLPreserveComments :: TestName -> TestTree
 testXMLPreserveComments baseName = checkExpectancy $
   goldenVsStringDiff baseName (\ref new -> ["diff", "-u", ref, new]) (addExtension baseName ".out") $ do
-    resOrErr <- parseXMLCommented exampleResolver <$> STIO.readFile (addExtension baseName "in")
+    resOrErr <- parseXMLCommented <$> STIO.readFile (addExtension baseName "in")
     case resOrErr of
       (Left err, _) -> fail $ LT.unpack $ LTB.toLazyText $ XML.displayError err
       (Right res, _) -> do
@@ -97,10 +90,10 @@ testXMLPreserveComments baseName = checkExpectancy $
       then expectFail
       else id
 
-testXMLShouldFail :: DoctypeResolver -> TestName -> TestTree
-testXMLShouldFail resolver baseName = checkExpectancy $
+testXMLShouldFail :: TestName -> TestTree
+testXMLShouldFail baseName = checkExpectancy $
   goldenVsStringDiff baseName (\ref new -> ["diff", "-u", ref, new]) (addExtension baseName ".out") $ do
-    res <- parseXML' resolver <$> STIO.readFile (addExtension baseName "fails")
+    res <- parseXML' <$> STIO.readFile (addExtension baseName "fails")
     case res of
       (Left err, warns) -> pure $ LTEnc.encodeUtf8 $ LTB.toLazyText $ XML.displayWarnings warns <> XML.displayError err <> "\n"
       (Right el, _) -> fail $ "Parsing succeeded: " <> show el
@@ -109,10 +102,10 @@ testXMLShouldFail resolver baseName = checkExpectancy $
       then expectFail
       else id
 
-testXMLStderr :: DoctypeResolver -> TestName -> TestTree
-testXMLStderr resolver baseName = checkExpectancy $
+testXMLStderr :: TestName -> TestTree
+testXMLStderr baseName = checkExpectancy $
   goldenVsStringDiff baseName (\ref new -> ["diff", "-u", ref, new]) (addExtension baseName "errout") $ do
-    xmlMay <- parseXML resolver <$> STIO.readFile (addExtension baseName "in")
+    xmlMay <- parseXML <$> STIO.readFile (addExtension baseName "in")
     case xmlMay of
       (Left err, warns) -> fail $ LT.unpack $ LTB.toLazyText $ XML.displayError err <> "\n" <> XML.displayWarnings warns
       (Right _, warns) -> pure $ LTEnc.encodeUtf8 $ LTB.toLazyText $ XML.displayWarnings warns
@@ -125,7 +118,7 @@ testXMLStderr resolver baseName = checkExpectancy $
 testXHTML2HTML :: TestName -> TestTree
 testXHTML2HTML baseName =
   goldenVsStringDiff baseName (\ref new -> ["diff", "-u", ref, new]) (addExtension baseName "out") $ do
-    xmlMay <- parseXML noEntities <$> STIO.readFile (addExtension baseName "in")
+    xmlMay <- parseXML <$> STIO.readFile (addExtension baseName "in")
     case xmlMay of
       (Left err, warns) -> fail $ LT.unpack $ LTB.toLazyText $ XML.displayError err <> "\n" <> XML.displayWarnings warns
       (Right xml, warns) -> do
@@ -139,7 +132,7 @@ testXHTML2HTML baseName =
 testXHTML2HTMLShouldFail :: TestName -> TestTree
 testXHTML2HTMLShouldFail baseName =
   goldenVsStringDiff baseName (\ref new -> ["diff", "-u", ref, new]) (addExtension baseName "out") $ do
-    xmlMay <- parseXML noEntities <$> STIO.readFile (addExtension baseName "fails")
+    xmlMay <- parseXML <$> STIO.readFile (addExtension baseName "fails")
     case xmlMay of
       (Left err, warns) -> fail $ LT.unpack $ LTB.toLazyText $ XML.displayError err <> "\n" <> XML.displayWarnings warns
       (Right xml, warns) -> do

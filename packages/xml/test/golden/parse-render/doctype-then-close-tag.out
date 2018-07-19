@@ -1,1 +1,1 @@
-Error: Close tag follows doctype at (2, 1).
+Error: Bad syntax: Expected the start of a NCName at (1, 2).

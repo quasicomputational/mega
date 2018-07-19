@@ -19,9 +19,7 @@ Using the `Desc` typeclass for an abstract structure definition and then having 
 Limited XML profile
 ===================
 
-Most things to do with DTDs are unsupported. No default attributes, no external unparsed entities. Internal subsets—even empty ones—are rejected.
-
-Restricted entity references are permitted. These must not contain markup. The replacement text is treated as if it was entirely made up of character references; this matters for attribute value normalisation. The entity-set to be used is identified by the tuple of the PUBLIC identifier and the SYSTEM identifier in the DOCTYPE. Library users can define their own entity-sets. It is recommended that only the SYSTEM identifier is used for this purpose; however, the HTML specification specifies a similar mechanism switching on the PUBLIC identifier, so that is supported.
+Everything to do with DTDs is unsupported. No entity references aside from the ones specified in the XML standard, no default attributes, no external unparsed entities. No DOCTYPEs.
 
 The XML declaration is forbidden.
 

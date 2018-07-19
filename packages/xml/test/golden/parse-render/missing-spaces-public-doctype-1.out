@@ -1,1 +1,1 @@
-Error: Bad syntax: Expected a space before the public literal at (1, 24).
+Error: Bad syntax: Expected the start of a NCName at (1, 2).
