@@ -1,7 +1,6 @@
 module Q4C12.XML
   ( Element (Element), element, elementPosition
   , QName (QName)
-  , DoctypeResolver, systemResolver, publicResolver, noEntities
   , Markup (Markup, getMarkup), markupNull
   , markupElement, markupText, markupSText, markupBuilder
   , Content (Content, getContent), contentNull
@@ -27,7 +26,6 @@ import Q4C12.Position (PositionRange)
 import Q4C12.XML.Internal
   ( Element (Element), element, elementPosition
   , QName (QName)
-  , DoctypeResolver, systemResolver, publicResolver, noEntities
   , Markup (Markup, getMarkup), markupNull
   , markupElement, markupText, markupSText, markupBuilder
   , Content (Content, getContent), contentNull
@@ -46,7 +44,6 @@ import Q4C12.XML.Internal
   )
 
 parseXML'
-  :: DoctypeResolver
-  -> SText
+  :: SText
   -> (Either XMLError (Element Void PositionRange), [XMLWarning])
 parseXML' = parseXML

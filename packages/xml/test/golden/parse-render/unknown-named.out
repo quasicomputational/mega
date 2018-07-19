@@ -1,1 +1,1 @@
-Error: Unknown entity 'foobarbazunknownandundefined' at (4:2-4:30).
+Error: Bad syntax: Expected the start of a NCName at (1, 2).

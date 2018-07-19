@@ -284,18 +284,14 @@ rawQName = later $ \case
 --TODO: factor the various 'stray X at Y' errors together?
 data XMLError
   = UnmatchedTags Position RawQName Position RawQName
-  | TextPreDoctype Position
-  | TextPostDoctype Position
+  | PreRootText Position
   | TrailingText Position
-  | StrayDoctype Position
   | TrailingStartTag Position Position
   | TrailingEndTag Position Position
   | TrailingRef Position
   | NoRoot
-  | PostDoctypeEndTag Position
-  | PostDoctypeRef Position
-  | PreDoctypeEndTag Position
-  | PreDoctypeRef Position
+  | PreRootEndTag Position
+  | PreRootRef Position
   | XMLBadSyntax SText Position
   | XMLUnexpectedEoF SText
   | XMLNonChar Position
@@ -303,7 +299,6 @@ data XMLError
   | NonNFDName PositionRange
   | XMLStrayGT Position
   | ResolveError (NonEmpty ResolveError)
-  | DoctypeRootNameMismatch Position PositionRange
   deriving (Show, Generic, Eq, Ord)
 
 instance NFData XMLError
@@ -320,8 +315,7 @@ data ResolveError
 instance NFData ResolveError
 
 data XMLWarning
-  = UnknownDoctype DOCTYPE Position
-  | AttributeNormalisation Position
+  = AttributeNormalisation Position
   deriving (Show, Generic, Eq, Ord)
 
 instance NFData XMLWarning
@@ -350,17 +344,12 @@ displayError (UnmatchedTags opos open cpos close) = bprint
   . ", but close tag is '" . rawQName . "' at " . position . "."
   )
   open opos close cpos
-displayError (TextPreDoctype pos) = bprint
-  ("Error: Unexpected text at " . position . " before the doctype.")
-  pos
-displayError (TextPostDoctype pos) = bprint
+displayError (PreRootText pos) = bprint
   ("Error: Unexpected text at " . position . " before the root element.")
   pos
 displayError (TrailingText pos) = bprint
   ("Error: Unexpected text at " . position . " after the root element.")
   pos
-displayError (StrayDoctype pos) =
-  bprint ("Error: Stray doctype at " . position . ".") pos
 displayError (TrailingEndTag rootClosePos tagPos) = bprint
   ( "Error: Trailing closing tag at " . position
   . "; the root element was closed at " . position . "."
@@ -375,17 +364,11 @@ displayError (TrailingRef pos) = bprint
   ("Error: Reference at " . position . ", after the root element.")
   pos
 displayError NoRoot = "Error: Missing root element."
-displayError (PostDoctypeEndTag pos) = bprint
-  ("Error: Close tag follows doctype at " . position . ".")
-  pos
-displayError (PostDoctypeRef pos) = bprint
+displayError (PreRootRef pos) = bprint
   ("Error: Reference at " . position . ", before the root element.")
   pos
-displayError (PreDoctypeEndTag pos) = bprint
-  ("Error: Close tag seen at " . position . ", before the doctype.")
-  pos
-displayError (PreDoctypeRef pos) = bprint
-  ("Error: Reference at " . position . ", before the doctype.")
+displayError (PreRootEndTag pos) = bprint
+  ("Error: End tag at " . position . ", before the root element.")
   pos
 displayError (ResolveError errs) =
   intercalateMap0 "\n" displayResolveError errs
@@ -406,9 +389,6 @@ displayError (XMLStrayGT pos) =
 displayError (NonNFDName pos) = bprint
   ("Error: Non-NFD attribute or element name at " . positionRange . ".")
   pos
-displayError (DoctypeRootNameMismatch doctypePos rootPosRange) = bprint
-  ("Error: Doctype (at " . position . ") and root element (at " . positionRange . ") name mis-match.")
-  doctypePos rootPosRange
 
 displayWarnings :: (Foldable f) => f XMLWarning -> TBuilder
 displayWarnings = foldMap (\warn -> displayWarning warn <> "\n")
@@ -416,12 +396,6 @@ displayWarnings = foldMap (\warn -> displayWarning warn <> "\n")
 --TODO: a -Werror option, which would mean prefixing this with 'error', not 'warning'.
 --TODO: escape the name?
 displayWarning :: XMLWarning -> TBuilder
-displayWarning (UnknownDoctype (DOCTYPEPublic pub sys) pos) = bprint
-  ("Warning: The doctype with public identifier " . stext . " and system identifier \"" . stext . "\" at " . position . " is not recognised.")
-  pub sys pos
-displayWarning (UnknownDoctype (DOCTYPESystem sys) pos) = bprint
-  ("Warning: The doctype with system identifier \"" . stext . "\" at " . position . " is not recognised.")
-  sys pos
 displayWarning (AttributeNormalisation pos) = bprint
   ("Warning: Performing attribute normalisation at " . position . ".")
   pos
@@ -476,48 +450,43 @@ utext :: PositionRange -> SText -> UText
 utext pos t = UText $ singletonOddA $ Seq.singleton (pos, t)
 
 resolveText
-  :: (SText -> Maybe LText)
-  -> UText
+  :: UText
   -> Validation (NonEmptyDList ResolveError) (Seq (PositionRange, LText))
-resolveText entity (UText parts) = bifoldMapM resolveEntity (pure . fmap (fmap LT.fromStrict)) parts
+resolveText (UText parts) = bifoldMapM resolveEntity (pure . fmap (fmap LT.fromStrict)) parts
   where
+    resolveEntity :: (PositionRange, SText) -> Validation (NonEmptyDList ResolveError) (Seq (PositionRange, LText))
     resolveEntity (pos, "amp") = pure $ Seq.singleton (pos, "&")
     resolveEntity (pos, "gt") = pure $ Seq.singleton (pos, ">")
     resolveEntity (pos, "lt") = pure $ Seq.singleton (pos, "<")
     resolveEntity (pos, "quot") = pure $ Seq.singleton (pos, "\"")
     resolveEntity (pos, "apos") = pure $ Seq.singleton (pos, "'")
-    resolveEntity (pos, name) = case entity name of
-      Nothing -> failure $ NEDList.singleton $ UnknownEntity pos name
-      Just ent -> pure $ Seq.singleton (pos, ent)
+    resolveEntity (pos, name) = failure $ NEDList.singleton $ UnknownEntity pos name
 
 resolveContent
-  :: (SText -> Maybe LText)
-  -> UContent
+  :: UContent
   -> Validation (NonEmptyDList ResolveError) (Content (Comment PositionRange) PositionRange)
-resolveContent entity (UContent tree) = fmap Content $
-  traverse (resolveText entity) tree
+resolveContent (UContent tree) = fmap Content $
+  traverse resolveText tree
 
 resolveMarkup
-  :: (SText -> Maybe LText)
-  -> Maybe SText
+  :: Maybe SText
   -> Map SText SText
   -> UMarkup
   -> Validation (NonEmptyDList ResolveError) (Markup (Comment PositionRange) PositionRange)
-resolveMarkup entity defaultNamespace namespaces (UMarkup tree) = fmap Markup $
-  bitraverse (resolveElement entity defaultNamespace namespaces) (resolveContent entity) tree
+resolveMarkup defaultNamespace namespaces (UMarkup tree) = fmap Markup $
+  bitraverse (resolveElement defaultNamespace namespaces) resolveContent tree
 
 resolveElement
-  :: (SText -> Maybe LText)
-  -> Maybe SText
+  :: Maybe SText
   -> Map SText SText
   -> UElement
   -> Validation (NonEmptyDList ResolveError) (Element (Comment PositionRange) PositionRange)
-resolveElement entity defaultNamespace namespaces (UElement rawName rawAttrs rawBody pos) = exceptToValidation $ do
+resolveElement defaultNamespace namespaces (UElement rawName rawAttrs rawBody pos) = exceptToValidation $ do
   --TODO: can do more of this in parallel and report more errors at once than we currently are.
   -- Attribute checking and namespace definition extraction.
   -- First, we go over the attributes and split them into three categories: default namespace declarations, named namespace declarations, and content-bearing attributes.
   rawAttrs' <- validationToExcept $ for rawAttrs $ \(rawAttrName, attrPos, rawText) ->
-    (,,) rawAttrName attrPos <$> resolveText entity rawText
+    (,,) rawAttrName attrPos <$> resolveText rawText
   let prepartitioned
         :: [ HSum
              '[ (PositionRange, SText)
@@ -562,22 +531,8 @@ resolveElement entity defaultNamespace namespaces (UElement rawName rawAttrs raw
         (r0, _) :| ((r1, _) : rest) -> failure $ NEDList.singleton $ DuplicateAttrs r0 (r1 :| fmap fst rest)
       -- Finally, recurse into our children.
       body <- validationToExcept $
-        resolveMarkup entity defaultNamespace' namespaces' rawBody
+        resolveMarkup defaultNamespace' namespaces' rawBody
       pure $ Element qname attrs body pos
-
---TODO: this is very simplistic, but it should do the job. Might think about maybe branching out to XML catalogs, but this is fine.
-data DoctypeResolver
-  = DoctypeResolverSystem (Map SText (SText -> Maybe LText))
-  | DoctypeResolverPublic (Map SText (SText -> Maybe LText))
-
-systemResolver :: Map SText (SText -> Maybe LText) -> DoctypeResolver
-systemResolver = DoctypeResolverSystem
-
-publicResolver :: Map SText (SText -> Maybe LText) -> DoctypeResolver
-publicResolver = DoctypeResolverPublic
-
-noEntities :: DoctypeResolver
-noEntities = DoctypeResolverSystem mempty
 
 data Parsed = Parsed
   { _preRootComments :: Seq (Comment PositionRange)
@@ -611,30 +566,27 @@ stripComments (Element qn attrs markup pos) =
   Element qn attrs (stripCommentsMarkup markup) pos
 
 parseXML
-  :: DoctypeResolver
-  -> SText
+  :: SText
   -> (Either XMLError (Element cmt PositionRange), [XMLWarning])
-parseXML doctypeResolver input =
+parseXML input =
   first (fmap $ stripComments . view rootElement) $
-    parseXMLCommented doctypeResolver input
+    parseXMLCommented input
 
 parseXMLCommented
-  :: DoctypeResolver
-  -> SText
+  :: SText
   -> (Either XMLError Parsed, [XMLWarning])
-parseXMLCommented doctypeResolver input = fmap toList $ runWriter $ runExceptT $ evalStateT (toplevel doctypeResolver mempty) (input, startPosition)
+parseXMLCommented input = fmap toList $ runWriter $ runExceptT $ evalStateT (toplevel mempty) (input, startPosition)
 
 toplevel
-  :: DoctypeResolver
-  -> Seq (Comment PositionRange)
+  :: Seq (Comment PositionRange)
   -> Parser Parsed
-toplevel doctypeResolver preCmts = do
+toplevel preCmts = do
   void xmlSpaces
   (input, pos) <- get
   when (ST.null input) $
     lift $ throwE NoRoot
-  chooseFrom (lift $ throwE $ TextPreDoctype pos)
-    [ ("&", lift $ throwE $ PreDoctypeRef pos)
+  chooseFrom (lift $ throwE $ PreRootText pos)
+    [ ("&", lift $ throwE $ PreRootRef pos)
     , ("<", do
         res <- xmlSeenLT pos
         case res of
@@ -642,52 +594,17 @@ toplevel doctypeResolver preCmts = do
             endPos <- gets snd
             postCmts <- finish endPos mempty
             e' <- lift $ withExceptT (ResolveError . toNonEmpty) $ validationToExcept $
-              resolveElement (const Nothing) Nothing defaultNamespaces e
+              resolveElement Nothing defaultNamespaces e
             pure $ Parsed preCmts e' postCmts
           SeenLTComment cmt ->
-            toplevel doctypeResolver (preCmts Seq.|> cmt)
-          SeenLTSlash -> lift $ throwE $ PreDoctypeEndTag pos
-          SeenLTDOCTYPE rootName Nothing -> seenDoctype pos rootName (const Nothing)
-          SeenLTDOCTYPE rootName (Just doctype) -> case doctypeResolver of
-            DoctypeResolverSystem doctypeMap
-              | Just entityFunc <- Map.lookup (getSystemId doctype) doctypeMap
-              -> seenDoctype pos rootName entityFunc
-            DoctypeResolverPublic doctypeMap
-              | DOCTYPEPublic pub _ <- doctype
-              , Just entityFunc <- Map.lookup pub doctypeMap
-              -> seenDoctype pos rootName entityFunc
-            _ -> do
-              lift $ lift $ tell $ DList.singleton $ UnknownDoctype doctype pos
-              seenDoctype pos rootName (const Nothing))
+            toplevel (preCmts Seq.|> cmt)
+          SeenLTSlash -> lift $ throwE $ PreRootEndTag pos)
     ]
   where
     defaultNamespaces :: Map SText SText
     defaultNamespaces = Map.fromList
       [ ("xml", xmlNS)
       ]
-    seenDoctype doctypePos rootName entityFunc = do
-      void xmlSpaces
-      (input, pos) <- get
-      when (ST.null input) $
-        lift $ throwE NoRoot
-      chooseFrom (lift $ throwE $ TextPostDoctype pos)
-        [ ("&", lift $ throwE $ PostDoctypeRef pos)
-        , ("<", do
-            res <- xmlSeenLT pos
-            case res of
-              SeenLTElement e -> do
-                case e of
-                  UElement name _ _ posRange -> unless (rootName == name) $
-                    lift $ throwE $ DoctypeRootNameMismatch doctypePos posRange
-                postCmts <- finish pos mempty
-                e' <- lift $ withExceptT (ResolveError . toNonEmpty) $
-                  validationToExcept $ resolveElement entityFunc Nothing defaultNamespaces e
-                pure $ Parsed preCmts e' postCmts
-              SeenLTComment _ ->
-                seenDoctype doctypePos rootName entityFunc
-              SeenLTSlash -> lift $ throwE $ PostDoctypeEndTag pos
-              SeenLTDOCTYPE _ _ -> lift $ throwE $ StrayDoctype pos)
-        ]
     finish rootPos postCmts = do
       void xmlSpaces
       (input, pos) <- get
@@ -700,11 +617,9 @@ toplevel doctypeResolver preCmts = do
               case res of
                 SeenLTElement _ -> lift $ throwE $ TrailingStartTag rootPos pos
                 SeenLTComment cmt -> finish rootPos (postCmts Seq.|> cmt)
-                SeenLTSlash -> lift $ throwE $ TrailingEndTag rootPos pos
-                SeenLTDOCTYPE _ _ -> lift $ throwE $ StrayDoctype pos)
+                SeenLTSlash -> lift $ throwE $ TrailingEndTag rootPos pos)
           ]
 
---TODO: give a way for the doctype lookup function to signal that a doctype is recognised but deprecated.
 --Note order of transformers: with ExceptT outside Writer, we will always report warnings alongside the error.
 type Parser = StateT (SText, Position) (ExceptT XMLError (Writer (DList XMLWarning)))
 
@@ -773,7 +688,6 @@ xmlRawQName = do
 data SeenLTRes
   = SeenLTElement UElement
   | SeenLTComment (Comment PositionRange)
-  | SeenLTDOCTYPE RawQName (Maybe DOCTYPE)
   | SeenLTSlash
 
 data TagStyle = OpenTag | SelfClosing
@@ -781,7 +695,6 @@ data TagStyle = OpenTag | SelfClosing
 xmlSeenLT :: Position -> Parser SeenLTRes
 xmlSeenLT startPos = chooseFrom (SeenLTElement <$> goElement)
   [ ("!--", SeenLTComment . Comment <$> goComment)
-  , ("!DOCTYPE", uncurry SeenLTDOCTYPE <$> xmlSeenDOCTYPE startPos)
   , ("/", pure SeenLTSlash)
   ]
   where
@@ -935,8 +848,7 @@ xmlFlowToLTSlash = do
           SeenLTSlash -> pure mempty
           SeenLTComment cmt -> do
             UMarkup tree <- xmlFlowToLTSlash
-            pure $ UMarkup $ singletonOddA (ucontentComment cmt) <> tree
-          SeenLTDOCTYPE _ _ -> lift $ throwE $ StrayDoctype startPos)
+            pure $ UMarkup $ singletonOddA (ucontentComment cmt) <> tree)
     , ("&", do
         content <- xmlReference
         (<>) (UMarkup $ singletonOddA $ UContent $ singletonOddA $ content) <$> xmlFlowToLTSlash
@@ -1032,75 +944,6 @@ xmlReference = do
       , ("e", hexadecimalRef (acc * 16 + 14) (n - 1))
       , ("f", hexadecimalRef (acc * 16 + 15) (n - 1))
       ]
-
-data DOCTYPE
-  = DOCTYPESystem SText
-  | DOCTYPEPublic SText SText
-  deriving (Show, Generic, Eq, Ord)
-
-instance NFData DOCTYPE
-
-getSystemId :: DOCTYPE -> SText
-getSystemId (DOCTYPESystem sys) = sys
-getSystemId (DOCTYPEPublic _ sys) = sys
-
-xmlSeenDOCTYPE :: Position -> Parser (RawQName, Maybe DOCTYPE)
-xmlSeenDOCTYPE startPos = do
-  leadingSpaces <- xmlSpaces
-  unless leadingSpaces $
-    lift $ throwE $ XMLBadSyntax "Expected a space following 'DOCTYPE'" startPos
-  rootName <- xmlRawQName
-  succSpaces <- xmlSpaces
-  res <- chooseFrom (pure Nothing)
-    [ ("SYSTEM", do
-         unless succSpaces $ do
-           spacePos <- gets snd
-           lift $ throwE $ XMLBadSyntax "Expected a space between the root element name and 'SYSTEM" spacePos
-         fmap Just $ DOCTYPESystem <$> systemLiteral)
-    , ("PUBLIC", do
-         unless succSpaces $
-           lift $ throwE $ XMLBadSyntax "Expected a space between the root element name and 'PUBLIC'" startPos
-         sepSpaces <- xmlSpaces
-         unless sepSpaces $ do
-           spacePos <- gets snd
-           lift $ throwE $ XMLBadSyntax "Expected a space before the public literal" spacePos
-         fmap Just $ DOCTYPEPublic <$> publicLiteral <*> systemLiteral)
-    ]
-  void xmlSpaces
-  mandatory ">" $ XMLBadSyntax "Expected '>' to close a DOCTYPE"
-  pure (rootName, res)
-  where
-    systemLiteral :: Parser SText
-    systemLiteral = do
-      sepSpaces <- xmlSpaces
-      unless sepSpaces $ do
-        spacePos <- gets snd
-        lift $ throwE $ XMLBadSyntax "Expected a space before the system literal" spacePos
-      chooseFrom (lift . throwE . XMLBadSyntax "Expected a system literal" =<< gets snd)
-        [ ("\"", charsUntil "\"")
-        , ("'",  charsUntil "'")
-        ]
-    publicLiteral = do
-      mandatory "\"" $ XMLBadSyntax "Expected a public literal"
-      ident <- pubIdChars
-      mandatory "\"" $ XMLBadSyntax "Expected '\"' to terminate a public literal"
-      pure ident
-    pubIdCharRanges =
-      [ ('\n', '\n')
-      , ('\xD', '\xD')
-      , (' ', '!')
-      , ('#', '%')
-      , ('\'', ';')
-      , ('=', 'Z')
-      , ('_', '_')
-      , ('a', 'z')
-      ]
-    pubIdChars :: Parser SText
-    pubIdChars = do
-      (input, pos) <- get
-      let (cs, input') = ST.span (\c -> any (\(lb, ub) -> lb <= c && c <= ub) pubIdCharRanges) input
-      put (input', updatePosition pos cs)
-      pure cs
 
 chooseFrom ::  Parser r -> [(SText, Parser r)] -> Parser r
 chooseFrom def opts = do
