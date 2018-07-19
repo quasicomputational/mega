@@ -17,8 +17,8 @@ import Q4C12.XML
   )
 
 import Q4C12.XML.Desc.Class
-  ( Desc ( DT, El, OddFlow, EvenFlow, Pos, nonTerminalE, elementE, tokenDT
-         , nonTerminalOdd, oddTx, oddTxPos, oddWS, nonTerminalEven, attrF, evenUp
+  ( Desc ( DT, El, OddFlow, EvenFlow, Pos, Cmt, nonTerminalE, elementE, tokenDT
+         , nonTerminalOdd, oddTxPos, oddTxNoPos, oddWS, nonTerminalEven, attrF, evenUp
          , elementEPos, datatypeDT
          )
   , Datatype (Datatype)
@@ -111,12 +111,13 @@ instance Desc RELAX where
   data DT RELAX _ = GrT { runGrT :: RuleDT }
     deriving (Functor)
   type Pos RELAX = ()
+  type Cmt RELAX = ()
 
   evenUp t e = GrPF $ RPFEvenUp <$> runGrCF t <*> runGrE e
   attrF qn (GrT t) = GrPF $ pure $ RPFAttr qn t
 
-  oddTx = GrCF $ pure $ RCFText RTAny
   oddTxPos = GrCF $ pure $ RCFText RTAny
+  oddTxNoPos = oddTxPos
   oddWS = GrCF $ pure $ RCFText RTWhitespace
 
   --TODO: we can distinguish between might-be-recursive definitions, and definitely-not-recursive; the latter always indicates an error. (Er. Present-me wonders what past-me meant by that? It makes sense to name non-recursive things for schema neatness reasons.)
@@ -245,7 +246,7 @@ instance RAlternative (DT RELAX) where
   rmany (GrT a) = GrT $ RDTMany a
   rsome (GrT a) = GrT $ RDTSome a
 
-relax :: El RELAX a -> Element ()
+relax :: El RELAX a -> Element cmt ()
 relax p =
   let (start, prods) = runWriter $ evalAccumT (runGrE p) mempty
   in rngelem "grammar" $ foldMap markupElement $
@@ -253,7 +254,7 @@ relax p =
          : relaxProductions prods
 
 --TODO: slightly more principled approach than this in re namespacing? The action-at-a-distance linkage here is worrisome.
-relaxProductions :: Productions -> [Element ()]
+relaxProductions :: Productions -> [Element cmt ()]
 relaxProductions (Productions prodsP prodsC prodsE) =
   uncurry go <$> fold
     [ bimap ((,) DfnNsP) (f . relaxRPF) <$> toList prodsP
@@ -261,22 +262,23 @@ relaxProductions (Productions prodsP prodsC prodsE) =
     , bimap ((,) DfnNsE) relaxRE <$> toList prodsE
     ]
   where
+    f :: Maybe (Element cmt ()) -> Element cmt ()
     f = fromMaybe $ rngelem "empty" mempty
-    go :: (DefinitionNamespace, LText) -> Element () -> Element ()
+    go :: (DefinitionNamespace, LText) -> Element cmt () -> Element cmt ()
     go qn =
       addUAttr "name" (uncurry dfnName qn) . rngelem "define" . markupElement
 
 splitMaybes :: [Maybe a] -> ([a], Bool)
 splitMaybes as = (catMaybes as, any isNothing as)
 
-addRelaxNameAttrs :: QName -> Element () -> Element ()
+addRelaxNameAttrs :: QName -> Element cmt () -> Element cmt ()
 addRelaxNameAttrs (QName Nothing local) =
   addUAttrS "name" local
 addRelaxNameAttrs (QName (Just ns) local) =
   addUAttrS "name" local . addUAttrS "ns" ns
 
 --TODO: prune sequences involving notAllowed?
-relaxRPF :: RulePF -> Maybe (Element ())
+relaxRPF :: RulePF -> Maybe (Element cmt ())
 relaxRPF (RPFNonTerminal name) = Just $
   addUAttr "name" (dfnName DfnNsP name) $ rngelem "ref" mempty
 relaxRPF (RPFSequence rs) = case mapMaybe relaxRPF $ toList rs of
@@ -295,7 +297,7 @@ relaxRPF (RPFAttr name tp) = Just $ addRelaxNameAttrs name $
     maybe (rngelem "empty" mempty) (rngelem "list" . markupElement) $
       relaxRDT tp
 
-relaxRCF :: RuleCF -> Maybe (Element ())
+relaxRCF :: RuleCF -> Maybe (Element cmt ())
 relaxRCF (RCFNonTerminal name) = Just $
   addUAttr "name" (dfnName DfnNsC name) $ rngelem "ref" mempty
 relaxRCF (RCFChoice rs) = relaxChoice $ relaxRCF <$> toList rs
@@ -308,7 +310,7 @@ relaxRCF (RCFFlow partial complete) =
       foldMap markupElement [a, b]
 relaxRCF (RCFText t) = relaxRTx t
 
-relaxRE :: RuleE -> Element ()
+relaxRE :: RuleE -> Element cmt ()
 relaxRE (RENonTerminal name) =
   addUAttr "name" (dfnName DfnNsE name) $ rngelem "ref" mempty
 relaxRE (REChoice ras) = case relaxRE <$> toList ras of
@@ -323,11 +325,11 @@ relaxRE (REElemDT name body) =
     maybe (rngelem "empty" mempty) (rngelem "list" . markupElement) $
       relaxRDT body
 
-relaxRTx :: RuleTx -> Maybe (Element ())
+relaxRTx :: RuleTx -> Maybe (Element cmt ())
 relaxRTx RTAny = Just $ rngelem "text" mempty
 relaxRTx RTWhitespace = Nothing
 
-relaxRDT :: RuleDT -> Maybe (Element ())
+relaxRDT :: RuleDT -> Maybe (Element cmt ())
 relaxRDT (RDTDatatype lib name) = Just
   $ addUAttr "datatypeLibrary" lib $ addUAttr "type" name $ rngelem "data" mempty
 relaxRDT (RDTSequence ts) = case mapMaybe relaxRDT $ toList ts of
@@ -341,9 +343,10 @@ relaxRDT (RDTToken tok) = Just
   $ addUAttr "datatypeLibrary" ""
   $ addUAttr "type" "token" $ rngelem "value" $ markupText tok
 
-relaxChoice :: [Maybe (Element ())] -> Maybe (Element ())
+relaxChoice :: [Maybe (Element cmt ())] -> Maybe (Element cmt ())
 relaxChoice = go . splitMaybes
   where
+    go :: ([Element cmt ()], Bool) -> Maybe (Element cmt ())
     go = \case
       (as, False) -> Just $ relaxChoiceNonEmpty as
       ([], True) -> Nothing
@@ -351,7 +354,7 @@ relaxChoice = go . splitMaybes
       (as, True) -> Just $ rngelem "optional" $ markupElement $
         rngelem "choice" $ foldMap markupElement as
 
-relaxChoiceNonEmpty :: [Element ()] -> Element ()
+relaxChoiceNonEmpty :: [Element cmt ()] -> Element cmt ()
 relaxChoiceNonEmpty [] = rngelem "notAllowed" mempty
 relaxChoiceNonEmpty [a] = a
 relaxChoiceNonEmpty as = rngelem "choice" $ foldMap markupElement as

@@ -1,0 +1,4 @@
+<foo><!--
+Line 1: CRLine 2: CR LF
+Line 3: done!
+-->bar</foo>

@@ -8,7 +8,6 @@ module Q4C12.XML.Desc.Class
   , Datatype (..)
   , uattrF
   , elementPosMixed, elementMixed, elementDT
-  , flowEvenPreWS, flowWSE
   , naturalZeroDT, naturalOneDT, langDT, ncNameDT, stringTokenDT
   , CompleteFlow (..)
   )
@@ -19,9 +18,9 @@ import qualified Data.Text.Lazy.Builder as LTB
 import qualified Data.Text.Lazy.Builder.Int as LTBI
 import qualified Data.Text.Lazy.Read as LTR
 
-import Q4C12.XML (QName, uname)
+import Q4C12.XML (QName, uname, Content)
 import Q4C12.XML.Desc.RApplicative
-  ( RFunctor (rfmap), RPlus, RPlusApplyR, ActionR, rconsR
+  ( RFunctor (rfmap), RPlus, RPlusApplyR, ActionR
   , RAlternative
   )
 
@@ -120,6 +119,7 @@ class (RAlternative (EvenFlow tag), RPlus (El tag), RAlternative (DT tag),
   data El tag :: Type -> Type
   data DT tag :: Type -> Type
   type Pos tag :: Type
+  type Cmt tag :: Type
 
   evenUp
     :: OddFlow tag a
@@ -127,9 +127,9 @@ class (RAlternative (EvenFlow tag), RPlus (El tag), RAlternative (DT tag),
     -> EvenFlow tag (HProd (a ': as))
   attrF :: QName -> DT tag a -> EvenFlow tag a
 
-  oddWS :: OddFlow tag ()
-  oddTx :: OddFlow tag LText
-  oddTxPos :: OddFlow tag (Seq (Pos tag, LText))
+  oddWS :: OddFlow tag (Seq (Cmt tag))
+  oddTxPos :: OddFlow tag (Content (Cmt tag) (Pos tag))
+  oddTxNoPos :: OddFlow tag (Content (Cmt tag) ())
 
   --TODO: should the labels be SText?
   nonTerminalEven :: LText -> EvenFlow tag a -> EvenFlow tag a
@@ -154,15 +154,5 @@ class (RAlternative (EvenFlow tag), RPlus (El tag), RAlternative (DT tag),
     -> El tag (HProd (Pos tag ': as))
   nonTerminalE :: LText -> El tag a -> El tag a
 
-flowWSE :: (Desc tag) => El tag a -> EvenFlow tag a
-flowWSE
-  = rfmap (dropUnit . from singleProd)
-  . evenUp oddWS
-  . rfmap singleProd
-
 uattrF :: (Desc tag) => SText -> DT tag a -> EvenFlow tag a
 uattrF = attrF . uname
-
-flowEvenPreWS :: (Desc tag) => EvenFlow tag a -> OddFlow tag a
-flowEvenPreWS p =
-  rfmap (from singleProd) $ rconsR p (rfmap unitProd oddWS)
