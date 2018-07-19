@@ -9,7 +9,7 @@ import qualified Data.Text.Lazy.IO as LTIO
 
 import Q4C12.XML (parseXML)
 import qualified Q4C12.XML as XML
-import Q4C12.XML.XHTML2HTML (htmlDocument, displayHTMLExceptionPos)
+import Q4C12.XHTML2HTML (htmlDocument, displayHTMLExceptionPos)
 
 main :: IO ()
 main = do

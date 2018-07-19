@@ -3,7 +3,7 @@
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE UndecidableSuperClasses #-}
-module Q4C12.XML.Desc.Class
+module Q4C12.XMLDesc.Class
   ( Desc (..)
   , Datatype (..)
   , uattrF
@@ -19,7 +19,7 @@ import qualified Data.Text.Lazy.Builder.Int as LTBI
 import qualified Data.Text.Lazy.Read as LTR
 
 import Q4C12.XML (QName, uname, Content)
-import Q4C12.XML.Desc.RApplicative
+import Q4C12.XMLDesc.RApplicative
   ( RFunctor (rfmap), RPlus, RPlusApplyR, ActionR
   , RAlternative
   )

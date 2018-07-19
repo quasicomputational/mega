@@ -2,7 +2,7 @@
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE TupleSections #-}
 {-# LANGUAGE TypeFamilies #-}
-module Q4C12.XML.Desc.Parse
+module Q4C12.XMLDesc.Parse
   ( parse
   , Parse
   ) where
@@ -12,9 +12,9 @@ import qualified Data.Map as Map
 import qualified Data.Text.Lazy as LT
 import qualified Data.Sequence as Seq
 import Q4C12.TwoFinger (halfsnocEvenA, halfunconsOddE, halfunconsOddE, halfsnocEvenE, halfunsnocEvenA, halfunconsOddA, halfunsnocOddA)
-
 import Q4C12.XML (QName, Element (Element), Markup (Markup), getMarkup, Content, getContent)
-import Q4C12.XML.Desc.Class
+
+import Q4C12.XMLDesc.Class
   ( Desc ( DT, El, OddFlow, EvenFlow, Pos, Cmt, nonTerminalE, elementE, tokenDT
          , nonTerminalOdd, oddTxPos, oddTxNoPos, oddWS, nonTerminalEven, attrF, evenUp
          , elementEPos, datatypeDT
@@ -22,7 +22,7 @@ import Q4C12.XML.Desc.Class
   , Datatype (Datatype)
   , CompleteFlow (CompleteFlowDT, CompleteFlowMixed)
   )
-import Q4C12.XML.Desc.RApplicative
+import Q4C12.XMLDesc.RApplicative
   ( RFunctor (rfmap), RPlusApplyR (ActionR, rconsR), RPlus (rempty, rplus)
   , RAlternative (rnil)
   )

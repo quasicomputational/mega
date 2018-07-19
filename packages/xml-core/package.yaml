@@ -1,6 +1,6 @@
-name: q4c12-xml
+name: q4c12-xml-core
 version: "0"
-homepage: https://github.com/quasicomputational/mega/tree/master/packages/xml
+homepage: https://github.com/quasicomputational/mega/tree/master/packages/xml-core
 github: quasicomputational/mega
 author: quasicomputational <quasicomputational@gmail.com>
 license: BSD2
@@ -48,9 +48,6 @@ _common-dependencies:
     "tasty-expected-failure >= 0.11.0.4 && < 0.12"
   - &d-tasty-golden
     "tasty-golden >= 2.3.1.1 && < 2.4"
-  - &d-template-haskell
-    # No bounds, because you shouldn't be downloading template-haskell off hackage anyway, as opposed to using your GHC's one...
-    "template-haskell"
   - &d-text
     "text >= 1.2.2.2 && < 1.3"
   - &d-text-icu
@@ -65,15 +62,7 @@ library:
     - src
   exposed-modules:
     - Q4C12.XML
-    - Q4C12.XML.Desc
-    - Q4C12.XML.Desc.Class
-    - Q4C12.XML.Desc.Parse
-    - Q4C12.XML.Desc.Print
-    - Q4C12.XML.Desc.RApplicative
-    - Q4C12.XML.Desc.RELAX
-    - Q4C12.XML.Desc.TH
     - Q4C12.XML.Internal
-    - Q4C12.XML.XHTML2HTML
   # Suppress Paths_*
   other-modules: []
   dependencies:
@@ -87,21 +76,10 @@ library:
     - *d-q4c12-position
     - *d-q4c12-prelude
     - *d-safe
-    - *d-template-haskell
     - *d-text
     - *d-text-icu
     - *d-transformers
     - *d-transformers-compat
-
-executables:
-  xhtml2html:
-    main: driver/xhtml2html.hs
-    # Suppress Paths_*
-    other-modules: []
-    dependencies:
-      - q4c12-xml
-      - *d-q4c12-prelude
-      - *d-text
 
 tests:
   golden-tests:
@@ -112,7 +90,7 @@ tests:
       - "-Wno-monomorphism-restriction"
       - "-Wno-missing-local-signatures"
     dependencies:
-      - q4c12-xml
+      - q4c12-xml-core
       - *d-containers
       - *d-filepath
       - *d-q4c12-prelude
@@ -127,7 +105,7 @@ benchmarks:
     main: bench/parse-xml.hs
     other-modules: []
     dependencies:
-      - q4c12-xml
+      - q4c12-xml-core
       - *d-criterion
       - *d-q4c12-prelude
       - *d-text

@@ -1,7 +1,7 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE TypeFamilies #-}
-module Q4C12.XML.Desc.Print
+module Q4C12.XMLDesc.Print
   ( printEl
   , Print
   ) where
@@ -9,9 +9,9 @@ module Q4C12.XML.Desc.Print
 import qualified Data.DList as DList
 import qualified Data.Map as Map
 import Q4C12.TwoFinger (appendEvenAOddA, snocEvenA, singletonOddA, halfunsnocOddA)
-
 import Q4C12.XML (QName, Element, addAttrs, element, Markup (Markup), markupText, Comment, Content, contentComment)
-import Q4C12.XML.Desc.Class
+
+import Q4C12.XMLDesc.Class
   ( Desc ( DT, El, OddFlow, EvenFlow, Pos, Cmt, nonTerminalE, elementE, tokenDT
          , nonTerminalOdd, oddTxPos, oddTxNoPos, oddWS, nonTerminalEven, attrF, evenUp
          , elementEPos, datatypeDT
@@ -19,7 +19,7 @@ import Q4C12.XML.Desc.Class
   , Datatype (Datatype)
   , CompleteFlow (CompleteFlowDT, CompleteFlowMixed)
   )
-import Q4C12.XML.Desc.RApplicative
+import Q4C12.XMLDesc.RApplicative
   ( RFunctor (rfmap), RPlusApplyR (ActionR, rconsR), RPlus (rempty, rplus)
   , RAlternative (rnil)
   )
