@@ -1,5 +1,7 @@
 `q4c12-xml-core` is an opinionated XML parser and renderer. It supports a subset of the intersection of XML 1.0 and Namespaces in XML 1.0, and, what it does support, it tries to support fully. Most of what is not supported is not-really-used-and-not-really-elsewhere-supported stuff, and some stray footguns.
 
+It preserves comments and also provides location information in its parsed results, allowing for (almost) lossless source-to-source transformations and accurate error location reporting.
+
 See also: the `q4c12-xml-desc` package. Write a parser, get a printer and a schema for free!
 
 Limited XML profile
