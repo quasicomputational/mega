@@ -159,6 +159,10 @@ import Data.DList as Export
 import Data.DList.NonEmpty as Export
   (NonEmptyDList)
 
+-- directory imports for re-export
+import System.Directory as Export
+  (listDirectory)
+
 -- lens imports for re-export
 import Control.Lens as Export
   (Lens', set, over, view, (<>~), Iso, Iso', from, iso, Prism, Prism', APrism, APrism', preview, matching, review, withPrism, foldMapOf)
