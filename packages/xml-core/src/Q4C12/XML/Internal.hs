@@ -565,6 +565,7 @@ stripComments :: Element cmt pos -> Element cmt' pos
 stripComments (Element qn attrs markup pos) =
   Element qn attrs (stripCommentsMarkup markup) pos
 
+--TODO: should this accept a filename to report errors from?
 parseXML
   :: SText
   -> (Either XMLError (Element cmt PositionRange), [XMLWarning])

@@ -1,0 +1,8 @@
+<package-config>
+  <exclude>
+  </exclude>
+  <include>
+    <build>ghc-8.6-no-noprelude</build>
+    <build>ghc-head-no-noprelude</build>
+  </include>
+</package-config>
