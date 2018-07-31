@@ -2,7 +2,7 @@
 
 set -euxo pipefail
 
-CABALOPTS=$(./travis/options.cabal-new-build.sh "$1")
+CABALOPTS=$(./travis/options.cabal-new-build.sh)
 
 cabal new-build all $CABALOPTS
 

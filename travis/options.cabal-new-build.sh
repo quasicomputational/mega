@@ -2,5 +2,5 @@
 
 set -euxo pipefail
 
-printf -- '--project-file=cabal/%s.project\n' "$1"
+printf -- '--project-file=cabal/%s.project\n' "$PROJECT"
 printf -- '--enable-tests --enable-benchmarks\n'

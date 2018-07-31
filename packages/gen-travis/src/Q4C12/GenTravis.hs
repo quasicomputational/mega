@@ -23,10 +23,7 @@ import Q4C12.XMLDesc ( Desc, El, EvenFlow, elementMixed, rfmap, rmany, rcons, rn
 
 -- TODO: wouldn't it be cool to integrate this with SUPPORT.markdown, and have a machine-checked policy for older GHC compatibility?
 
--- TODO: bugs and annoyances with build stages:
---  * too monolithic: would like to be able to declare fine-grained relationships between jobs (i.e., no need to wait for the 8.0 deps job for the 8.4 build job); this causes a severe loss of parallelism
---  * relatedly, early-stage allowed-to-fail jobs aren't postponed til last
---  * for N GHC versions with M builds, we create N+M containers, download N+M times from the GHC PPA, etc, which is all slow.
+-- There's a certain amount of duplicated work going on when two builds share a GHC version, but downloading from the PPA is SO SLOW that it's worth it; after the first slow runs it gets cached just fine. If the per-container overhead was reduced, then we could move back to aiming for no redundant builds of dependencies, but it's just too much as it is.
 
 data Regularity = Regular | PreRelease
 
@@ -61,18 +58,14 @@ data Build = Build
   }
 
 --TODO: use formatting??
-env :: GHCVersion -> SText
-env ghc = fold
+env :: SText -> GHCVersion -> SText
+env buildName ghc = fold
   [ "CMD=cabal-new-build"
   , " "
   , "GHCVER="
   , ghcVersion ghc
-  ]
-
-buildScript :: SText -> SText
-buildScript buildName = fold
-  [ "./travis/build.cabal-new-build.sh"
   , " "
+  , "PROJECT="
   , buildName
   ]
 
@@ -92,15 +85,13 @@ beforeInstallStack = Aeson.pair "before_install" $ Aeson.list Aeson.text
   , "stack setup"
   ]
 
-
--- Note: we have to use the 'script' property, because in order to share cache, all builds of a specific GHC version share the same 'env'; the 'script' is what varies.
 buildAllowFailures :: SText -> Build -> [Aeson.Encoding]
 buildAllowFailures buildName build = do
   guard $ case ghcRegularity ( buildGHCVersion build ) of
     Regular -> False
     PreRelease -> True
   pure $ Aeson.pairs $
-    Aeson.pair "script" $ Aeson.text $ buildScript buildName
+    Aeson.pair "env" $ Aeson.text $ env buildName ( buildGHCVersion build )
 
 travisConfiguration :: Map SText Build -> Aeson.Encoding
 travisConfiguration buildMap = Aeson.pairs $ fold
@@ -118,8 +109,8 @@ travisConfiguration buildMap = Aeson.pairs $ fold
   -- cache stack and new-build's package stores
   , Aeson.pair "cache" $ Aeson.pairs $
       Aeson.pair "directories" $ Aeson.list Aeson.text
-      -- store everything in .cabal so that we can avoid doing new-update in the build step
-      [ "$HOME/.cabal"
+      [ "$HOME/.cabal/store"
+      , "$HOME/.cabal/bin"
       , "$HOME/.stack/bin"
       , "$HOME/.stack/precompiled"
       , "$HOME/.stack/programs"
@@ -133,45 +124,24 @@ travisConfiguration buildMap = Aeson.pairs $ fold
       , Map.foldMapWithKey buildAllowFailures buildMap
       ]
     ]
-  , Aeson.pair "stages" $ Aeson.list Aeson.text
-    [ "deps"
-    , "build"
-    ]
   , Aeson.pair "jobs" $ Aeson.pairs $ Aeson.pair "include" $ Aeson.list id $ fold
     [ [ Aeson.pairs $ fold
         [ Aeson.pair "env" $ Aeson.text "CMD=stack-werror"
-        , Aeson.pair "stage" $ Aeson.text "deps"
-        , Aeson.pair "script" $ Aeson.text "./travis/deps.stack.sh"
-        , beforeInstallStack
-        ]
-      , Aeson.pairs $ fold
-        [ Aeson.pair "env" $ Aeson.text "CMD=stack-nightly"
-        , Aeson.pair "stage" $ Aeson.text "deps"
-        , Aeson.pair "script" $ Aeson.text "./travis/deps.stack.sh --resolver nightly"
-        , beforeInstallStack
-        ]
-      , Aeson.pairs $ fold
-        [ Aeson.pair "env" $ Aeson.text "CMD=stack-werror"
-        , Aeson.pair "stage" $ Aeson.text "build"
+        , Aeson.pair "install" $ Aeson.text "./travis/deps.stack.sh" 
         , Aeson.pair "script" $ Aeson.text "./travis/build.stack.sh --ghc-options=-Werror"
         , beforeInstallStack
         ]
       , Aeson.pairs $ fold
         [ Aeson.pair "env" $ Aeson.text "CMD=stack-nightly"
-        , Aeson.pair "stage" $ Aeson.text "build"
+        , Aeson.pair "install" $ Aeson.text "./travis/deps.stack.sh --resolver nightly"
         , Aeson.pair "script" $ Aeson.text "./travis/build.stack.sh --resolver nightly"
         , beforeInstallStack
         ]
       ]
-    , depsJobs
     , buildJobs
     ]
   ]
   where
-
-    buildsByVersion :: Map GHCVersion ( Map SText Build )
-    buildsByVersion = MapPend.getMapPend $ flip Map.foldMapWithKey buildMap $ \ buildName build ->
-      MapPend.singleton ( buildGHCVersion build ) ( Map.singleton buildName build )
 
     aptPair :: GHCVersion -> Aeson.Series
     aptPair ghc =
@@ -185,24 +155,12 @@ travisConfiguration buildMap = Aeson.pairs $ fold
           ]
         ]
 
-    depsJobs = flip fmap ( Map.assocs buildsByVersion ) $ \ ( ghc, builds ) ->
+    buildJobs = flip fmap ( Map.assocs buildMap ) $ \ ( buildName, build ) ->
       Aeson.pairs $ fold
-        [ Aeson.pair "env" $ Aeson.text $ env ghc
-        , Aeson.pair "stage" $ Aeson.text "deps"
-        , aptPair ghc
-        , beforeInstallNewBuild
-        , Aeson.pair "script" $ Aeson.list Aeson.text $
-          flip fmap ( Map.keys builds ) $ \ buildName ->
-            "./travis/deps.cabal-new-build.sh " <> buildName
-        , beforeInstallNewBuild
-        ]
-
-    buildJobs = flip foldMap ( Map.assocs buildsByVersion ) $ \ ( ghc, builds ) ->
-      flip fmap ( Map.keys builds ) $ \ buildName -> Aeson.pairs $ fold
-        [ Aeson.pair "env" $ Aeson.text $ env ghc
-        , Aeson.pair "stage" $ Aeson.text "build"
-        , aptPair ghc
-        , Aeson.pair "script" $ Aeson.text $ buildScript buildName
+        [ Aeson.pair "env" $ Aeson.text $ env buildName $ buildGHCVersion build
+        , aptPair $ buildGHCVersion build
+        , Aeson.pair "install" $ Aeson.text "./travis/deps.cabal-new-build.sh"
+        , Aeson.pair "script" $ Aeson.text "./travis/build.cabal-new-build.sh"
         , beforeInstallNewBuild
         ]
 
@@ -277,7 +235,6 @@ packageConfigSchema
     -- TODO: should this go into Q4C12.XMLDesc?
     consolidate :: Iso (Content cmt pos) (Content cmt' ()) LText LText
     consolidate = iso (foldMap (foldMap snd) . getContent) contentText
-
 
 parsePackageConfig :: FilePath -> IO PackageConfig
 parsePackageConfig path = do
