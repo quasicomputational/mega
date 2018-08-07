@@ -16,10 +16,13 @@ extra-source-files:
 defaults:
   local: ../../hpack/defaults.rolling.yaml
 
+verbatim:
+  cabal-version: "2.0"
+
 _common-dependencies:
     # Define version ranges once and only once across components.
-  - &d-base-noprelude
-    "base-noprelude >= 4.9.1.0 && < 4.12"
+  - &d-base
+    "base >= 4.10.1.0 && < 4.12"
   - &d-containers
     "containers >= 0.5.9.2 && < 0.7"
   - &d-criterion
@@ -66,7 +69,7 @@ library:
   # Suppress Paths_*
   other-modules: []
   dependencies:
-    - *d-base-noprelude
+    - *d-base
     - *d-containers
     - *d-dlist
     - *d-dlist-nonempty
@@ -80,6 +83,8 @@ library:
     - *d-text-icu
     - *d-transformers
     - *d-transformers-compat
+  verbatim:
+    mixins: "base hiding (Prelude)"
 
 tests:
   golden-tests:

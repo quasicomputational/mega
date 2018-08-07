@@ -9,6 +9,9 @@ license-file:
 defaults:
   local: ../../hpack/defaults.rolling.yaml
 
+verbatim:
+  cabal-version: "2.0"
+
 library:
   source-dirs:
     - src
@@ -18,7 +21,7 @@ library:
   other-modules: []
   dependencies:
     - "aeson >= 1.4.0.0 && < 1.5"
-    - "base-noprelude >= 4.9.1.0 && < 4.12"
+    - "base >= 4.10.1.0 && < 4.12"
     - "bytestring >= 0.10.8.2 && < 0.11"
     - "containers >= 0.5.10.2 && < 0.6"
     - "q4c12-mappend >= 0 && < 0.1"
@@ -26,6 +29,8 @@ library:
     - "q4c12-xml-core >= 0 && < 0.1"
     - "q4c12-xml-desc >= 0 && < 0.1"
     - "text >= 1.2.3.0 && < 1.3"
+  verbatim:
+    mixins: "base hiding (Prelude)"
 
 executables:
   gen-travis:

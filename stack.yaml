@@ -11,6 +11,3 @@ packages:
   - location: ./packages/hlist
   - location: ./packages/position
   - location: ./packages/gen-travis
-extra-deps:
-  #TODO: remove base-prelude extra-dep once it makes it back into Stackage.
-  - base-noprelude-4.11.1.0@rev:0

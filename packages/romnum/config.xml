@@ -1,5 +1,6 @@
 <package-config>
   <exclude>
+    <build>ghc-8.0</build>
   </exclude>
   <include>
   </include>
