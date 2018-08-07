@@ -73,7 +73,7 @@ beforeInstallNewBuild :: Aeson.Series
 beforeInstallNewBuild = Aeson.pair "before_install" $ Aeson.list Aeson.text
   [ "mkdir -p \"$HOME/.local/bin\""
   , "export PATH=/opt/ghc/bin:$PATH"
-  , "HPACKVER=0.27.0 ./travis/hpack-setup.sh"
+  , "HPACKVER=0.28.2 ./travis/hpack-setup.sh"
   ]
 
 --TODO: pin stack version?
@@ -265,12 +265,9 @@ configs = Map.fromList
   [ ( "ghc-8.0", BuildConfig GHC8_0 OptOut )
   , ( "ghc-8.2", BuildConfig GHC8_2 OptOut )
   , ( "ghc-8.4", BuildConfig GHC8_4 OptOut )
-  -- TODO: regularise (including removing ghc-8.6-no-noprelude)
+  -- TODO: regularise 8.6
   , ( "ghc-8.6", BuildConfig GHC8_6 OptOut )
-  , ( "ghc-8.6-no-noprelude", BuildConfig GHC8_6 OptIn )
   , ( "ghc-head", BuildConfig GHCHEAD OptOut )
-  -- TODO: rm once base-noprelude works with GHC HEAD again
-  , ( "ghc-head-no-noprelude", BuildConfig GHCHEAD OptIn )
   ]
 
 constructBuilds

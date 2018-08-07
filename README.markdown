@@ -20,6 +20,6 @@ In roughly decreasing order of likelihood of being useful to anyone else, they a
 
 * [q4c12-hlist](packages/hlist) has heterogeneous lists and sums.
 
-* [q4c12-prelude](packages/prelude) is that hippest thing, an alternative `Prelude`. Its module is actually called `Prelude`; use it with `base-noprelude`.
+* [q4c12-prelude](packages/prelude) is that hippest thing, an alternative `Prelude`. Its module is actually called `Prelude`; use it with `base-noprelude`, or with `mixins: base hiding (Prelude)` alongside `build-depends: base`.
 
   It's not very comprehensive: I'm adding things as I find I need them.
