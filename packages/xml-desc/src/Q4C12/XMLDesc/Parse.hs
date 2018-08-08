@@ -103,7 +103,7 @@ instance (Show cmt, Show pos) => Desc (Parse cmt pos) where
 
   oddTxPos = ParseCF $ \ (halfunconsOddA -> (a, xs)) attrs ->
     pure (a, xs, attrs)
-  oddTxNoPos = fmap (const ()) <$> oddTxPos
+  oddTxNoPos = void <$> oddTxPos
 
   --TODO: use these for helpful error location reporting?
   nonTerminalEven _ = id

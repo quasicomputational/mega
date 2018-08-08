@@ -236,8 +236,8 @@ monadProperties = testGroup "OddA monad laws"
 --TODO: test isTraversal on the various traversals? Is there an isTraversal1? isTraversal for the bitraversals??
 lensProperties :: TestTree
 lensProperties = testGroup "lens laws"
-  [ testProperty "firstOddA" $ isLens $ (_AnyOddA . firstOddA :: Lens' (AnyOddA Int Int) Int)
-  , testProperty "lastOddA" $ isLens $ (_AnyOddA . lastOddA :: Lens' (AnyOddA Int Int) Int)
+  [ testProperty "firstOddA" $ isLens (_AnyOddA . firstOddA :: Lens' (AnyOddA Int Int) Int)
+  , testProperty "lastOddA" $ isLens (_AnyOddA . lastOddA :: Lens' (AnyOddA Int Int) Int)
   ]
 
 main :: IO ()

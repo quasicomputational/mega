@@ -465,16 +465,16 @@ resolveText (UText parts) = bifoldMapM resolveEntity (pure . fmap (fmap LT.fromS
 resolveContent
   :: UContent
   -> Validation (NonEmptyDList ResolveError) (Content (Comment PositionRange) PositionRange)
-resolveContent (UContent tree) = fmap Content $
-  traverse resolveText tree
+resolveContent (UContent tree) =
+  Content <$> traverse resolveText tree
 
 resolveMarkup
   :: Maybe SText
   -> Map SText SText
   -> UMarkup
   -> Validation (NonEmptyDList ResolveError) (Markup (Comment PositionRange) PositionRange)
-resolveMarkup defaultNamespace namespaces (UMarkup tree) = fmap Markup $
-  bitraverse (resolveElement defaultNamespace namespaces) resolveContent tree
+resolveMarkup defaultNamespace namespaces (UMarkup tree) =
+  Markup <$> bitraverse (resolveElement defaultNamespace namespaces) resolveContent tree
 
 resolveElement
   :: Maybe SText
@@ -609,7 +609,7 @@ toplevel preCmts = do
     finish rootPos postCmts = do
       void xmlSpaces
       (input, pos) <- get
-      if (ST.null input)
+      if ST.null input
         then pure postCmts
         else chooseFrom (lift $ throwE $ TrailingText pos)
           [ ("&", lift $ throwE $ TrailingRef pos)
@@ -852,7 +852,7 @@ xmlFlowToLTSlash = do
             pure $ UMarkup $ singletonOddA (ucontentComment cmt) <> tree)
     , ("&", do
         content <- xmlReference
-        (<>) (UMarkup $ singletonOddA $ UContent $ singletonOddA $ content) <$> xmlFlowToLTSlash
+        (<>) (UMarkup $ singletonOddA $ UContent $ singletonOddA content) <$> xmlFlowToLTSlash
         )
     , (">", lift . throwE . XMLStrayGT =<< gets snd)
     , ("\r", do
