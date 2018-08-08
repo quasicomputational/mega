@@ -34,9 +34,7 @@ library:
 
 executables:
   gen-travis:
-    main:
-      driver/gen-travis.hs
-    other-modules:
-      []
+    main: driver/gen-travis.hs
+    other-modules: []
     dependencies:
       - "q4c12-gen-travis"
