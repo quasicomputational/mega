@@ -58,12 +58,9 @@ data Build = Build
   }
 
 --TODO: use formatting??
-env :: SText -> GHCVersion -> SText
-env buildName ghc = fold
+env :: SText -> SText
+env buildName = fold
   [ "CMD=cabal-new-build"
-  , " "
-  , "GHCVER="
-  , ghcVersion ghc
   , " "
   , "PROJECT="
   , buildName
@@ -91,7 +88,7 @@ buildAllowFailures buildName build = do
     Regular -> False
     PreRelease -> True
   pure $ Aeson.pairs $
-    Aeson.pair "env" $ Aeson.text $ env buildName ( buildGHCVersion build )
+    Aeson.pair "env" $ Aeson.text $ env buildName
 
 travisConfiguration :: Map SText Build -> Aeson.Encoding
 travisConfiguration buildMap = Aeson.pairs $ fold
@@ -157,7 +154,7 @@ travisConfiguration buildMap = Aeson.pairs $ fold
 
     buildJobs = flip fmap ( Map.assocs buildMap ) $ \ ( buildName, build ) ->
       Aeson.pairs $ fold
-        [ Aeson.pair "env" $ Aeson.text $ env buildName $ buildGHCVersion build
+        [ Aeson.pair "env" $ Aeson.text $ env buildName
         , aptPair $ buildGHCVersion build
         , Aeson.pair "install" $ Aeson.text "./travis/deps.cabal-new-build.sh"
         , Aeson.pair "script" $ Aeson.text "./travis/build.cabal-new-build.sh"
