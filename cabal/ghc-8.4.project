@@ -11,3 +11,4 @@ packages:
   packages/xhtml2html
   packages/xml-core
   packages/xml-desc
+with-compiler: ghc-8.4.3

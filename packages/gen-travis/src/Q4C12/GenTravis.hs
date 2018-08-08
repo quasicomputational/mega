@@ -176,6 +176,7 @@ generateProjectFiles = traverseWithKey_ $ \ buildName build -> do
       ]
     , flip fmap ( buildPackages build ) $ \ package ->
         "  " <> LT.pack package
+    , [ "with-compiler: ghc-" <> LT.fromStrict ( ghcVersion ( buildGHCVersion build ) ) ]
     , if | PreRelease <- ghcRegularity $ buildGHCVersion build
          -> [ "repository head.hackage"
             , "  url: http://head.hackage.haskell.org/"

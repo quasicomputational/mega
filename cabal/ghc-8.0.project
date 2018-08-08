@@ -4,3 +4,4 @@ packages:
   packages/hlist
   packages/mappend
   packages/twofinger
+with-compiler: ghc-8.0.2
