@@ -55,6 +55,9 @@ import Data.Functor.Compose as Export
   (Compose (Compose), getCompose)
 import Data.Functor.Const as Export
   (Const (Const), getConst)
+import Data.Functor.Contravariant as Export
+  ( Contravariant ( contramap )
+  )
 import Data.Functor.Identity as Export
   (runIdentity, Identity (Identity))
 import Data.Int as Export
@@ -165,7 +168,12 @@ import System.Directory as Export
 
 -- lens imports for re-export
 import Control.Lens as Export
-  (Lens', set, over, view, (<>~), Iso, Iso', from, iso, Prism, Prism', APrism, APrism', preview, matching, review, withPrism, foldMapOf)
+  (Lens', set, over, view, (<>~), Iso, Iso', AnIso, AnIso', from, iso, withIso, Prism, Prism', APrism, APrism', preview, matching, review, withPrism, foldMapOf)
+
+-- invariant imports for re-export
+import Data.Functor.Invariant as Export
+  ( Invariant (invmap), invmapFunctor, invmapContravariant
+  )
 
 -- profunctors imports for re-export
 import Data.Profunctor as Export

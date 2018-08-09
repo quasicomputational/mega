@@ -23,7 +23,7 @@ import Q4C12.XMLDesc.Class
   , CompleteFlow (CompleteFlowDT, CompleteFlowMixed)
   )
 import Q4C12.XMLDesc.RApplicative
-  ( RFunctor (rfmap), RPlusApplyR (ActionR, rconsR), RPlus (rempty, rplus)
+  ( rfmap, RPlusApplyR (ActionR, rconsR), RPlus (rempty, rplus)
   , RAlternative (rnil)
   )
 
@@ -148,8 +148,8 @@ instance (Show cmt, Show pos) => Desc (Parse cmt pos) where
       then Right ((), rest)
       else Left ("wrong token, expected: " <> tok)
 
-instance RFunctor (EvenFlow (Parse cmt pos)) where
-  rfmap f = fmap (view f)
+instance Invariant (EvenFlow (Parse cmt pos)) where
+  invmap = invmapFunctor
 
 instance RPlus (EvenFlow (Parse cmt pos)) where
   rempty = ParsePF $ \_ _ -> Left ([], "empty")
@@ -169,8 +169,8 @@ instance RPlusApplyR (EvenFlow (Parse cmt pos)) where
 instance RAlternative (EvenFlow (Parse cmt pos)) where
   rnil = ParsePF $ \flow attrs -> pure (HProdNil, flow, attrs)
 
-instance RFunctor (OddFlow (Parse cmt pos)) where
-  rfmap f = fmap (view f)
+instance Invariant (OddFlow (Parse cmt pos)) where
+  invmap = invmapFunctor
 
 instance RPlus (OddFlow (Parse cmt pos)) where
   rempty = ParseCF $ \_ _ -> Left ([], "empty")
@@ -189,8 +189,8 @@ instance RPlusApplyR (OddFlow (Parse cmt pos)) where
       (as, lft, attrs'') <- runParseCF final flow' attrs'
       pure (HProdCons a as, lft, attrs'')
 
-instance RFunctor (El (Parse cmt pos)) where
-  rfmap f = fmap (view f)
+instance Invariant (El (Parse cmt pos)) where
+  invmap = invmapFunctor
 
 --XXX: Do we need backtracking?
 instance RPlus (El (Parse cmt pos)) where
@@ -201,8 +201,8 @@ instance RPlus (El (Parse cmt pos)) where
       --TODO: don't just throw away the LHS error
       Left _ -> runParseE (HSumThere <$> as) el
 
-instance RFunctor (DT (Parse cmt pos)) where
-  rfmap f = fmap (view f)
+instance Invariant (DT (Parse cmt pos)) where
+  invmap = invmapFunctor
 
 instance RPlus (DT (Parse cmt pos)) where
   rempty = ParseDT $ const $ Left "empty"

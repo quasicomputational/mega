@@ -20,7 +20,7 @@ import qualified Data.Text.Lazy.Read as LTR
 
 import Q4C12.XML (QName, uname, Content)
 import Q4C12.XMLDesc.RApplicative
-  ( RFunctor (rfmap), RPlus, RPlusApplyR, ActionR
+  ( rfmap, RPlus, RPlusApplyR, ActionR
   , RAlternative
   )
 
@@ -30,9 +30,9 @@ data CompleteFlow tag a
   = CompleteFlowMixed (OddFlow tag a)
   | CompleteFlowDT (DT tag a)
 
-instance (Desc tag) => RFunctor (CompleteFlow tag) where
-  rfmap f (CompleteFlowMixed prs) = CompleteFlowMixed (rfmap f prs)
-  rfmap f (CompleteFlowDT prs) = CompleteFlowDT (rfmap f prs)
+instance (Desc tag) => Invariant (CompleteFlow tag) where
+  invmap f g (CompleteFlowMixed prs) = CompleteFlowMixed (invmap f g prs)
+  invmap f g (CompleteFlowDT prs) = CompleteFlowDT (invmap f g prs)
 
 elementPosMixed
   :: (Desc tag)
