@@ -4,7 +4,7 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE UndecidableSuperClasses #-}
 module Q4C12.XMLDesc.RApplicative
-  ( RFunctor (rfmap)
+  ( rfmap
   , RPlus (rempty, rplus), rchoice
   , RPlusApplyR (ActionR, rconsR), rright
   , RAlternative (rnil, rmany, rsome), rcons
@@ -14,12 +14,8 @@ module Q4C12.XMLDesc.RApplicative
 
 --TODO: We have an Apply-a-like. What's the Traverse1-a-like??
 
--- Laws:
---   1. rfmap id a === a
---   2. rfmap (f . g) a === rfmap f . rfmap g $ a
---TODO: hang on, is that in the right order? Not rfmap g . rfmap f?
-class RFunctor f where
-  rfmap :: Iso' a b -> f a -> f b
+rfmap :: (Invariant f) => AnIso' a b -> f a -> f b
+rfmap l = withIso l invmap
 
 --Laws:
 --  1. rplus rempty a ~~~ a
@@ -28,7 +24,7 @@ class RFunctor f where
 --  4. rfmap (bimapping f g) (rplus a b) ~~~ rplus (rfmap f a) (rfmap g b)
 --TODO: that 4th law doesn't quite look right to me. Do we also need something about swap, or do we get that for free?
 --TODO: describe what we do about overlapping patterns.
-class (RFunctor f) => RPlus f where
+class (Invariant f) => RPlus f where
   rempty :: f (HSum '[])
   rplus :: f a -> f (HSum as) -> f (HSum (a ': as))
 

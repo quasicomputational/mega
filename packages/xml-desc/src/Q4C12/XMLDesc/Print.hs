@@ -20,7 +20,7 @@ import Q4C12.XMLDesc.Class
   , CompleteFlow (CompleteFlowDT, CompleteFlowMixed)
   )
 import Q4C12.XMLDesc.RApplicative
-  ( RFunctor (rfmap), RPlusApplyR (ActionR, rconsR), RPlus (rempty, rplus)
+  ( rfmap, RPlusApplyR (ActionR, rconsR), RPlus (rempty, rplus)
   , RAlternative (rnil)
   )
 
@@ -69,8 +69,11 @@ instance Desc Print where
   elementE name (CompleteFlowDT (PrintDT f)) = PrintEl $
     element name . markupText . intercalate0 " " . f
 
-instance RFunctor (EvenFlow Print) where
-  rfmap i (PrintEF a) = PrintEF $ a . view (from i)
+instance Contravariant (EvenFlow Print) where
+  contramap f (PrintEF a) = PrintEF (a . f)
+
+instance Invariant (EvenFlow Print) where
+  invmap = invmapContravariant
 
 instance RPlus (EvenFlow Print) where
   rempty = PrintEF $ \case {}
@@ -86,8 +89,11 @@ instance RPlusApplyR (EvenFlow Print) where
 instance RAlternative (EvenFlow Print) where
   rnil = PrintEF $ \HProdNil -> (mempty, mempty)
 
-instance RFunctor (OddFlow Print) where
-  rfmap i (PrintOF a) = PrintOF $ a . view (from i)
+instance Contravariant (OddFlow Print) where
+  contramap f (PrintOF a) = PrintOF (a . f)
+
+instance Invariant (OddFlow Print) where
+  invmap = invmapContravariant
 
 instance RPlus (OddFlow Print) where
   rempty = PrintOF $ \case {}
@@ -103,8 +109,11 @@ instance RPlusApplyR (OddFlow Print) where
           (ilv, attrs') = g as
       in (appendEvenAOddA pairs ilv, attrs <> attrs')
 
-instance RFunctor (El Print) where
-  rfmap i (PrintEl a) = PrintEl $ a . view (from i)
+instance Contravariant (El Print) where
+  contramap f (PrintEl a) = PrintEl (a . f)
+
+instance Invariant (El Print) where
+  invmap = invmapContravariant
 
 instance RPlus (El Print) where
   rempty = PrintEl $ \case {}
@@ -112,8 +121,11 @@ instance RPlus (El Print) where
     HSumHere x -> runPrintEl a x
     HSumThere xs -> runPrintEl as xs
 
-instance RFunctor (DT Print) where
-  rfmap i (PrintDT a) = PrintDT $ a . view (from i)
+instance Contravariant (DT Print) where
+  contramap f (PrintDT a) = PrintDT (a . f)
+
+instance Invariant (DT Print) where
+  invmap = invmapContravariant
 
 instance RPlus (DT Print) where
   rempty = PrintDT $ \case {}

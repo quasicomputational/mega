@@ -25,7 +25,7 @@ import Q4C12.XMLDesc.Class
   , CompleteFlow (CompleteFlowDT, CompleteFlowMixed)
   )
 import Q4C12.XMLDesc.RApplicative
-  ( RFunctor (rfmap), RPlusApplyR (ActionR, rconsR), RPlus (rempty, rplus)
+  ( rfmap, RPlusApplyR (ActionR, rconsR), RPlus (rempty, rplus)
   , RAlternative (rnil, rsome, rmany)
   )
 
@@ -163,8 +163,8 @@ instance Desc RELAX where
         Productions mempty mempty (DList.singleton (name, r))
     pure $ RENonTerminal name
 
-instance RFunctor (EvenFlow RELAX) where
-  rfmap _ (GrPF a) = GrPF a
+instance Invariant (EvenFlow RELAX) where
+  invmap = invmapFunctor
 
 instance RPlus (EvenFlow RELAX) where
   rempty = GrPF $ pure $ RPFChoice mempty
@@ -191,8 +191,8 @@ instance RAlternative (EvenFlow RELAX) where
   rmany (GrPF a) = GrPF $ RPFMany <$> a
   rsome (GrPF a) = GrPF $ RPFSome <$> a
 
-instance RFunctor (OddFlow RELAX) where
-  rfmap _ (GrCF a) = GrCF a
+instance Invariant (OddFlow RELAX) where
+  invmap = invmapFunctor
 
 instance RPlus (OddFlow RELAX) where
   rempty = GrCF $ pure $ RCFChoice mempty
@@ -208,8 +208,8 @@ instance RPlusApplyR (OddFlow RELAX) where
   type ActionR (OddFlow RELAX) = EvenFlow RELAX
   rconsR f t = GrCF $ RCFFlow <$> runGrPF f <*> runGrCF t
 
-instance RFunctor (El RELAX) where
-  rfmap _ (GrE a) = GrE a
+instance Invariant (El RELAX) where
+  invmap = invmapFunctor
 
 instance RPlus (El RELAX) where
   rempty = GrE $ pure $ REChoice mempty
@@ -221,8 +221,8 @@ instance RPlus (El RELAX) where
       (x, REChoice ys) -> x Seq.<| ys
       (x, y) -> Seq.fromList [x, y]
 
-instance RFunctor (DT RELAX) where
-  rfmap _ (GrT a) = GrT a
+instance Invariant (DT RELAX) where
+  invmap = invmapFunctor
 
 instance RPlus (DT RELAX) where
   rempty = GrT $ RDTChoice mempty

@@ -18,7 +18,7 @@ import Q4C12.XMLDesc.Class as Export
   , naturalZeroDT, naturalOneDT, langDT, ncNameDT, stringTokenDT
   )
 import Q4C12.XMLDesc.RApplicative as Export
-  ( RFunctor (rfmap)
+  ( rfmap
   , RPlus (rplus, rempty)
   , RPlusApplyR (ActionR, rconsR), rright
   , RAlternative (rnil, rmany, rsome), rcons
