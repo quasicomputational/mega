@@ -40,7 +40,7 @@ patGroup name = Writer.censor $ \dl -> DList.fromList $
   in Right (CasePatGroup name ps) : fmap Left is
 
 class AcceptsVars f where
-  type Ret f :: *
+  type Ret f :: Type
   type instance Ret f = f
 
   withVars :: f -> Q (Ret f, [Name])
