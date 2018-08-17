@@ -7,7 +7,8 @@ module Q4C12.Position
   where
 
 import qualified Data.Text as ST
-import Formatting (Format, later, bprint, int)
+import Data.Text.Lazy.Builder.Int
+  ( decimal )
 import GHC.Real (fromIntegral)
 
 --0-based indices.
@@ -45,10 +46,10 @@ updatePosition initial
     addCols t pos = Position (posLine pos) (posColumn pos + fromIntegral (ST.length t))
     nextLine pos = Position (posLine pos + 1) 0
 
-position :: Format r (Position -> r)
-position = later $ \(Position line col) ->
-  bprint ("(" . int . ", " . int . ")") (line + 1) (col + 1)
+position :: Position -> TBuilder
+position (Position line col) = fold
+  [ "(", decimal (line + 1), ", ", decimal (col + 1), ")" ]
 
-positionRange :: Format r (PositionRange -> r)
-positionRange = later $ \(PositionRange (Position line col) (Position line' col')) ->
-  bprint ("(" . int . ":" . int . "-" . int . ":" . int . ")") (line + 1) (col + 1) (line' + 1) (col' + 1)
+positionRange :: PositionRange -> TBuilder
+positionRange (PositionRange (Position line col) (Position line' col')) = fold
+  [ "(", decimal (line + 1), ":", decimal (col + 1), "-", decimal (line' + 1), ":", decimal (col' + 1), ")" ]

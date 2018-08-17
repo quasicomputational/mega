@@ -27,8 +27,6 @@ _common-dependencies:
     "dlist-nonempty >= 0.1.1 && < 0.2"
   - &d-filepath
     "filepath >= 1.4.1.1 && < 1.5"
-  - &d-formatting
-    "formatting >= 6.3.0 && < 6.4"
   - &d-q4c12-mappend
     "q4c12-mappend >= 0 && < 0.1"
   - &d-q4c12-position
@@ -63,7 +61,6 @@ library:
   other-modules: []
   dependencies:
     - *d-containers
-    - *d-formatting
     - *d-q4c12-position
     - *d-q4c12-prelude
     - *d-q4c12-twofinger

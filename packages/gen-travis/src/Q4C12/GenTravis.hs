@@ -57,7 +57,6 @@ data Build = Build
   , buildPackages :: [FilePath]
   }
 
---TODO: use formatting??
 env :: SText -> SText
 env buildName = fold
   [ "CMD=cabal-new-build"
@@ -283,7 +282,6 @@ constructBuilds packageData = do
   void $ mergeA
     dropMissing
     ( traverseMissing $ \ configName dirs ->
-        --TODO: use formatting?
         Left $ "Unknown config '" <> configName <> "' mentioned in config.xml in " <> intercalateMap0 ", " ST.pack dirs <> "."
     )
     ( zipWithMatched $ \ _ _ _ -> () )
