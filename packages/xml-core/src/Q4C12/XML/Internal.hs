@@ -25,7 +25,7 @@ import qualified Data.Text as ST
 import Data.Text.ICU.Normalize (isNormalized, NormalizationMode (NFD))
 import qualified Data.Text.Lazy as LT
 import qualified Data.Text.Lazy.Builder as LTB
-import Formatting (bprint, stext, Format, later, int, builder)
+import qualified Data.Text.Lazy.Builder.Int as LTBI
 import Q4C12.MapPend (MapPend, getMapPend)
 import qualified Q4C12.MapPend as MapPend
 import Q4C12.Position (Position, startPosition, PositionRange (PositionRange), updatePosition, position, positionRange)
@@ -234,16 +234,16 @@ renderElement (Element name attrs markup _) = flip evalStateT 1 $ do
     renderQName _ (QName Nothing local) =
       tell $ LTB.fromText local
     renderQName _ (QName (Just ns) local) | ns == xmlNS =
-      tell $ bprint ("xml:" . stext) local
+      tell $ "xml:" <> LTB.fromText local
     renderQName cur (QName (Just _) local) =
-      tell $ bprint ("n" . int . ":" . stext) cur local
+      tell $ "n" <> LTBI.decimal cur <> ":" <> LTB.fromText local
     renderNamespaceFor :: QName -> StateT Word (Writer TBuilder) ()
     renderNamespaceFor (QName Nothing _) = pure ()
     renderNamespaceFor (QName (Just ns) _) | ns == xmlNS =
       pure ()
     renderNamespaceFor (QName (Just ns) _) = do
       cur <- get
-      lift $ tell $ bprint (" xmlns:n" . int . "=\"") cur
+      lift $ tell $ " xmlns:n" <> LTBI.decimal cur <> "=\""
       lift $ renderAttrText $ LT.fromStrict ns
       lift $ tell "\""
       modify (+ 1)
@@ -275,10 +275,12 @@ data RawQName = RawQName (Maybe SText) SText
 
 instance NFData RawQName
 
-rawQName :: Format r (RawQName -> r)
-rawQName = later $ \case
-  RawQName Nothing local -> bprint stext local
-  RawQName (Just pref) local -> bprint (stext . ":" . stext) pref local
+rawQName :: RawQName -> TBuilder
+rawQName = \case
+  RawQName Nothing local ->
+    LTB.fromText local
+  RawQName (Just pref) local -> fold
+    [ LTB.fromText pref, ":", LTB.fromText local ]
 
 --TODO: it'd be nice to be able to mark individual entities as deprecated, wouldn't it?
 --TODO: factor the various 'stray X at Y' errors together?
@@ -321,74 +323,58 @@ data XMLWarning
 instance NFData XMLWarning
 
 displayResolveError :: ResolveError -> TBuilder
-displayResolveError (UnknownEntity pos name) = bprint
+displayResolveError (UnknownEntity pos name) = fold
   --TODO: escape the entity name??
-  ("Error: Unknown entity '" . stext . "' at " . positionRange . ".")
-  name pos
-displayResolveError (UnboundNamespace pos pref) = bprint
-  ("Error: Unknown namespace prefix '" . stext . "' at " . positionRange . ".")
-  pref pos
-displayResolveError (DuplicateAttrs r0 rs) =
-  bprint ("Error: Duplicate attributes at " . builder . " and " . positionRange . ".") (intercalateMap0 ", " (bprint positionRange) rs) r0
-displayResolveError (DuplicateNamespacePrefixDecls pref r0 rs) =
-  bprint ("Error: Duplicate definitions for prefix '" . stext . "' at " . builder . " and " . positionRange . ".") pref (intercalateMap0 ", " (bprint positionRange) rs) r0
-displayResolveError (DuplicateDefaultNamespaceDecls r0 rs) =
-  bprint ("Error: Duplicate default namespace definitions at " . builder . " and " . positionRange . ".") (intercalateMap0 ", " (bprint positionRange) rs) r0
-displayResolveError (NonNFDNamespace r) = bprint
-  ("Error: Namespace is not in NFD at " . positionRange . ".")
-  r
+  [ "Error: Unknown entity '", LTB.fromText name, "' at ", positionRange pos, "." ]
+displayResolveError (UnboundNamespace pos pref) = fold
+  [ "Error: Unknown namespace prefix '", LTB.fromText pref, "' at ", positionRange pos, "." ]
+displayResolveError (DuplicateAttrs r0 rs) = fold
+  [ "Error: Duplicate attributes at ", intercalateMap0 ", " positionRange rs, " and ", positionRange r0, "." ]
+displayResolveError (DuplicateNamespacePrefixDecls pref r0 rs) = fold
+  [ "Error: Duplicate definitions for prefix '", LTB.fromText pref, "' at ", intercalateMap0 ", " positionRange rs, " and ", positionRange r0, "." ]
+displayResolveError (DuplicateDefaultNamespaceDecls r0 rs) = fold
+  [ "Error: Duplicate default namespace definitions at ", intercalateMap0 ", " positionRange rs, " and ", positionRange r0, "." ]
+displayResolveError (NonNFDNamespace r) = fold
+  [ "Error: Namespace is not in NFD at ", positionRange r, "." ]
 
 displayError :: XMLError -> TBuilder
-displayError (UnmatchedTags opos open cpos close) = bprint
-  ( "Error: Misnested tags: Open tag is '" . rawQName . "' at " . position
-  . ", but close tag is '" . rawQName . "' at " . position . "."
-  )
-  open opos close cpos
-displayError (PreRootText pos) = bprint
-  ("Error: Unexpected text at " . position . " before the root element.")
-  pos
-displayError (TrailingText pos) = bprint
-  ("Error: Unexpected text at " . position . " after the root element.")
-  pos
-displayError (TrailingEndTag rootClosePos tagPos) = bprint
-  ( "Error: Trailing closing tag at " . position
-  . "; the root element was closed at " . position . "."
-  )
-  tagPos rootClosePos
-displayError (TrailingStartTag rootClosePos tagPos) = bprint
-  ( "Error: Trailing opening tag at " . position
-  . "; the root element was closed at " . position . "."
-  )
-  tagPos rootClosePos
-displayError (TrailingRef pos) = bprint
-  ("Error: Reference at " . position . ", after the root element.")
-  pos
+displayError (UnmatchedTags opos open cpos close) = fold
+  [ "Error: Misnested tags: Open tag is '", rawQName open, "' at ", position opos
+  , ", but close tag is '", rawQName close, "' at ", position cpos, "."
+  ]
+displayError (PreRootText pos) = fold
+  [ "Error: Unexpected text at ", position pos, " before the root element." ]
+displayError (TrailingText pos) = fold
+  [ "Error: Unexpected text at ", position pos, " after the root element." ]
+displayError (TrailingEndTag rootClosePos tagPos) = fold
+  [ "Error: Trailing closing tag at ", position tagPos
+  , "; the root element was closed at ", position rootClosePos, "."
+  ]
+displayError (TrailingStartTag rootClosePos tagPos) = fold
+  [ "Error: Trailing opening tag at ", position tagPos
+  , "; the root element was closed at ", position rootClosePos, "."
+  ]
+displayError (TrailingRef pos) = fold
+  [ "Error: Reference at ", position pos, ", after the root element." ]
 displayError NoRoot = "Error: Missing root element."
-displayError (PreRootRef pos) = bprint
-  ("Error: Reference at " . position . ", before the root element.")
-  pos
-displayError (PreRootEndTag pos) = bprint
-  ("Error: End tag at " . position . ", before the root element.")
-  pos
+displayError (PreRootRef pos) = fold
+  [ "Error: Reference at ", position pos, ", before the root element." ]
+displayError (PreRootEndTag pos) = fold
+  [ "Error: End tag at ", position pos, ", before the root element." ]
 displayError (ResolveError errs) =
   intercalateMap0 "\n" displayResolveError errs
-displayError (XMLUnexpectedEoF instead) = bprint
-  ("Error: End of input seen, instead of expected " . stext . ".")
-  instead
-displayError (XMLBadSyntax msg pos) = bprint
-  ("Error: Bad syntax: " . stext . " at " . position . ".")
-  msg pos
-displayError (XMLNonChar pos) = bprint
-  ("Error: Non-XML character at " . position . ".")
-  pos
-displayError (BadCharRef pos) = bprint
-  ("Error: Character reference is not an XML character at " . positionRange . ".")
-  pos
-displayError (XMLStrayGT pos) =
-  bprint ("Error: Stray '>' at " . position . ".") pos
-displayError (NonNFDName pos) = bprint
-  ("Error: Non-NFD attribute or element name at " . positionRange . ".")
-  pos
+displayError (XMLUnexpectedEoF instead) = fold
+  [ "Error: End of input seen, instead of expected ", LTB.fromText instead, "." ]
+displayError (XMLBadSyntax msg pos) = fold
+  [ "Error: Bad syntax: ", LTB.fromText msg, " at ", position pos, "." ]
+displayError (XMLNonChar pos) = fold
+  [ "Error: Non-XML character at ", position pos, "." ]
+displayError (BadCharRef pos) = fold
+  [ "Error: Character reference is not an XML character at ", positionRange pos, "." ]
+displayError (XMLStrayGT pos) = fold
+  [ "Error: Stray '>' at ", position pos, "." ]
+displayError (NonNFDName pos) = fold
+  [ "Error: Non-NFD attribute or element name at ", positionRange pos, "." ]
 
 displayWarnings :: (Foldable f) => f XMLWarning -> TBuilder
 displayWarnings = foldMap (\warn -> displayWarning warn <> "\n")
@@ -396,9 +382,8 @@ displayWarnings = foldMap (\warn -> displayWarning warn <> "\n")
 --TODO: a -Werror option, which would mean prefixing this with 'error', not 'warning'.
 --TODO: escape the name?
 displayWarning :: XMLWarning -> TBuilder
-displayWarning (AttributeNormalisation pos) = bprint
-  ("Warning: Performing attribute normalisation at " . position . ".")
-  pos
+displayWarning (AttributeNormalisation pos) = fold
+  [ "Warning: Performing attribute normalisation at ", position pos, "." ]
 
 data UElement = UElement
   RawQName

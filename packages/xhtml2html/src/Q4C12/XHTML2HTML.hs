@@ -10,7 +10,6 @@ import qualified Data.Map as Map
 import qualified Data.Set as Set
 import qualified Data.Text.Lazy as LT
 import qualified Data.Text.Lazy.Builder as LTB
-import Formatting (bprint, stext)
 import Q4C12.Position (PositionRange, positionRange)
 import Q4C12.TwoFinger (unconsOddA)
 
@@ -27,36 +26,28 @@ data HTMLException pos
   | ElementInRawText SText pos
 
 displayHTMLExceptionPos :: HTMLException PositionRange -> TBuilder
-displayHTMLExceptionPos (UnknownNamespace pos ns) = bprint
-  ("Error while HTMLifying: Unknown namespace " . stext . " at " . positionRange . ".")
-  ns pos
-displayHTMLExceptionPos (MissingNamespace pos) = bprint
-  ("Error while HTMLifying: Element in no namespace at " . positionRange . ".")
-  pos
-displayHTMLExceptionPos (ElementShouldBeVoid pos) = bprint
-  ("Error while HTMLifying: Element at " . positionRange . " should be void.")
-  pos
-displayHTMLExceptionPos (LTInRawText element pos) = bprint
-  ("Error while HTMLifying: <" . stext . "> can't have &lt; in it in the HTML syntax, but there's one at " . positionRange . ".")
-  element pos
-displayHTMLExceptionPos (ElementInRawText element pos) = bprint
-  ("Error while HTMLifying: <" . stext . "> can't have child elements, but there's one at " . positionRange . ".")
-  element pos
+displayHTMLExceptionPos (UnknownNamespace pos ns) = fold
+  [ "Error while HTMLifying: Unknown namespace ", LTB.fromText ns, " at ", positionRange pos, "." ]
+displayHTMLExceptionPos (MissingNamespace pos) = fold
+  [ "Error while HTMLifying: Element in no namespace at ", positionRange pos, "." ]
+displayHTMLExceptionPos (ElementShouldBeVoid pos) = fold
+  [ "Error while HTMLifying: Element at ", positionRange pos,  " should be void." ]
+displayHTMLExceptionPos (LTInRawText element pos) = fold
+  [ "Error while HTMLifying: <", LTB.fromText element, "> can't have &lt; in it in the HTML syntax, but there's one at ", positionRange pos, "." ]
+displayHTMLExceptionPos (ElementInRawText element pos) = fold
+  [ "Error while HTMLifying: <", LTB.fromText element, "> can't have child elements, but there's one at ", positionRange pos, "." ]
 
 displayHTMLException :: HTMLException pos -> TBuilder
-displayHTMLException (UnknownNamespace _ ns) = bprint
-  ("Error while HTMLifying: Unknown namespace " . stext . ".")
-  ns
+displayHTMLException (UnknownNamespace _ ns) = fold
+  [ "Error while HTMLifying: Unknown namespace ", LTB.fromText ns,  "." ]
 displayHTMLException (MissingNamespace _) =
   "Error while HTMLifying: Element in no namespace."
 displayHTMLException (ElementShouldBeVoid _) =
   "Error while HTMLifying: Element should be void."
-displayHTMLException (LTInRawText element _) = bprint
-  ("Error while HTMLifying: <" . stext . "> can't have &lt; in it in the HTML syntax.")
-  element
-displayHTMLException (ElementInRawText element _) = bprint
-  ("Error while HTMLifying: <" . stext . "> can't have child elements.")
-  element
+displayHTMLException (LTInRawText element _) = fold
+  [ "Error while HTMLifying: <", LTB.fromText element, "> can't have &lt; in it in the HTML syntax." ]
+displayHTMLException (ElementInRawText element _) = fold
+  [ "Error while HTMLifying: <", LTB.fromText element, "> can't have child elements." ]
 
 htmlDocument :: Element cmt pos -> Either (HTMLException pos) TBuilder
 htmlDocument el = foldSequence
