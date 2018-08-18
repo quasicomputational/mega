@@ -5,4 +5,4 @@ module Main
 
 where
 
-import Q4C12.GenTravis ( main )
+import Q4C12.Meta ( main )

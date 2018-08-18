@@ -9,4 +9,4 @@ packages:
   ./packages/foldable-utils
   ./packages/hlist
   ./packages/position
-  ./packages/gen-travis
+  ./packages/meta

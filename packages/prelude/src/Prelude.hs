@@ -2,7 +2,7 @@
 module Prelude
   ( module Export
   , mtimesSafe
-  , LText, SText, TBuilder
+  , LText, SText, TBuilder, BSBuilder
   , hush
   , (<&>)
   , FilePathComponent
@@ -196,6 +196,7 @@ import Q4C12.TwoFinger as Export
   (TwoFingerOddA, TwoFingerOddE, TwoFingerEvenA, TwoFingerEvenE)
 
 --Imports for local use.
+import qualified Data.ByteString.Builder as BSB
 import Data.Semigroup (mtimesDefault)
 import Data.String (String)
 import qualified Data.Text as ST
@@ -206,6 +207,7 @@ import GHC.Real (fromIntegral)
 type SText = ST.Text
 type LText = LT.Text
 type TBuilder = LTB.Builder
+type BSBuilder = BSB.Builder
 
 --TODO: get rid of all the local definitions that aren't purely for compatibility.
 

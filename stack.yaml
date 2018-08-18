@@ -10,4 +10,4 @@ packages:
   - location: ./packages/foldable-utils
   - location: ./packages/hlist
   - location: ./packages/position
-  - location: ./packages/gen-travis
+  - location: ./packages/meta
