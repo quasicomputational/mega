@@ -18,35 +18,6 @@ extra-source-files:
 verbatim:
   cabal-version: "2.0"
 
-_common-dependencies:
-  # Define version ranges once and only once across components.
-  - &d-base
-    "base >= 4.9.1.0 && < 4.12"
-  - &d-bytestring
-    "bytestring >= 0.10.8.1 && < 0.11"
-  - &d-Cabal
-    "Cabal >= 1.24.2.0 && < 1.25 || >= 2.0.1.0 && < 2.1 || >= 2.2.0.1 && < 2.3"
-  - &d-containers
-    "containers >= 0.5.7.1 && < 0.6"
-  - &d-dlist
-    "dlist >= 0.8.0.4 && < 0.9"
-  - &d-dlist-nonempty
-    "dlist-nonempty >= 0.1.1 && < 0.2"
-  - &d-lens
-    "lens >= 4.17 && < 4.18"
-  - &d-optparse-applicative
-    "optparse-applicative >= 0.14.2.0 && < 0.15"
-  - &d-q4c12-prelude
-    "q4c12-prelude >= 0 && < 0.1"
-  - &d-q4c12-project-file
-    "q4c12-project-file >= 0 && < 0.1"
-  - &d-tasty
-    "tasty >= 1.1.0.2 && < 1.2"
-  - &d-tasty-golden
-    "tasty-golden >= 2.3.2 && < 2.4"
-  - &d-text
-    "text >= 1.2.3.0 && < 1.3"
-
 library:
   source-dirs:
     - src
@@ -54,15 +25,15 @@ library:
     - Q4C12.Refrigerate
   other-modules: []
   dependencies:
-    - *d-base
-    - *d-bytestring
-    - *d-Cabal
-    - *d-containers
-    - *d-dlist-nonempty
-    - *d-lens
-    - *d-q4c12-prelude
-    - *d-q4c12-project-file
-    - *d-text
+    - base
+    - bytestring
+    - Cabal
+    - containers
+    - dlist-nonempty
+    - lens
+    - q4c12-prelude
+    - q4c12-project-file
+    - text
   verbatim:
     mixins: "base hiding (Prelude)"
 
@@ -71,14 +42,14 @@ executables:
     main: driver/refrigerate.hs
     other-modules: []
     dependencies:
-      - "q4c12-refrigerate"
-      - *d-base
-      - *d-bytestring
-      - *d-Cabal
-      - *d-optparse-applicative
-      - *d-q4c12-prelude
-      - *d-q4c12-project-file
-      - *d-text
+      - q4c12-refrigerate
+      - base
+      - bytestring
+      - Cabal
+      - optparse-applicative
+      - q4c12-prelude
+      - q4c12-project-file
+      - text
     verbatim:
       mixins: "base hiding (Prelude)"
 
@@ -87,15 +58,15 @@ tests:
     main: test/tasty.hs
     other-modules: []
     dependencies:
-      - "q4c12-refrigerate"
-      - *d-base
-      - *d-bytestring
-      - *d-Cabal
-      - *d-dlist
-      - *d-q4c12-prelude
-      - *d-q4c12-project-file
-      - *d-tasty
-      - *d-tasty-golden
-      - *d-text
+      - q4c12-refrigerate
+      - base
+      - bytestring
+      - Cabal
+      - dlist
+      - q4c12-prelude
+      - q4c12-project-file
+      - tasty
+      - tasty-golden
+      - text
     verbatim:
       mixins: "base hiding (Prelude)"

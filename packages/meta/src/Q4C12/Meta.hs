@@ -184,6 +184,11 @@ travisConfiguration buildMap = Aeson.pairs $ fold
             []
           MetaYes ->
             [ "./travis/meta.cabal-new-build.sh" ]
+      , case ghcRegularity $ buildGHCVersion build of
+          Regular ->
+            [ "./travis/check-outdated.cabal-new-build.sh" ]
+          PreRelease ->
+            []
       ]
 
 generateProjectFiles :: Map SText Build -> IO ()
