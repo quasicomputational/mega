@@ -45,7 +45,7 @@ import Data.Eq as Export
 --Note: elem is a potential performance landmine: if a container places more restrictions on its elements and can use those for retrieval, the (Eq a) constraint forces it to go linear. (e.g., Data.Set.member is O(log n).) Hence, we don't want to export it generally.
 import Data.Foldable as Export
   ( Foldable (foldMap), toList, foldr, traverse_, sequence_, foldl', fold
-  , for_, any, all, null, find
+  , for_, any, all, null, find, length
   )
 import Data.Function as Export
   (($), const, flip, (&), fix)
@@ -97,7 +97,7 @@ import GHC.Err as Export
 import GHC.Generics as Export
   (Generic)
 import GHC.Num as Export
-  ((*), (+), (-), Integer)
+  ((*), (+), (-), Integer, negate)
 import GHC.Real as Export
   (Integral)
 import Numeric.Natural as Export
