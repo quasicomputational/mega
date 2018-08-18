@@ -27,40 +27,12 @@ defaults:
 
 #TODO: https://github.com/commercialhaskell/stack/issues/2583 means we can't get away with putting the QuickCheck stuff into another package.
 
-_common-dependencies:
-  # Define version ranges once and only once across components.
-  - &d-base
-    "base >= 4.9.1.0 && < 4.12"
-  - &d-bifunctors
-    "bifunctors >= 5.4.2 && < 5.6"
-  - &d-cabal-doctest
-    "cabal-doctest >= 1.0.5 && < 1.1"
-  - &d-containers
-    "containers >= 0.5.7.1 && < 0.7"
-  - &d-deepseq
-    "deepseq >= 1.4.2.0 && < 1.5"
-  - &d-doctest
-    "doctest >= 0.11.4 && < 0.17"
-  - &d-lens
-    "lens >= 4.15.4 && < 4.18"
-  - &d-lens-properties
-    "lens-properties >= 4.11.1 && < 4.12"
-  - &d-QuickCheck
-    "QuickCheck >= 2.10.1 && < 2.11 || >= 2.11.3 && < 2.12"
-  - &d-semigroupoids
-    "semigroupoids >= 5.2.1 && < 5.4"
-  - &d-tasty
-    "tasty >= 0.12 && < 0.13 || >= 1.0 && < 1.2"
-  - &d-tasty-quickcheck
-    "tasty-quickcheck >= 0.9.1 && < 0.11"
-
 custom-setup:
   dependencies:
     #TODO: remove Cabal dep once https://github.com/haskell/cabal/issues/4288 is fixed
-    #TODO: we don't have to share dep versions with the other components here, thinking about it; is that worth changing??
-    - "Cabal"
-    - *d-base
-    - *d-cabal-doctest
+    - Cabal
+    - base
+    - cabal-doctest
 
 library:
   source-dirs:
@@ -71,15 +43,15 @@ library:
   # Suppress Paths_*
   other-modules: []
   dependencies:
-    - *d-base
-    - *d-containers
-    - *d-deepseq
-    - *d-semigroupoids
+    - base
+    - containers
+    - deepseq
+    - semigroupoids
   when:
     #TODO: rm once 8.0 is unsupported
     - condition: impl(ghc < 8.2)
       dependencies:
-        - *d-bifunctors
+        - bifunctors
     - condition: "true"
       #Have to specify this in a conditional because of https://github.com/sol/hpack/issues/255 TODO remove once fixed
       ghc-options:
@@ -93,12 +65,12 @@ tests:
     other-modules: []
     dependencies:
       - q4c12-twofinger
-      - *d-base
-      - *d-lens
-      - *d-lens-properties
-      - *d-QuickCheck
-      - *d-tasty
-      - *d-tasty-quickcheck
+      - base
+      - lens
+      - lens-properties
+      - QuickCheck
+      - tasty
+      - tasty-quickcheck
   doctests:
     main: test/Doctest.hs
     other-modules: []
@@ -115,8 +87,8 @@ tests:
     dependencies:
       #https://github.com/phadej/cabal-doctest/issues/19
       - q4c12-twofinger
-      - *d-base
-      - *d-doctest
-      - *d-lens
+      - base
+      - doctest
+      - lens
 
 #TODO: Benchmarks!

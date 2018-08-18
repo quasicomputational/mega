@@ -12,27 +12,6 @@ defaults:
 verbatim:
   cabal-version: "2.0"
 
-_common-dependencies:
-  # Define version ranges once and only once across components.
-  - &d-base
-    "base >= 4.9.1.0 && < 4.12"
-  - &d-Cabal
-    "Cabal >= 2.2.0.1 && < 2.3"
-  - &d-containers
-    "containers >= 0.5.7.1 && < 0.6"
-  - &d-megaparsec
-    "megaparsec >= 6.5.0 && < 6.6"
-  - &d-parser-combinators
-    "parser-combinators >= 1.0.0 && < 1.1"
-  - &d-q4c12-prelude
-    "q4c12-prelude >= 0 && < 0.0.1"
-  - &d-tasty
-    "tasty >= 1.0 && < 1.2"
-  - &d-tasty-hunit
-    "tasty-hunit >= 0.10 && < 0.11"
-  - &d-text
-    "text >= 1.2.3.0 && < 1.3"
-
 library:
   source-dirs:
     - src
@@ -41,13 +20,13 @@ library:
   # Suppress Paths_*
   other-modules: []
   dependencies:
-    - *d-base
-    - *d-Cabal
-    - *d-containers
-    - *d-megaparsec
-    - *d-parser-combinators
-    - *d-q4c12-prelude
-    - *d-text
+    - base
+    - Cabal
+    - containers
+    - megaparsec
+    - parser-combinators
+    - q4c12-prelude
+    - text
   verbatim:
     mixins: "base hiding (Prelude)"
 
@@ -56,13 +35,13 @@ tests:
     main: test/tasty.hs
     other-modules: []
     dependencies:
-      - "q4c12-project-file"
-      - *d-base
-      - *d-Cabal
-      - *d-containers
-      - *d-q4c12-prelude
-      - *d-tasty
-      - *d-tasty-hunit
-      - *d-text
+      - q4c12-project-file
+      - base
+      - Cabal
+      - containers
+      - q4c12-prelude
+      - tasty
+      - tasty-hunit
+      - text
     verbatim:
       mixins: "base hiding (Prelude)"

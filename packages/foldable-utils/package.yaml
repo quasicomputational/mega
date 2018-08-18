@@ -9,25 +9,12 @@ license-file:
 defaults:
   local: ../../hpack/defaults.rolling.yaml
 
-_common-dependencies:
-  # Define version ranges once and only once across components.
-  - &d-base
-    "base >= 4.9.1.0 && < 4.12"
-  - &d-bifunctors
-    "bifunctors >= 5.5 && < 5.6"
-  - &d-cabal-doctest
-    "cabal-doctest >= 1.0.5 && < 1.1"
-  - &d-doctest
-    "doctest >= 0.11.4 && < 0.17"
-  - &d-transformers
-    "transformers >= 0.5 && < 0.6"
-
 custom-setup:
   dependencies:
     #TODO: remove Cabal dep once https://github.com/haskell/cabal/issues/4288 is fixed
-    - "Cabal"
-    - *d-base
-    - *d-cabal-doctest
+    - Cabal
+    - base
+    - cabal-doctest
 
 library:
   source-dirs:
@@ -37,13 +24,13 @@ library:
   # Suppress Paths_*
   other-modules: []
   dependencies:
-    - *d-base
-    - *d-transformers
+    - base
+    - transformers
   when:
     #TODO: rm once 8.0 is unsupported
     - condition: impl(ghc < 8.2)
       dependencies:
-        - *d-bifunctors
+        - bifunctors
     - condition: "true"
       #Have to specify this in a conditional because of https://github.com/sol/hpack/issues/255 TODO remove once fixed
       ghc-options:
@@ -68,5 +55,5 @@ tests:
     dependencies:
       #https://github.com/phadej/cabal-doctest/issues/19
       - q4c12-foldable-utils
-      - *d-base
-      - *d-doctest
+      - base
+      - doctest

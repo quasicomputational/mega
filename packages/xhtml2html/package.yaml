@@ -15,43 +15,6 @@ extra-source-files:
 defaults:
   local: ../../hpack/defaults.rolling.yaml
 
-_common-dependencies:
-    # Define version ranges once and only once across components.
-  - &d-containers
-    "containers >= 0.5.9.2 && < 0.7"
-  - &d-criterion
-    "criterion >= 1.5.0.0 && < 1.6"
-  - &d-dlist
-    "dlist >= 0.8.0.3 && < 0.9"
-  - &d-dlist-nonempty
-    "dlist-nonempty >= 0.1.1 && < 0.2"
-  - &d-filepath
-    "filepath >= 1.4.1.1 && < 1.5"
-  - &d-q4c12-mappend
-    "q4c12-mappend >= 0 && < 0.1"
-  - &d-q4c12-position
-    "q4c12-position >= 0 && < 0.1"
-  - &d-q4c12-prelude
-    "q4c12-prelude >= 0 && < 0.0.1"
-  - &d-q4c12-twofinger
-    "q4c12-twofinger >= 0.2 && < 0.3"
-  - &d-q4c12-xml-core
-    "q4c12-xml-core >= 0 && < 0.1"
-  - &d-safe
-    "safe >= 0.3.15 && < 0.4"
-  - &d-tasty
-    "tasty >= 0.12 && < 0.13 || >= 1.0 && < 1.2"
-  - &d-tasty-golden
-    "tasty-golden >= 2.3.1.1 && < 2.4"
-  - &d-text
-    "text >= 1.2.2.2 && < 1.3"
-  - &d-text-icu
-    "text-icu >= 0.7.0.1 && < 0.8"
-  - &d-transformers
-    "transformers >= 0.5 && < 0.6"
-  - &d-transformers-compat
-    "transformers-compat >= 0.6 && < 0.7"
-
 library:
   source-dirs:
     src
@@ -60,12 +23,12 @@ library:
   # Suppress Paths_*
   other-modules: []
   dependencies:
-    - *d-containers
-    - *d-q4c12-position
-    - *d-q4c12-prelude
-    - *d-q4c12-twofinger
-    - *d-q4c12-xml-core
-    - *d-text
+    - containers
+    - q4c12-position
+    - q4c12-prelude
+    - q4c12-twofinger
+    - q4c12-xml-core
+    - text
 
 executables:
   xhtml2html:
@@ -74,9 +37,9 @@ executables:
     other-modules: []
     dependencies:
       - q4c12-xhtml2html
-      - *d-q4c12-prelude
-      - *d-q4c12-xml-core
-      - *d-text
+      - q4c12-prelude
+      - q4c12-xml-core
+      - text
 
 tests:
   golden-tests:
@@ -88,12 +51,12 @@ tests:
       - "-Wno-missing-local-signatures"
     dependencies:
       - q4c12-xhtml2html
-      - *d-filepath
-      - *d-q4c12-prelude
-      - *d-q4c12-xml-core
-      - *d-tasty
-      - *d-tasty-golden
-      - *d-text
-      - *d-transformers
+      - filepath
+      - q4c12-prelude
+      - q4c12-xml-core
+      - tasty
+      - tasty-golden
+      - text
+      - transformers
 
 #TODO: property-based testing. Round-trip render/parse.
