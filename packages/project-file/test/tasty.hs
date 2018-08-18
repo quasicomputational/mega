@@ -3,7 +3,6 @@ module Main
   )
   where
 
-import qualified Data.List as List
 import qualified Data.Sequence as Seq
 import qualified Data.Text as ST
 import Distribution.Types.Version
