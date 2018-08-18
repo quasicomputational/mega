@@ -176,8 +176,7 @@ travisConfiguration buildMap = Aeson.pairs $ fold
           MetaNo ->
             []
           MetaYes ->
-            [ "cabal new-run meta check-hash"
-            ]
+            [ "./travis/meta.cabal-new-build.sh" ]
       ]
 
 generateProjectFiles :: Map SText Build -> IO ()

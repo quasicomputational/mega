@@ -6,6 +6,8 @@ packages:
   packages/meta
   packages/position
   packages/prelude
+  packages/project-file
+  packages/refrigerate
   packages/romnum
   packages/twofinger
   packages/xhtml2html

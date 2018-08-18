@@ -3,5 +3,5 @@ dist/
 dist-newstyle/
 .cabal-sandbox/
 cabal.sandbox.config
-*.cabal
+packages/*/*.cabal
 .ghc.environment.*

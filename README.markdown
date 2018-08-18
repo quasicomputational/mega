@@ -14,6 +14,10 @@ In roughly decreasing order of likelihood of being useful to anyone else, they a
 
 * [q4c12-xhtml2html](packages/xhtml2html) converts from the XML syntax to the HTML syntax.
 
+* [q4c12-refrigerate](packages/refrigerate) is like Stack's [`pvp-bounds` feature](https://docs.haskellstack.org/en/stable/yaml_configuration/#pvp-bounds), except it works on Cabal's freeze files instead. If you test your code against a set of freeze files, `refrigerate` can add the PVP bounds to your `.cabal` file corresponding to the dependency versions in those freeze files.
+
+* [q4c12-project-file](packages/project-file) is a horribly incomplete parser and renderer for Cabal's [`.project` configuration files](http://cabal.readthedocs.io/en/latest/nix-local-build.html#configuring-builds-with-cabal-project).
+
 * [q4c12-romnum](packages/romnum) is a Roman numeral generator.
 
 * [q4c12-position](packages/position) is a type to represent points or contiguous ranges in text.

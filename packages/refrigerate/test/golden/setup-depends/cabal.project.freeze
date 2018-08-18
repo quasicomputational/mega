@@ -1,0 +1,7 @@
+constraints:
+  any.foo == 2,
+  setup.bar == 3,
+  bar == 4,
+  otherpkg:setup.bar == 7,
+  testpkg:setup.baz == 5,
+  otherpkg:setup.baz == 6

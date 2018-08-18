@@ -10,3 +10,5 @@ packages:
   ./packages/hlist
   ./packages/position
   ./packages/meta
+  ./packages/project-file
+  ./packages/refrigerate

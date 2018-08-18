@@ -13,7 +13,7 @@ module Prelude
 --TODO: consider eliminating mappend as an export, in favour of (<>)? Slightly awkward since we need it visible when we define new Monoid instances (until GHC 8.4). So maybe stick on the 'do later' pile...
 -- base imports for re-export
 import Control.Applicative as Export
-  (Applicative, pure, (<*>), (*>))
+  (Applicative, pure, (<*>), (*>), (<*), liftA2, many, empty, (<|>))
 import Control.Category as Export
   (Category (id, (.)), (>>>))
 import Control.Exception as Export
@@ -36,7 +36,7 @@ import Data.Bitraversable as Export
 import Data.Bool as Export
   (Bool (True, False), not, (||), (&&), otherwise)
 import Data.Char as Export
-  (Char, isSpace, toUpper, isAlphaNum)
+  (Char, isSpace, toUpper, isAlphaNum, isAscii)
 import Data.Either as Export
   (Either (Left, Right), either, partitionEithers)
 import Data.Eq as Export
@@ -73,7 +73,7 @@ import Data.Maybe as Export
 import Data.Monoid as Export
   (Monoid (mempty, mappend), Endo (Endo), appEndo, Dual (Dual), getDual)
 import Data.Ord as Export
-  (Ord, (>=), (<=), (>), (<), min, max)
+  (Ord, (>=), (<=), (>), (<), min, max, Ordering (LT, EQ, GT))
 --TODO: get rid of Option once Maybe's Monoid instance changes
 import Data.Semigroup as Export
   ( Semigroup ((<>)), All (All), getAll, Any (Any), getAny, Option (Option), option
@@ -116,7 +116,7 @@ import Control.DeepSeq as Export
 -- filepath imports for re-export
 --TODO: consider dropping the String-based ones?
 import System.FilePath.Posix as Export
-  (addExtension, dropExtension, (</>))
+  (addExtension, dropExtension, stripExtension, (</>))
 
 -- transformers imports for re-export
 import Control.Monad.Trans.Accum as Export
@@ -164,11 +164,11 @@ import Data.DList.NonEmpty as Export
 
 -- directory imports for re-export
 import System.Directory as Export
-  (listDirectory)
+  (doesFileExist, listDirectory)
 
 -- lens imports for re-export
 import Control.Lens as Export
-  (Lens', set, over, view, (<>~), Iso, Iso', AnIso, AnIso', from, iso, withIso, Prism, Prism', APrism, APrism', preview, matching, review, withPrism, foldMapOf)
+  (Lens', set, over, view, (<>~), Iso, Iso', AnIso, AnIso', from, iso, withIso, Prism, Prism', APrism, APrism', preview, matching, review, withPrism, foldMapOf, anyOf)
 
 -- invariant imports for re-export
 import Data.Functor.Invariant as Export

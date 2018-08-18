@@ -1,0 +1,9 @@
+cabal-version: 2.2
+name: test
+version: 0
+
+library
+    
+    if os(linux)
+        build-depends:
+            some-lib ==0.1.*

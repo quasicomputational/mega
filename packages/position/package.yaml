@@ -20,7 +20,7 @@ library:
   # Suppress Paths_*
   other-modules: []
   dependencies:
-    - "base >= 4.10.1.0 && < 4.12"
+    - "base >= 4.9.1.0 && < 4.12"
     - "q4c12-prelude >= 0 && < 0.0.1"
     - "text >= 1.2.2.2 && < 1.3"
   verbatim:
