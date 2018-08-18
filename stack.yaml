@@ -11,3 +11,5 @@ packages:
   - location: ./packages/hlist
   - location: ./packages/position
   - location: ./packages/meta
+  - location: ./packages/project-file
+  - location: ./packages/refrigerate

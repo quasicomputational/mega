@@ -1,0 +1,3 @@
+constraints:
+  some-lib == 0.1,
+  some-lib +flagname
