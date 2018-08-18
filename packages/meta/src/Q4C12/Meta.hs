@@ -120,15 +120,18 @@ travisConfiguration buildMap = Aeson.pairs $ fold
   , Aeson.pair "notifications" $ Aeson.pairs $
       Aeson.pair "email" $ Aeson.bool False
   -- cache stack and new-build's package stores
-  , Aeson.pair "cache" $ Aeson.pairs $
-      Aeson.pair "directories" $ Aeson.list Aeson.text
-      [ "$HOME/.cabal/store"
-      , "$HOME/.cabal/bin"
-      , "$HOME/.stack/bin"
-      , "$HOME/.stack/precompiled"
-      , "$HOME/.stack/programs"
-      , "$HOME/.stack/setup-exe-cache"
-      , "$HOME/.stack/snapshots"
+  , Aeson.pair "cache" $ Aeson.pairs $ fold
+      [ Aeson.pair "directories" $ Aeson.list Aeson.text
+        [ "$HOME/.cabal/store"
+        , "$HOME/.cabal/bin"
+        , "$HOME/.stack/bin"
+        , "$HOME/.stack/precompiled"
+        , "$HOME/.stack/programs"
+        , "$HOME/.stack/setup-exe-cache"
+        , "$HOME/.stack/snapshots"
+        ]
+      -- storing a full cache by stack takes a while and tends to over-run the default 180 second budget. Bump it up to a more comfortable level.
+      , Aeson.pair "timeout" $ Aeson.word 300
       ]
   , Aeson.pair "matrix" $ Aeson.pairs $ fold
     [ Aeson.pair "fast_finish" $ Aeson.bool True
