@@ -4,3 +4,5 @@
 *.fails                                      -text
 *.out                                        -text
 *.errout                                     -text
+# travis/hash is a binary file
+travis/hash                                  -text
