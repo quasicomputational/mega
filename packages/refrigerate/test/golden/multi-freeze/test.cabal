@@ -1,9 +1,0 @@
-cabal-version: 2.2
-name: test
-version: 0
-
-library
-  build-depends:
-    some-lib,
-    other-lib,
-    preconstrained < 1.0.1

@@ -10,10 +10,6 @@ defaults:
   local: ../../hpack/defaults.rolling.yaml
 extra-doc-files:
   - "README.markdown"
-extra-source-files:
-  - "test/golden/*/out"
-  - "test/golden/*/test.cabal"
-  - "test/golden/*/*.freeze"
 
 verbatim:
   cabal-version: "2.0"
@@ -26,7 +22,6 @@ library:
   other-modules: []
   dependencies:
     - base
-    - bytestring
     - Cabal
     - containers
     - dlist-nonempty
@@ -37,22 +32,6 @@ library:
   verbatim:
     mixins: "base hiding (Prelude)"
 
-executables:
-  refrigerate:
-    main: driver/refrigerate.hs
-    other-modules: []
-    dependencies:
-      - q4c12-refrigerate
-      - base
-      - bytestring
-      - Cabal
-      - optparse-applicative
-      - q4c12-prelude
-      - q4c12-project-file
-      - text
-    verbatim:
-      mixins: "base hiding (Prelude)"
-
 tests:
   tasty:
     main: test/tasty.hs
@@ -62,11 +41,12 @@ tests:
       - base
       - bytestring
       - Cabal
-      - dlist
+      - containers
+      - lens
       - q4c12-prelude
       - q4c12-project-file
       - tasty
-      - tasty-golden
+      - tasty-hunit
       - text
     verbatim:
       mixins: "base hiding (Prelude)"

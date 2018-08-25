@@ -3,16 +3,30 @@ module Main
   )
   where
 
+import Control.Lens
+  ( set
+  )
 import qualified Data.ByteString as BS
-import qualified Data.ByteString.Lazy as LBS
-import qualified Data.DList as DList
+import qualified Data.Sequence as Seq
 import qualified Data.Text as ST
-import qualified Data.Text.Encoding as STEnc
-import qualified Data.Text.IO as STIO
-import qualified Data.Text.Lazy as LT
-import qualified Data.Text.Lazy.Encoding as LTEnc
+import qualified Distribution.Compiler as Compiler
+import Distribution.PackageDescription
+  ( mkFlagAssignment
+  )
 import Distribution.PackageDescription.PrettyPrint
   ( showGenericPackageDescription
+  )
+import Distribution.PackageDescription.Parsec
+  ( parseGenericPackageDescription
+  , runParseResult
+  )
+import Distribution.Parsec.Common
+  ( showPError
+  )
+import qualified Distribution.System as System
+import Distribution.Version
+  ( mkVersion
+  , thisVersion
   )
 import qualified Q4C12.ProjectFile as PF
 import Test.Tasty
@@ -20,88 +34,527 @@ import Test.Tasty
   , defaultMain
   , testGroup
   )
-import Test.Tasty.Golden
-  ( goldenVsString
+import Test.Tasty.HUnit
+  ( (@?=)
+  , testCase
   )
 
 import Q4C12.Refrigerate
-  ( refrigerate
+  ( Env
+  , env
+  , refrigerate
   )
 
-data Tests = Tests
-  { _successTests :: DList FilePath
-  , _failureTests :: DList FilePath
-  }
-
-instance Semigroup Tests where
-  Tests a b <> Tests a' b' = Tests (a <> a') (b <> b')
-
-instance Monoid Tests where
-  mempty = Tests mempty mempty
-  mappend = (<>)
-
-gatherTests :: IO Tests
-gatherTests = do
-  dirs <- listDirectory "test/golden"
-  fmap fold $ for dirs $ \ dirLocal -> do
-    let dir = "test/golden" </> dirLocal
-    isSuccess <- doesFileExist ( dir </> "out" )
-    isFailure <- doesFileExist ( dir </> "err" )
-    pure $ Tests
-      ( if isSuccess then DList.singleton dir else mempty )
-      ( if isFailure then DList.singleton dir else mempty )
-
--- Returns the (possibly non-existent) project file name, not the freeze itself (i.e., FILE, not FILE.freeze).
-gatherFreezes :: FilePath -> IO [FilePath]
-gatherFreezes dir =
-  fmap (dir </>) . mapMaybe ( stripExtension "freeze" ) <$> listDirectory dir
-
 main :: IO ()
-main = do
-  Tests successTests failureTests <- gatherTests
-  defaultMain $ testGroup "refrigeration testing"
-    [ testGroup "should work" $ successTest <$> toList successTests
-    , testGroup "should fail" $ failureTest <$> toList failureTests
-    ]
+main = defaultMain $ testGroup "refrigerate tests"
+  [ testGroup "should work" successTests
+  , testGroup "should fail" failureTests
+  ]
 
-successTest :: FilePath -> TestTree
-successTest dir =
-  goldenVsString dir ( dir </> "out" ) $ do
-    projectFiles <- gatherFreezes dir
-    let freezeFiles = flip addExtension "freeze" <$> projectFiles
-    configs <- for freezeFiles $ \ freezeFile -> do
-      res <- PF.parse <$> STIO.readFile freezeFile
-      case res of
-        Left err ->
-          fail $ ST.unpack $
-            "Error while reading " <> ST.pack freezeFile <> ":\n" <> PF.renderError err
-        Right config ->
-          pure config
-    cabalString <- BS.readFile ( dir </> "test.cabal" )
-    let res = refrigerate configs cabalString
-    case res of
-      Left err ->
-        fail $ ST.unpack $ "refrigerate failed: " <> err
-      Right gpd ->
-        pure $ LTEnc.encodeUtf8 $ LT.pack $ showGenericPackageDescription gpd
+successTest :: SByteString -> [ Env ] -> SByteString -> IO ()
+successTest input envs expected = do
+  let
+    inputParseRes = parseGenericPackageDescription input
+  case runParseResult inputParseRes of
+    (_warns, Left (_versionMay, errs)) ->
+      fail $ foldMap (showPError "(input)") errs
+    (_warns, Right inputGpd) -> do
+      let expectedParseRes = parseGenericPackageDescription expected
+      case runParseResult expectedParseRes of
+        (_warns, Left (_versionMay, errs)) ->
+          fail $ foldMap (showPError "(expected)") errs
+        (_warns, Right expectedGpd) -> do
+          refrigerate envs inputGpd @?= Right expectedGpd          
 
-failureTest :: FilePath -> TestTree
-failureTest dir =
-  goldenVsString dir ( dir </> "err" ) $ do
-    projectFiles <- gatherFreezes dir
-    let freezeFiles = flip addExtension "freeze" <$> projectFiles
-    configs <- for freezeFiles $ \ freezeFile -> do
-      res <- PF.parse <$> STIO.readFile freezeFile
-      case res of
-        Left err ->
-          fail $ ST.unpack $
-            "Error while reading " <> ST.pack freezeFile <> ":\n" <> PF.renderError err
-        Right config ->
-          pure config
-    cabalString <- BS.readFile ( dir </> "test.cabal" )
-    let res = refrigerate configs cabalString
-    case res of
-      Left err ->
-        pure $ LBS.fromStrict $ STEnc.encodeUtf8 err
-      Right _gpd ->
-        fail "refrigerate failed to fail."
+successTests :: [TestTree]
+successTests =
+  [ testCase "simple" $ do
+      let
+        input = BS.intercalate "\n"
+          [ "cabal-version: 2.2"
+          , "name: test"
+          , "version: 0"
+          , "library"
+          , "  build-depends:"
+          , "    foo"
+          ]
+        freezes =
+          [ env System.Linux System.I386 (mkFlagAssignment []) Compiler.GHC (mkVersion [8, 4]) $
+              set PF.constraints
+                ( Seq.fromList
+                  [ PF.constraintVersion "foo" PF.qualifiedAll $ thisVersion (mkVersion [3])
+                  ]
+                )
+                PF.emptyConfig
+          ]
+        expected = BS.intercalate "\n"
+          [ "cabal-version: 2.2"
+          , "name: test"
+          , "version: 0"
+          , "library"
+          , "  build-depends:"
+          , "    foo >=3 && <3.1"
+          ]
+      successTest input freezes expected
+
+  , testCase "unqualified only" $ do
+      let
+        input = BS.intercalate "\n"
+          [ "cabal-version: 2.2"
+          , "name: test"
+          , "version: 0"
+          , "library"
+          , "  build-depends:"
+          , "    foo"
+          ]
+        freezes =
+          [ env System.Linux System.I386 (mkFlagAssignment []) Compiler.GHC (mkVersion [8, 4]) $
+              set PF.constraints
+                ( Seq.fromList
+                  [ PF.constraintVersion "foo" PF.unqualifiedOnly $ thisVersion (mkVersion [3])
+                  ]
+                )
+                PF.emptyConfig
+          ]
+        expected = BS.intercalate "\n"
+          [ "cabal-version: 2.2"
+          , "name: test"
+          , "version: 0"
+          , "library"
+          , "  build-depends:"
+          , "    foo >=3 && <3.1"
+          ]
+      successTest input freezes expected
+
+  , testCase "unqualified and setup differ" $ do
+      let
+        input = BS.intercalate "\n"
+          [ "cabal-version: 2.2"
+          , "name: test"
+          , "version: 0"
+          , "custom-setup"
+          , "  setup-depends:"
+          , "    foo"
+          , "library"
+          , "  build-depends:"
+          , "    foo"
+          ]
+        freezes =
+          [ env System.Linux System.I386 (mkFlagAssignment []) Compiler.GHC (mkVersion [8, 4]) $
+              set PF.constraints
+                ( Seq.fromList
+                  [ PF.constraintVersion "foo" PF.unqualifiedOnly $ thisVersion (mkVersion [3])
+                  , PF.constraintVersion "foo" PF.qualifiedSetupAll $ thisVersion (mkVersion [4])
+                  ]
+                )
+                PF.emptyConfig
+          ]
+        expected = BS.intercalate "\n"
+          [ "cabal-version: 2.2"
+          , "name: test"
+          , "version: 0"
+          , "custom-setup"
+          , "  setup-depends:"
+          , "    foo >= 4 && < 4.1"
+          , "library"
+          , "  build-depends:"
+          , "    foo >=3 && <3.1"
+          ]
+      successTest input freezes expected
+
+  , testCase "unqualified and all" $ do
+      let
+        input = BS.intercalate "\n"
+          [ "cabal-version: 2.2"
+          , "name: test"
+          , "version: 0"
+          , "library"
+          , "  build-depends:"
+          , "    foo"
+          ]
+        freezes =
+          [ env System.Linux System.I386 (mkFlagAssignment []) Compiler.GHC (mkVersion [8, 4]) $
+              set PF.constraints
+                ( Seq.fromList
+                  [ PF.constraintVersion "foo" PF.unqualifiedOnly $ thisVersion (mkVersion [3])
+                  ]
+                )
+                PF.emptyConfig
+          , env System.OpenBSD System.X86_64 (mkFlagAssignment []) Compiler.GHC (mkVersion [8, 2]) $
+              set PF.constraints
+                ( Seq.fromList
+                  [ PF.constraintVersion "foo" PF.qualifiedAll $ thisVersion (mkVersion [5])
+                  ]
+                )
+                PF.emptyConfig
+          ]
+        expected = BS.intercalate "\n"
+          [ "cabal-version: 2.2"
+          , "name: test"
+          , "version: 0"
+          , "library"
+          , "  build-depends:"
+          , "    foo >=3 && <3.1 || >=5 && <5.1"
+          ]
+      successTest input freezes expected
+
+  , testCase "leave internal libraries & self-deps alone" $ do
+      let
+        input = BS.intercalate "\n"
+          [ "cabal-version: 2.2"
+          , "name: example-test"
+          , "version: 0"
+          , ""
+          , "library"
+          , ""
+          , "library some-internal-library"
+          , ""
+          , "executable foo"
+          , "  build-depends:"
+          , "    some-internal-library,"
+          , "    example-test"
+          ]
+        freezes =
+          [ env System.Linux System.I386 (mkFlagAssignment []) Compiler.GHC (mkVersion [8, 4]) $
+              set PF.constraints
+                ( Seq.fromList
+                  [ PF.constraintVersion "foo" PF.unqualifiedOnly $ thisVersion (mkVersion [3])
+                  ]
+                )
+                PF.emptyConfig
+          ]
+        expected = BS.intercalate "\n"
+          [ "cabal-version: 2.2"
+          , "name: example-test"
+          , "version: 0"
+          , ""
+          , "library"
+          , ""
+          , "library some-internal-library"
+          , ""
+          , "executable foo"
+          , "  build-depends:"
+          , "    some-internal-library,"
+          , "    example-test"
+          ]
+      successTest input freezes expected
+
+
+  , testCase "setup-depends" $ do
+      let
+        input = BS.intercalate "\n"
+          [ "cabal-version: 2.2"
+          , "name: test"
+          , "version: 0"
+          , "custom-setup"
+          , "  setup-depends:"
+          , "    a,"
+          , "    b,"
+          , "    c"
+          ]
+        freezes =
+          [ env System.Linux System.I386 (mkFlagAssignment []) Compiler.GHC (mkVersion [8, 4]) $
+              set PF.constraints
+                ( Seq.fromList
+                  [ PF.constraintVersion "a" PF.unqualifiedOnly $ thisVersion (mkVersion [1])
+                  , PF.constraintVersion "a" PF.qualifiedAll $ thisVersion (mkVersion [2])
+                  , PF.constraintVersion "b" PF.qualifiedSetupAll $ thisVersion (mkVersion [3])
+                  , PF.constraintVersion "c" (PF.qualifiedSetup "test") $ thisVersion (mkVersion [4])
+                  , PF.constraintVersion "c" (PF.qualifiedSetup "other") $ thisVersion (mkVersion [5])
+                  ]
+                )
+                PF.emptyConfig
+          ]
+        expected = BS.intercalate "\n"
+          [ "cabal-version: 2.2"
+          , "name: test"
+          , "version: 0"
+          , "custom-setup"
+          , "  setup-depends:"
+          , "    a >=2 && <2.1,"
+          , "    b >=3 && < 3.1,"
+          , "    c >=4 && <4.1"
+          ]
+      successTest input freezes expected
+
+  , testCase "preconstrained" $ do
+      let
+        input = BS.intercalate "\n"
+          [ "cabal-version: 2.2"
+          , "name: test"
+          , "version: 0"
+          , "library"
+          , "  build-depends:"
+          , "    foo > 1.0.1 || < 1.0.1"
+          ]
+        freezes =
+          [ env System.Linux System.I386 (mkFlagAssignment []) Compiler.GHC (mkVersion [8, 4]) $
+              set PF.constraints
+                ( Seq.fromList
+                  [ PF.constraintVersion "foo" PF.qualifiedAll $ thisVersion (mkVersion [1])
+                  ]
+                )
+                PF.emptyConfig
+          ]
+        expected = BS.intercalate "\n"
+          [ "cabal-version: 2.2"
+          , "name: test"
+          , "version: 0"
+          , "library"
+          , "  build-depends:"
+          , "    foo >=1 && <1.0.1 || >1.0.1 && < 1.1"
+          ]
+      successTest input freezes expected
+
+  , testCase "conditional dependency" $ do
+      let
+        input = BS.intercalate "\n"
+          [ "cabal-version: 2.2"
+          , "name: test"
+          , "version: 0"
+          , "library"
+          , "  if impl(ghc >= 8.4)"
+          , "    build-depends:"
+          , "      foo"
+          ]
+        freezes =
+          [ env System.Linux System.I386 (mkFlagAssignment []) Compiler.GHC (mkVersion [8, 4]) $
+              set PF.constraints
+                ( Seq.fromList
+                  [ PF.constraintVersion "foo" PF.qualifiedAll $ thisVersion (mkVersion [1])
+                  ]
+                )
+                PF.emptyConfig
+          ]
+        expected = BS.intercalate "\n"
+          [ "cabal-version: 2.2"
+          , "name: test"
+          , "version: 0"
+          , "library"
+          , "  if impl(ghc >= 8.4)"
+          , "    build-depends:"
+          , "      foo >=1 && <1.1"
+          ]
+      successTest input freezes expected
+
+  , testCase "conditional dependency multi-freeze" $ do
+      let
+        input = BS.intercalate "\n"
+          [ "cabal-version: 2.2"
+          , "name: test"
+          , "version: 0"
+          , "library"
+          , "  if impl(ghc >= 8.4)"
+          , "    build-depends:"
+          , "      foo"
+          ]
+        freezes =
+          [ env System.Linux System.I386 (mkFlagAssignment []) Compiler.GHC (mkVersion [8, 4]) $
+              set PF.constraints
+                ( Seq.fromList
+                  [ PF.constraintVersion "foo" PF.qualifiedAll $ thisVersion (mkVersion [1])
+                  ]
+                )
+                PF.emptyConfig
+          , env System.Linux System.I386 (mkFlagAssignment []) Compiler.GHC (mkVersion [8, 6]) $
+              set PF.constraints
+                ( Seq.fromList
+                  [ PF.constraintVersion "foo" PF.qualifiedAll $ thisVersion (mkVersion [2])
+                  ]
+                )
+                PF.emptyConfig
+          , env System.Linux System.I386 (mkFlagAssignment []) Compiler.GHC (mkVersion [8, 2]) $
+              set PF.constraints
+                ( Seq.fromList
+                  [ PF.constraintVersion "foo" PF.qualifiedAll $ thisVersion (mkVersion [3])
+                  ]
+                )
+                PF.emptyConfig
+          ]
+        expected = BS.intercalate "\n"
+          [ "cabal-version: 2.2"
+          , "name: test"
+          , "version: 0"
+          , "library"
+          , "  if impl(ghc >= 8.4)"
+          , "    build-depends:"
+          , "      foo >=1 && <1.1 || >= 2 && < 2.1"
+          ]
+      successTest input freezes expected
+
+  , testCase "conditional dependency multi-freeze disjunction" $ do
+      let
+        input = BS.intercalate "\n"
+          [ "cabal-version: 2.2"
+          , "name: test"
+          , "version: 0"
+          , "library"
+          , "  if impl(ghc >= 8.4) || os(linux)"
+          , "    build-depends:"
+          , "      foo"
+          ]
+        freezes =
+          [ env System.Linux System.I386 (mkFlagAssignment []) Compiler.GHC (mkVersion [8, 4]) $
+              set PF.constraints
+                ( Seq.fromList
+                  [ PF.constraintVersion "foo" PF.qualifiedAll $ thisVersion (mkVersion [1])
+                  ]
+                )
+                PF.emptyConfig
+          , env System.Linux System.I386 (mkFlagAssignment []) Compiler.GHC (mkVersion [8, 2]) $
+              set PF.constraints
+                ( Seq.fromList
+                  [ PF.constraintVersion "foo" PF.qualifiedAll $ thisVersion (mkVersion [2])
+                  ]
+                )
+                PF.emptyConfig
+          , env System.Windows System.I386 (mkFlagAssignment []) Compiler.GHC (mkVersion [8, 4]) $
+              set PF.constraints
+                ( Seq.fromList
+                  [ PF.constraintVersion "foo" PF.qualifiedAll $ thisVersion (mkVersion [3])
+                  ]
+                )
+                PF.emptyConfig
+          ]
+        expected = BS.intercalate "\n"
+          [ "cabal-version: 2.2"
+          , "name: test"
+          , "version: 0"
+          , "library"
+          , "  if impl(ghc >= 8.4) || os(linux)"
+          , "    build-depends:"
+          , "      foo >=1 && <1.1 || >= 2 && < 2.1 || >= 3 && < 3.1"
+          ]
+      successTest input freezes expected
+
+  , testCase "conditional dependency multi-freeze conjunction" $ do
+      let
+        input = BS.intercalate "\n"
+          [ "cabal-version: 2.2"
+          , "name: test"
+          , "version: 0"
+          , "library"
+          , "  if impl(ghc >= 8.4) && os(linux)"
+          , "    build-depends:"
+          , "      foo"
+          ]
+        freezes =
+          [ env System.Linux System.I386 (mkFlagAssignment []) Compiler.GHC (mkVersion [8, 4]) $
+              set PF.constraints
+                ( Seq.fromList
+                  [ PF.constraintVersion "foo" PF.qualifiedAll $ thisVersion (mkVersion [1])
+                  ]
+                )
+                PF.emptyConfig
+          , env System.Windows System.I386 (mkFlagAssignment []) Compiler.GHC (mkVersion [8, 6]) $
+              set PF.constraints
+                ( Seq.fromList
+                  [ PF.constraintVersion "foo" PF.qualifiedAll $ thisVersion (mkVersion [2])
+                  ]
+                )
+                PF.emptyConfig
+          , env System.Windows System.I386 (mkFlagAssignment []) Compiler.GHC (mkVersion [8, 2]) $
+              set PF.constraints
+                ( Seq.fromList
+                  [ PF.constraintVersion "foo" PF.qualifiedAll $ thisVersion (mkVersion [3])
+                  ]
+                )
+                PF.emptyConfig
+          ]
+        expected = BS.intercalate "\n"
+          [ "cabal-version: 2.2"
+          , "name: test"
+          , "version: 0"
+          , "library"
+          , "  if impl(ghc >= 8.4) && os(linux)"
+          , "    build-depends:"
+          , "      foo >=1 && <1.1"
+          ]
+      successTest input freezes expected
+  ]
+
+failureTests :: [TestTree]
+failureTests =
+  [ testCase "missing build-depends" $ do
+      let
+        input = BS.intercalate "\n"
+          [ "cabal-version: 2.2"
+          , "name: test"
+          , "version: 0"
+          , "library"
+          , "  build-depends: bar, baz"
+          ]
+        freezes =
+          [ env System.Linux System.I386 (mkFlagAssignment []) Compiler.GHC (mkVersion [8, 4]) $
+              set PF.constraints
+                ( Seq.fromList
+                  [ PF.constraintVersion "foo" PF.qualifiedAll $ thisVersion (mkVersion [1])
+                  ]
+                )
+                PF.emptyConfig
+          ]
+        expected = ST.unlines
+          [ "Unfrozen build dependency: bar"
+          , "Unfrozen build dependency: baz"
+          ]
+      failureTest input freezes expected
+
+  , testCase "missing setup-depends" $ do
+      let
+        input = BS.intercalate "\n"
+          [ "cabal-version: 2.2"
+          , "name: test"
+          , "version: 0"
+          , "custom-setup"
+          , "  setup-depends: bar, baz"
+          ]
+        freezes =
+          [ env System.Linux System.I386 (mkFlagAssignment []) Compiler.GHC (mkVersion [8, 4]) $
+              set PF.constraints
+                ( Seq.fromList
+                  [ PF.constraintVersion "foo" PF.qualifiedAll $ thisVersion (mkVersion [1])
+                  ]
+                )
+                PF.emptyConfig
+          ]
+        expected = ST.unlines
+          [ "Unfrozen setup dependency: bar"
+          , "Unfrozen setup dependency: baz"
+          ]
+      failureTest input freezes expected
+
+  , testCase "conditional dependency only present irrelevantly" $ do
+      let
+        input = BS.intercalate "\n"
+          [ "cabal-version: 2.2"
+          , "name: test"
+          , "version: 0"
+          , "library"
+          , "  if os(linux)"
+          , "    build-depends:"
+          , "      foo"
+          ]
+        freezes =
+          [ env System.Windows System.I386 (mkFlagAssignment []) Compiler.GHC (mkVersion [8, 4]) $
+              set PF.constraints
+                ( Seq.fromList
+                  [ PF.constraintVersion "foo" PF.qualifiedAll $ thisVersion (mkVersion [1])
+                  ]
+                )
+                PF.emptyConfig
+          ]
+        expected = ST.unlines
+          [ "Unfrozen build dependency: foo"
+          ]
+      failureTest input freezes expected
+  ]
+
+failureTest :: SByteString -> [ Env ] -> SText -> IO ()
+failureTest input envs expected = do
+  let
+    inputParseRes = parseGenericPackageDescription input
+  case runParseResult inputParseRes of
+    (_warns, Left (_versionMay, errs)) ->
+      fail $ foldMap (showPError "(input)") errs
+    (_warns, Right inputGpd) -> do
+      refrigerate envs inputGpd @?= Left expected

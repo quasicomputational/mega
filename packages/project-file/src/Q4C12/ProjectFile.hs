@@ -1,6 +1,7 @@
 module Q4C12.ProjectFile
   ( -- * Core type and lenses to access it.
     Config
+  , emptyConfig
   , constraints
   , packages
 
@@ -78,6 +79,12 @@ data Config = Config
   , configPackages :: Seq SText
   }
   deriving ( Show )
+
+emptyConfig :: Config
+emptyConfig = Config
+  { configConstraints = mempty
+  , configPackages = mempty
+  }
 
 constraints :: Lens' Config (Seq Constraint)
 constraints f config =

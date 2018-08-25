@@ -57,7 +57,9 @@ Limitations
   
   `refrigerate` is not this postulated cleverer tool. In particular, `refrigerate` only performs operations that can then be applied as a revision on Hackage; the flag-based solution does not have this property, as new flags cannot be added in revisions.
 
-* If you're doing interesting things with flags and CPP and conditionals, `refrigerate` may be too optimistic and allow configurations that aren't going to work; e.g., if you depend on `Win32` on all platforms but only actually exercise it on Windows, the spurious `Win32` versions in your Linux freeze files will contribute to the bounds that `refrigerate` will add, and, if they are out of date, the bounds added will be wrong.
+* If you're doing interesting things with flags and CPP and conditionals, `refrigerate` may not get things right. It can see through conditionals and only apply bounds to dependencies according to how they're tested: e.g., if you only directly depend on `bifunctors` in some configurations but it's always in your freeze files as a transitive dependency, the generated package description will only reflect the `bifunctors` versions that have been directly used as dependencies.
+
+  But if you're doing something more complicated like, e.g., always depending on a package but only using it in some configurations via CPP, `refrigerate` won't know about that. Generally, `refrigerate` is optimistic and puts on wider bounds rather than narrower.
 
 
 Why not use `plan.json`?

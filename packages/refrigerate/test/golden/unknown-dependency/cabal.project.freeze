@@ -1,4 +1,0 @@
-constraints:
-  base == 4.11.1.0,
-  otherpkg:setup.blah == 5,
-  blah == 6
