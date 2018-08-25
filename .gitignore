@@ -5,4 +5,3 @@ dist-newstyle/
 cabal.sandbox.config
 packages/*/*.cabal
 .ghc.environment.*
-refreeze.xml
