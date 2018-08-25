@@ -1,6 +1,6 @@
-name: q4c12-refrigerate
+name: q4c12-defrost
 version: "0"
-homepage: https://github.com/quasicomputational/mega/tree/master/packages/refrigerate
+homepage: https://github.com/quasicomputational/mega/tree/master/packages/defrost
 github: quasicomputational/mega
 author: quasicomputational <quasicomputational@gmail.com>
 license: BSD2
@@ -18,7 +18,7 @@ library:
   source-dirs:
     - src
   exposed-modules:
-    - Q4C12.Refrigerate
+    - Q4C12.Defrost
   other-modules: []
   dependencies:
     - base
@@ -37,7 +37,7 @@ tests:
     main: test/tasty.hs
     other-modules: []
     dependencies:
-      - q4c12-refrigerate
+      - q4c12-defrost
       - base
       - bytestring
       - Cabal

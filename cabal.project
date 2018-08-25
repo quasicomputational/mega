@@ -11,4 +11,4 @@ packages:
   ./packages/position
   ./packages/meta
   ./packages/project-file
-  ./packages/refrigerate
+  ./packages/defrost

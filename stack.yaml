@@ -12,4 +12,4 @@ packages:
   - location: ./packages/position
   - location: ./packages/meta
   - location: ./packages/project-file
-  - location: ./packages/refrigerate
+  - location: ./packages/defrost

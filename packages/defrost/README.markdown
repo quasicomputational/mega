@@ -1,0 +1,72 @@
+Packages should only claim compatibility with versions of their dependencies that they've tested against. `defrost` is a tool to help automate that.
+
+`defrost` gathers up all the bounds from a set of freeze files, then constrain a `.cabal` file appropriately so that only versions of dependencies which promise compatibility with at least one of the frozen versions will be allowed.
+
+If you run your tests with each of those freeze files, then you have some assurance that the defrostd `.cabal` file has tight, accurate bounds: they may be conservative, but there's a high chance that they'll only generate valid build plans.
+
+Existing bounds are preserved: `defrost` will only ever tighten bounds, not loosen them.
+
+`defrost` is heavily inspired by Stack's `pvp-bounds` feature, with the main innovation being that multiple sets of frozen dependency versions are taken into account.
+
+
+One possible workflow
+=====================
+
+Don't put any bounds on your `.cabal` files in your VCS. Check in a set of freeze files corresponding to each row in your test matrix, and actually use those in CI. Before a release (when, of course, CI is green), run `defrost` on your `.cabal` file, passing in those freeze files, and generate the sdist you upload from that modified package description.
+
+
+Limitations
+===========
+
+* If your dependencies release versions that break PVP compliance that should be compatible with your frozen versions but aren't, there will be trouble.
+
+  This also applies if, e.g., your dependencies' API or behaviour is not a straightforwards function of its version number. For example, re-exporting modules from other packages can cause trouble here: the re-exporter's version number may not describe its behaviour, and you need to use the source package's version number to truly pin it down; flags controlling which modules are exported is another source of trouble.
+
+  It should be noted this is a problem common to any package description rather than a specific `defrost` limitation, but it bears thinking about.
+
+* `defrost` assumes your dependencies follow the PVP. If they believe in semver instead, applying the PVP major bounds logic is safe, but conservative. Any package which indicates breaking changes by increases in the third component onwards will misbehave.
+
+  This could be fixed by having the user inform `defrost` about which versioning convention dependencies are following. (That is obviously not ideal: all the dependents on a package must each determine which convention is in use and then correctly configure their tools or set bounds manually, but the dependency's author could declare which convention is being followed once in a central location, if such a mechanism existed.)
+
+* Goals from `build-tools` and `build-tool-depends` are currently left entirely alone. This is just a matter of putting in the support for something I haven't needed yet.
+
+* Interactions between dependencies can break users' builds, even if all of your tests pass. Suppose you depend on two packages, `foo` and `bar`, both of which have versions 1 and 2. You test with `foo == 1, bar == 1` and `foo == 2, bar == 2`, but the bounds `defrost` will give you are `foo == 1.* || == 2.*, bar == 1.* || == 2.*`. That's a weaker statement: if `foo-1` and `bar-2` misbehave when put together in a build plan, this spells trouble!
+
+  A cleverer tool could (ab?)use flags to convey to the solver precisely which sets of dependencies have been tested and which are likely to work:
+
+  ```
+  flag build-1
+    manual: false
+  flag build-2
+    manual: false
+    
+  library
+    if flag(build-1)
+      build-depends:
+        foo == 1.*,
+        bar == 1.*
+    if flag(build-2)
+      build-depends:
+        foo == 2.*,
+        bar == 2.*
+    if flag(build-1) && flag(build-2)
+      buildable: false
+    if !flag(build-1) && !flag(build-2)
+      buildable: false
+  ```
+  
+  `defrost` is not this postulated cleverer tool. In particular, `defrost` only performs operations that can then be applied as a revision on Hackage; the flag-based solution does not have this property, as new flags cannot be added in revisions.
+
+* If you're doing interesting things with flags and CPP and conditionals, `defrost` may not get things right. It can see through conditionals and only apply bounds to dependencies according to how they're tested: e.g., if you only directly depend on `bifunctors` in some configurations but it's always in your freeze files as a transitive dependency, the generated package description will only reflect the `bifunctors` versions that have been directly used as dependencies.
+
+  But if you're doing something more complicated like, e.g., always depending on a package but only using it in some configurations via CPP, `defrost` won't know about that. Generally, `defrost` is optimistic and puts on wider bounds rather than narrower.
+
+
+Why not use `plan.json`?
+========================
+
+`plan.json` is generated by cabal-install whenever it generates a build plan. It describes the plan precisely.
+
+In theory, defrost could use `plan.json` files instead of freeze files. However, this would come with a significant disadvantage: when you want to add the bounds to the `.cabal` file, you have to generate the build plan - but to do that requires keeping many GHC versions around and even transmitting data between (virtual) machines (e.g., to make sure that both `Win32` and `unix` dependencies are properly set).
+
+If you can arrange to use the same freeze files for adding bounds to the `.cabal` files as you do for testing, that complexity evaporates: you don't need to gather and store `plan.json` from test machines.
