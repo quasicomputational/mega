@@ -4,10 +4,14 @@ module Q4C12.XMLDesc
   , oddWSDropComments
   , flowEvenPreWSDropComments
   , flowWSEDropComments
+  , consolidate
   )
   where
 
 import Q4C12.TwoFinger (unconsOddA, consOddA, singletonOddA)
+import Q4C12.XML
+  ( Content, contentText, getContent
+  )
 
 import Q4C12.XMLDesc.Class as Export
   ( Desc, Pos, Cmt, El, OddFlow, EvenFlow, DT
@@ -64,3 +68,6 @@ flowEvenPreWSDropComments p
   = rfmap (from singleProd)
   $ rconsR p
   $ rfmap unitProd oddWSDropComments
+
+consolidate :: Iso (Content cmt pos) (Content cmt' ()) LText LText
+consolidate = iso (foldMap (foldMap snd) . getContent) contentText

@@ -12,3 +12,4 @@ packages:
   ./packages/meta
   ./packages/project-file
   ./packages/defrost
+  ./packages/refreeze
