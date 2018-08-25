@@ -16,6 +16,8 @@ In roughly decreasing order of likelihood of being useful to anyone else, they a
 
 * [q4c12-defrost](packages/defrost) is like Stack's [`pvp-bounds` feature](https://docs.haskellstack.org/en/stable/yaml_configuration/#pvp-bounds), except it works on Cabal's freeze files instead. If you test your code against a set of freeze files, `defrost` can add the PVP bounds to your `.cabal` file corresponding to the dependency versions in those freeze files.
 
+* [q4c12-refreeze](packages/refreeze) can re-generate many freeze files at once.
+
 * [q4c12-project-file](packages/project-file) is a horribly incomplete parser and renderer for Cabal's [`.project` configuration files](http://cabal.readthedocs.io/en/latest/nix-local-build.html#configuring-builds-with-cabal-project).
 
 * [q4c12-romnum](packages/romnum) is a Roman numeral generator.

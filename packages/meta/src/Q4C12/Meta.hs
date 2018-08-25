@@ -31,9 +31,13 @@ import qualified Data.Text.Lazy.IO as LTIO
 import GHC.Real (fromIntegral)
 import qualified Options.Applicative as OA
 import qualified Q4C12.MapPend as MapPend
-import Q4C12.XML ( parseXML', displayWarnings, displayError, uname, Content, contentText, getContent )
+import Q4C12.Refreeze
+  ( defaultRefreezeConfig, projects, refreezeSchema
+  )
+import Q4C12.XML ( parseXML', displayWarnings, displayError, uname, renderXML )
 import qualified Q4C12.XMLDesc.Parse as XMLDesc.Parse
-import Q4C12.XMLDesc ( Desc, El, EvenFlow, elementMixed, rfmap, rmany, rcons, rnil, flowWSEDropComments, flowEvenPreWSDropComments, oddTxNoPos )
+import qualified Q4C12.XMLDesc.Print as XMLDesc.Print
+import Q4C12.XMLDesc ( Desc, El, EvenFlow, consolidate, elementMixed, rfmap, rmany, rcons, rnil, flowWSEDropComments, flowEvenPreWSDropComments, oddTxNoPos )
 
 -- TODO: wouldn't it be cool to integrate this with SUPPORT.markdown, and have a machine-checked policy for older GHC compatibility?
 
@@ -263,10 +267,6 @@ packageConfigSchema
       $ rfmap consolidate
       $ oddTxNoPos
 
-    -- TODO: should this go into Q4C12.XMLDesc?
-    consolidate :: Iso (Content cmt pos) (Content cmt' ()) LText LText
-    consolidate = iso (foldMap (foldMap snd) . getContent) contentText
-
 parsePackageConfig :: FilePath -> IO PackageConfig
 parsePackageConfig path = do
   STIO.putStrLn $ "Parsing " <> ST.pack path
@@ -355,6 +355,27 @@ generateHash = SHA256.hash . LBS.toStrict . BSB.toLazyByteString . foldMap (uncu
           , BSB.word8 0
           ]
       ]
+generateRefreezeConfig
+  :: Map SText Build
+  -> IO ()
+generateRefreezeConfig builds = do
+  let
+    projectsWithFreezeFiles
+      = builds
+      & Map.assocs
+      & mapMaybe
+          ( \ ( buildName, build ) -> do
+              let
+                projectFile = addExtension ( "cabal" </> ST.unpack buildName ) "project"
+              case ghcRegularity $ buildGHCVersion build of
+                PreRelease ->
+                  Nothing
+                Regular ->
+                  Just projectFile
+          )
+  LTIO.writeFile "refreeze.xml" $
+    TBuilder.toLazyText $ renderXML $ XMLDesc.Print.printEl refreezeSchema ( defaultRefreezeConfig & set projects projectsWithFreezeFiles )
+  STIO.putStrLn "Written refreeze.xml"
 
 data Command
   = GenTravis
@@ -397,6 +418,7 @@ runGenTravis packageData = do
         hPutBuilder hnd $ Aeson.fromEncoding $ travisConfiguration sortedBuilds
         STIO.putStrLn "Written .travis.yml."
       generateProjectFiles builds
+      generateRefreezeConfig builds
       BS.writeFile "travis/hash" $ generateHash packageData
       STIO.putStrLn "Written hash."
 

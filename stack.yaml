@@ -13,3 +13,4 @@ packages:
   - location: ./packages/meta
   - location: ./packages/project-file
   - location: ./packages/defrost
+  - location: ./packages/refreeze
