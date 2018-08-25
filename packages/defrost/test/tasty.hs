@@ -36,14 +36,14 @@ import Test.Tasty.HUnit
   , testCase
   )
 
-import Q4C12.Refrigerate
+import Q4C12.Defrost
   ( Env
   , env
-  , refrigerate
+  , defrost
   )
 
 main :: IO ()
-main = defaultMain $ testGroup "refrigerate tests"
+main = defaultMain $ testGroup "defrost tests"
   [ testGroup "should work" successTests
   , testGroup "should fail" failureTests
   ]
@@ -61,7 +61,7 @@ successTest input envs expected = do
         (_warns, Left (_versionMay, errs)) ->
           fail $ foldMap (showPError "(expected)") errs
         (_warns, Right expectedGpd) -> do
-          refrigerate envs inputGpd @?= Right expectedGpd          
+          defrost envs inputGpd @?= Right expectedGpd          
 
 successTests :: [TestTree]
 successTests =
@@ -554,4 +554,4 @@ failureTest input envs expected = do
     (_warns, Left (_versionMay, errs)) ->
       fail $ foldMap (showPError "(input)") errs
     (_warns, Right inputGpd) -> do
-      refrigerate envs inputGpd @?= Left expected
+      defrost envs inputGpd @?= Left expected

@@ -1,9 +1,9 @@
 {-# LANGUAGE FlexibleInstances #-}
 
-module Q4C12.Refrigerate
+module Q4C12.Defrost
   ( env
   , Env
-  , refrigerate
+  , defrost
   )
   where
 
@@ -104,12 +104,12 @@ env os arch flags compiler compilerVersion =
 canonicalVersionRange :: VersionRange -> VersionRange
 canonicalVersionRange = fromVersionIntervals . toVersionIntervals
 
-data RefrigerationError
+data DefrostingError
   = UnfrozenDependency QualificationType PackageName
   | NotFullyFrozen PackageName SystemEnv
 
-showRefrigerationError :: RefrigerationError -> SText
-showRefrigerationError = \case
+showDefrostingError :: DefrostingError -> SText
+showDefrostingError = \case
   UnfrozenDependency Build pn ->
     "Unfrozen build dependency: " <> ST.pack ( unPackageName pn ) <> "\n"
   UnfrozenDependency Setup pn ->
@@ -207,7 +207,7 @@ instance DependencyWithQualification Benchmark where
 type FrozenDependencies =
   Map ( PackageName, QualificationType )
     ( Map SystemEnv
-        ( Validation ( NonEmptyDList RefrigerationError ) VersionRange )
+        ( Validation ( NonEmptyDList DefrostingError ) VersionRange )
     )
 
 newtype UnionRanges =
@@ -224,7 +224,7 @@ instance Monoid UnionRanges where
 applyFreezes
   :: FrozenDependencies
   -> GenericPackageDescription
-  -> Validation (NonEmptyDList RefrigerationError) GenericPackageDescription
+  -> Validation (NonEmptyDList DefrostingError) GenericPackageDescription
 applyFreezes frozen gpd =
   traverseDependencies addBounds gpd
 
@@ -245,7 +245,7 @@ applyFreezes frozen gpd =
     :: QualificationType
     -> Condition ConfVar
     -> Dependency
-    -> Validation ( NonEmptyDList RefrigerationError ) Dependency
+    -> Validation ( NonEmptyDList DefrostingError ) Dependency
   addBounds qual cond dep@(Dependency pn range) = do
     let
       relevant = frozen
@@ -296,7 +296,7 @@ checkFrozenDependencies =
 --TODO tests for not-fully-frozen ranges and other weird cases
 gatherFreezes
   :: PackageName
-  -- ^ Name of the package description we're refrigerating.
+  -- ^ Name of the package description we're defrosting.
   -> [ Env ]
   -> FrozenDependencies
 gatherFreezes pkgName
@@ -354,13 +354,13 @@ fixCondBranchConstraints ( CondBranch cond true falseMay ) =
     ( fixCondTreeConstraints true )
     ( fixCondTreeConstraints <$> falseMay )
 
-refrigerate
+defrost
   :: [ Env ]
   -> GenericPackageDescription
   -> Either SText GenericPackageDescription
-refrigerate envs gpd = do
+defrost envs gpd = do
   let
     pn = view ( Lenses.packageDescription . Lenses.package . Lenses.pkgName ) gpd
     frozen = gatherFreezes pn envs
   --TODO: should be sorting the errors, for test stability
-  bimap ( foldMap showRefrigerationError ) fixGPDConstraints $ validationToEither $ applyFreezes frozen gpd
+  bimap ( foldMap showDefrostingError ) fixGPDConstraints $ validationToEither $ applyFreezes frozen gpd
