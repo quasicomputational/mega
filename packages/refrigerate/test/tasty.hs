@@ -13,9 +13,6 @@ import qualified Distribution.Compiler as Compiler
 import Distribution.PackageDescription
   ( mkFlagAssignment
   )
-import Distribution.PackageDescription.PrettyPrint
-  ( showGenericPackageDescription
-  )
 import Distribution.PackageDescription.Parsec
   ( parseGenericPackageDescription
   , runParseResult
