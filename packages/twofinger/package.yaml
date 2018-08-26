@@ -23,7 +23,7 @@ extra-doc-files:
   - SUPPORT.markdown
   #TODO: Should this file (i.e., package.yaml) be included in sdists? Question of what to do for the includes, in that case.
 defaults:
-  local: ../../hpack/defaults.rolling.yaml
+  local: ../../hpack-defaults.yaml
 
 #TODO: https://github.com/commercialhaskell/stack/issues/2583 means we can't get away with putting the QuickCheck stuff into another package.
 

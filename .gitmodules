@@ -1,3 +1,0 @@
-[submodule "hpack"]
-	path = hpack
-	url = https://github.com/quasicomputational/hpack-defaults
