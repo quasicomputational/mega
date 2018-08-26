@@ -9,7 +9,7 @@ license-file:
 extra-doc-files:
   - README.markdown
 defaults:
-  local: ../../hpack/defaults.rolling.yaml
+  local: ../../hpack-defaults.yaml
 
 verbatim:
   cabal-version: "2.0"

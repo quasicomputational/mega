@@ -1,0 +1,4 @@
+defaults:
+  github: quasicomputational/hpack-defaults
+  ref: 10c53d06ae6555a3b264a0040788051c6874505a
+  path: defaults.rolling.yaml
