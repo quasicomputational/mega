@@ -107,6 +107,9 @@ import System.Exit as Export
   (exitFailure)
 import System.IO as Export
   (IO, FilePath, stdin, stdout, stderr, withFile, IOMode (ReadMode, WriteMode, AppendMode, ReadWriteMode))
+import System.IO.Error as Export
+  ( isDoesNotExistError
+  )
 import Text.Show as Export
   (Show, show)
 
@@ -165,7 +168,7 @@ import Data.DList.NonEmpty as Export
 
 -- directory imports for re-export
 import System.Directory as Export
-  (doesFileExist, listDirectory, removeDirectoryRecursive)
+  (doesFileExist, listDirectory, removeDirectoryRecursive, removeFile)
 
 -- lens imports for re-export
 import Control.Lens as Export

@@ -21,7 +21,6 @@ library:
   other-modules: []
   dependencies:
     - base
-    - process
     - q4c12-prelude
     - q4c12-xml-core
     - q4c12-xml-desc
@@ -35,3 +34,13 @@ executables:
     other-modules: []
     dependencies:
       - q4c12-refreeze
+      - base
+      - hpack
+      - process
+      - q4c12-prelude
+      - q4c12-project-file
+      - q4c12-xml-core
+      - q4c12-xml-desc
+      - text
+    verbatim:
+      mixins: "base hiding (Prelude)"
