@@ -24,6 +24,7 @@ import qualified Distribution.System as System
 import Distribution.Version
   ( mkVersion
   , thisVersion
+  , laterVersion
   )
 import qualified Q4C12.ProjectFile as PF
 import Test.Tasty
@@ -48,8 +49,8 @@ main = defaultMain $ testGroup "defrost tests"
   , testGroup "should fail" failureTests
   ]
 
-successTest :: SByteString -> [ Env ] -> SByteString -> IO ()
-successTest input envs expected = do
+successTest :: [ PF.Constraint ] -> SByteString -> [ Env ] -> SByteString -> IO ()
+successTest extraConstraints input envs expected = do
   let
     inputParseRes = parseGenericPackageDescription input
   case runParseResult inputParseRes of
@@ -61,7 +62,7 @@ successTest input envs expected = do
         (_warns, Left (_versionMay, errs)) ->
           fail $ foldMap (showPError "(expected)") errs
         (_warns, Right expectedGpd) -> do
-          defrost envs inputGpd @?= Right expectedGpd          
+          defrost extraConstraints envs inputGpd @?= Right expectedGpd          
 
 successTests :: [TestTree]
 successTests =
@@ -92,7 +93,7 @@ successTests =
           , "  build-depends:"
           , "    foo >=3 && <3.1"
           ]
-      successTest input freezes expected
+      successTest [] input freezes expected
 
   , testCase "unqualified only" $ do
       let
@@ -121,7 +122,7 @@ successTests =
           , "  build-depends:"
           , "    foo >=3 && <3.1"
           ]
-      successTest input freezes expected
+      successTest [] input freezes expected
 
   , testCase "unqualified and setup differ" $ do
       let
@@ -157,7 +158,7 @@ successTests =
           , "  build-depends:"
           , "    foo >=3 && <3.1"
           ]
-      successTest input freezes expected
+      successTest [] input freezes expected
 
   , testCase "unqualified and all" $ do
       let
@@ -193,7 +194,7 @@ successTests =
           , "  build-depends:"
           , "    foo >=3 && <3.1 || >=5 && <5.1"
           ]
-      successTest input freezes expected
+      successTest [] input freezes expected
 
   , testCase "leave internal libraries & self-deps alone" $ do
       let
@@ -234,7 +235,7 @@ successTests =
           , "    some-internal-library,"
           , "    example-test"
           ]
-      successTest input freezes expected
+      successTest [] input freezes expected
 
 
   , testCase "setup-depends" $ do
@@ -272,7 +273,7 @@ successTests =
           , "    b >=3 && < 3.1,"
           , "    c >=4 && <4.1"
           ]
-      successTest input freezes expected
+      successTest [] input freezes expected
 
   , testCase "preconstrained" $ do
       let
@@ -301,7 +302,7 @@ successTests =
           , "  build-depends:"
           , "    foo >=1 && <1.0.1 || >1.0.1 && < 1.1"
           ]
-      successTest input freezes expected
+      successTest [] input freezes expected
 
   , testCase "conditional dependency" $ do
       let
@@ -332,7 +333,7 @@ successTests =
           , "    build-depends:"
           , "      foo >=1 && <1.1"
           ]
-      successTest input freezes expected
+      successTest [] input freezes expected
 
   , testCase "conditional dependency multi-freeze" $ do
       let
@@ -377,7 +378,7 @@ successTests =
           , "    build-depends:"
           , "      foo >=1 && <1.1 || >= 2 && < 2.1"
           ]
-      successTest input freezes expected
+      successTest [] input freezes expected
 
   , testCase "conditional dependency multi-freeze disjunction" $ do
       let
@@ -422,7 +423,7 @@ successTests =
           , "    build-depends:"
           , "      foo >=1 && <1.1 || >= 2 && < 2.1 || >= 3 && < 3.1"
           ]
-      successTest input freezes expected
+      successTest [] input freezes expected
 
   , testCase "conditional dependency multi-freeze conjunction" $ do
       let
@@ -467,7 +468,39 @@ successTests =
           , "    build-depends:"
           , "      foo >=1 && <1.1"
           ]
-      successTest input freezes expected
+      successTest [] input freezes expected
+
+  , testCase "extra constraints" $ do
+      let
+        extraConstraints =
+          [ PF.constraintVersion "foo" PF.qualifiedAll $ laterVersion (mkVersion [3,0,5])
+          ]
+        input = BS.intercalate "\n"
+          [ "cabal-version: 2.2"
+          , "name: test"
+          , "version: 0"
+          , "library"
+          , "  build-depends:"
+          , "    foo"
+          ]
+        freezes =
+          [ env System.Linux System.I386 (mkFlagAssignment []) Compiler.GHC (mkVersion [8, 4]) $
+              set PF.constraints
+                ( Seq.fromList
+                  [ PF.constraintVersion "foo" PF.qualifiedAll $ thisVersion (mkVersion [3])
+                  ]
+                )
+                PF.emptyConfig
+          ]
+        expected = BS.intercalate "\n"
+          [ "cabal-version: 2.2"
+          , "name: test"
+          , "version: 0"
+          , "library"
+          , "  build-depends:"
+          , "    foo >3.0.5 && <3.1"
+          ]
+      successTest extraConstraints input freezes expected
   ]
 
 failureTests :: [TestTree]
@@ -544,6 +577,9 @@ failureTests =
           [ "Unfrozen build dependency: foo"
           ]
       failureTest input freezes expected
+
+  -- TODO: test that an extra constraint without a frozen constraint isn't enough.
+  -- TODO: test that a partially frozen constraint isn't enough, even if it's fully tightened by an extra constraint
   ]
 
 failureTest :: SByteString -> [ Env ] -> SText -> IO ()
@@ -554,4 +590,4 @@ failureTest input envs expected = do
     (_warns, Left (_versionMay, errs)) ->
       fail $ foldMap (showPError "(input)") errs
     (_warns, Right inputGpd) -> do
-      defrost envs inputGpd @?= Left expected
+      defrost [] envs inputGpd @?= Left expected
