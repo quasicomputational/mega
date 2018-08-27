@@ -14,6 +14,7 @@ import Control.Lens
 import qualified Data.DList.NonEmpty as NEDL
 import qualified Data.List as List
 import qualified Data.Map as Map
+import qualified Data.Map.Merge.Lazy as Merge
 import qualified Data.Set as Set
 import qualified Data.Text as ST
 import Distribution.Compiler
@@ -221,11 +222,11 @@ instance Monoid UnionRanges where
   mempty = UnionRanges noVersion
   mappend = (<>)
 
-applyFreezes
+applyConstraints
   :: FrozenDependencies
   -> GenericPackageDescription
   -> Validation (NonEmptyDList DefrostingError) GenericPackageDescription
-applyFreezes frozen gpd =
+applyConstraints frozen gpd =
   traverseDependencies addBounds gpd
 
   where
@@ -293,7 +294,6 @@ checkFrozenDependencies =
           failure $ NEDL.singleton $ NotFullyFrozen pn systemEnv
 
 --TODO: build-tools, build-tool-depends
---TODO tests for not-fully-frozen ranges and other weird cases
 gatherFreezes
   :: PackageName
   -- ^ Name of the package description we're defrosting.
@@ -301,14 +301,22 @@ gatherFreezes
   -> FrozenDependencies
 gatherFreezes pkgName
     = fmap ( \ ( Env buildEnv config )
-             -> view constraints config
-              & fmap constraintToQualifiedMap
-              & toList
-              & Map.unionsWith intersectVersionRanges
+             -> fromConstraints pkgName ( view constraints config )
               & fmap ( Map.singleton buildEnv )
               & checkFrozenDependencies
            )
   >>> Map.unionsWith ( Map.unionWith $ liftA2 unionVersionRanges )
+
+fromConstraints
+  :: ( Foldable f )
+  => PackageName
+  -> f Constraint
+  -> Map ( PackageName, QualificationType ) VersionRange
+fromConstraints pkgName
+  = Map.unionsWith intersectVersionRanges
+  . fmap constraintToQualifiedMap
+  . toList
+
   where
 
   filterIrrelevant constr = List.filter $ \ (_, qual) -> case qual of
@@ -355,12 +363,20 @@ fixCondBranchConstraints ( CondBranch cond true falseMay ) =
     ( fixCondTreeConstraints <$> falseMay )
 
 defrost
-  :: [ Env ]
+  :: [ Constraint ]
+  -> [ Env ]
   -> GenericPackageDescription
   -> Either SText GenericPackageDescription
-defrost envs gpd = do
+defrost extra envs gpd = do
   let
     pn = view ( Lenses.packageDescription . Lenses.package . Lenses.pkgName ) gpd
-    frozen = gatherFreezes pn envs
+    combinedConstraints = Merge.merge
+      ( Merge.mapMissing $ \ _ _ -> mempty )
+      ( Merge.mapMissing $ \ _ -> id )
+      ( Merge.zipWithMatched $ \ _ cstr frozen ->
+          fmap (fmap $ intersectVersionRanges cstr) frozen
+      )
+      ( fromConstraints pn extra )
+      ( gatherFreezes pn envs )
   --TODO: should be sorting the errors, for test stability
-  bimap ( foldMap showDefrostingError ) fixGPDConstraints $ validationToEither $ applyFreezes frozen gpd
+  bimap ( foldMap showDefrostingError ) fixGPDConstraints $ validationToEither $ applyConstraints combinedConstraints gpd
