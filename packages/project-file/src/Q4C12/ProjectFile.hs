@@ -24,6 +24,7 @@ module Q4C12.ProjectFile
   , constraintToVersionRange
   , constraintAppliesToUnqualified
   , constraintAppliesToSetup
+  , renderConstraint
 
     -- * Parsing
   , ParseError
@@ -38,19 +39,26 @@ import Control.Applicative.Combinators
   )
 import qualified Data.Sequence as Seq
 import qualified Data.Text as ST
+import qualified Data.Text.Lazy.Builder as LTB
+import qualified Data.Text.Lazy.Builder.Int as LTBI
 import Distribution.Types.GenericPackageDescription
   ( FlagName
   , mkFlagName
+  , unFlagName
   )
 import Distribution.Types.PackageName
   ( PackageName
   , mkPackageName
+  , unPackageName
   )
 import Distribution.Types.VersionInterval
   ( VersionInterval
   , asVersionIntervals
   , fromVersionIntervals
   , mkVersionIntervals
+  , Bound ( ExclusiveBound, InclusiveBound )
+  , LowerBound ( LowerBound )
+  , UpperBound ( NoUpperBound, UpperBound )
   )
 import Distribution.Types.VersionRange
   ( VersionRange
@@ -68,6 +76,8 @@ import Distribution.Types.VersionRange
 import Distribution.Version
   ( Version
   , mkVersion
+  , version0
+  , versionNumbers
   )
 import qualified Text.Megaparsec as MP
 import qualified Text.Megaparsec.Char as MPC
@@ -423,3 +433,77 @@ pUnknown = Lexer.nonIndented spaceNL $ do
   where
     someLine :: (Ord e) => MP.Parsec e SText ()
     someLine = void $ MP.takeWhile1P Nothing $ not . isSpace
+
+renderConstraint :: Constraint -> TBuilder
+renderConstraint ( Constraint pkg qual constr ) = fold
+  [ case qual of
+      UnqualifiedOnly -> ""
+      QualifiedAll -> "any."
+      QualifiedSetupAll -> "setup."
+      QualifiedSetup pkg' -> fold
+        [ LTB.fromString $ unPackageName pkg'
+        , ":setup."
+        ]
+  , LTB.fromString $ unPackageName pkg
+  , " "
+  , case constr of
+      PackageConstraintVersion intervals -> case intervals of
+        [] ->
+          "-none"
+        _ ->
+          intercalateMap0 " || " renderVersionInterval intervals
+      PackageConstraintTest -> "test"
+      PackageConstraintBench -> "bench"
+      PackageConstraintInstalled -> "installed"
+      PackageConstraintSource -> "source"
+      PackageConstraintFlag True flag -> fold
+        [ "+"
+        , LTB.fromString $ unFlagName flag
+        ]
+      PackageConstraintFlag False flag -> fold
+        [ "-"
+        , LTB.fromString $ unFlagName flag
+        ]
+  ]
+
+renderVersionInterval :: VersionInterval -> TBuilder
+renderVersionInterval (LowerBound ver bound, NoUpperBound)
+  | ver == version0
+  = "-any"
+  | otherwise
+  = renderLowerBound ver bound
+renderVersionInterval (LowerBound ver bound, UpperBound ver' bound')
+  | ver == version0
+  = renderUpperBound ver' bound'
+  | ver == ver'
+  = fold
+    [ "== "
+    , renderVersion ver
+    ]
+  | otherwise
+  = fold
+    [ renderLowerBound ver bound
+    , " && "
+    , renderUpperBound ver' bound'
+    ]
+
+renderLowerBound :: Version -> Bound -> TBuilder
+renderLowerBound ver bound = fold
+  [ case bound of
+      InclusiveBound -> ">="
+      ExclusiveBound -> ">"
+  , " "
+  , renderVersion ver
+  ]
+
+renderUpperBound :: Version -> Bound -> TBuilder
+renderUpperBound ver bound = fold
+  [ case bound of
+      InclusiveBound -> "<="
+      ExclusiveBound -> "<"
+  , " "
+  , renderVersion ver
+  ]
+
+renderVersion :: Version -> TBuilder
+renderVersion = intercalateMap0 "." LTBI.decimal . versionNumbers

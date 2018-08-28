@@ -5,6 +5,8 @@ module Main
 
 import qualified Data.Sequence as Seq
 import qualified Data.Text as ST
+import qualified Data.Text.Lazy as LT
+import qualified Data.Text.Lazy.Builder as LTB
 import Distribution.Types.Version
   ( mkVersion
   )
@@ -21,7 +23,8 @@ import Distribution.Types.VersionRange
   , unionVersionRanges
   )
 import Test.Tasty
-  ( TestTree
+  ( TestName
+  , TestTree
   , defaultMain
   , testGroup
   )
@@ -374,10 +377,75 @@ constraintParseTests = testGroup "constraints"
   , constraintsNone
   ]
 
+constraintRenderTest :: TestName -> SText -> PF.Constraint -> TestTree
+constraintRenderTest testName output cstr = testCase testName $
+  LT.toStrict ( LTB.toLazyText ( PF.renderConstraint cstr ) ) @?= output
+
+constraintRenderTests :: TestTree
+constraintRenderTests = testGroup "constraints"
+  [ constraintRenderTest "thisVersion" "foo == 3.4.2" $
+      PF.constraintVersion "foo" PF.unqualifiedOnly ( thisVersion $ mkVersion [ 3, 4, 2 ] )
+  , constraintRenderTest "earlierVersion" "foo < 4" $
+      PF.constraintVersion "foo" PF.unqualifiedOnly ( earlierVersion $ mkVersion [ 4 ] )
+  , constraintRenderTest "orEarlierVersion" "foo <= 4" $
+      PF.constraintVersion "foo" PF.unqualifiedOnly ( orEarlierVersion $ mkVersion [ 4 ] )
+  , constraintRenderTest "laterVersion" "foo > 4" $
+      PF.constraintVersion "foo" PF.unqualifiedOnly ( laterVersion $ mkVersion [ 4 ] )
+  , constraintRenderTest "orLaterVersion" "foo >= 4" $
+      PF.constraintVersion "foo" PF.unqualifiedOnly ( orLaterVersion $ mkVersion [ 4 ] )
+  , constraintRenderTest "intersection" "foo > 3 && < 4" $
+      PF.constraintVersion "foo" PF.unqualifiedOnly $
+        intersectVersionRanges
+          ( laterVersion $ mkVersion [ 3 ] )
+          ( earlierVersion $ mkVersion [ 4 ] )
+  , constraintRenderTest "union" "foo < 3 || > 4" $
+      PF.constraintVersion "foo" PF.unqualifiedOnly $
+        unionVersionRanges
+          ( earlierVersion $ mkVersion [ 3 ] )
+          ( laterVersion $ mkVersion [ 4 ] )
+  , constraintRenderTest "complicated" "foo >= 3 && < 3.5 || >= 4 && < 4.1" $
+      PF.constraintVersion "foo" PF.unqualifiedOnly $
+        unionVersionRanges
+          ( intersectVersionRanges
+              ( orLaterVersion $ mkVersion [ 3 ] )
+              ( earlierVersion $ mkVersion [ 3, 5 ] )
+          )
+          ( intersectVersionRanges
+              ( orLaterVersion $ mkVersion [ 4 ] )
+              ( earlierVersion $ mkVersion [ 4, 1 ] )
+          )
+  , constraintRenderTest "impossible" "foo -none" $
+      PF.constraintVersion "foo" PF.unqualifiedOnly $
+        intersectVersionRanges
+          ( thisVersion $ mkVersion [ 1 ] )
+          ( thisVersion $ mkVersion [ 2 ] )
+  , constraintRenderTest "all qualification" "any.foo >= 4" $
+      PF.constraintVersion "foo" PF.qualifiedAll ( orLaterVersion $ mkVersion [ 4 ] )
+  , constraintRenderTest "all setup qualification" "setup.foo >= 4" $
+      PF.constraintVersion "foo" PF.qualifiedSetupAll ( orLaterVersion $ mkVersion [ 4 ] )
+  , constraintRenderTest "specific setup qualification" "bar:setup.foo >= 4" $
+      PF.constraintVersion "foo" ( PF.qualifiedSetup "bar" ) ( orLaterVersion $ mkVersion [ 4 ] )
+  , constraintRenderTest "test constraint" "foo test" $
+      PF.constraintTest "foo" PF.unqualifiedOnly
+  , constraintRenderTest "bench constraint" "foo bench" $
+      PF.constraintBench "foo" PF.unqualifiedOnly
+  , constraintRenderTest "source constraint" "foo source" $
+      PF.constraintSource "foo" PF.unqualifiedOnly
+  , constraintRenderTest "installed constraint" "foo installed" $
+      PF.constraintInstalled "foo" PF.unqualifiedOnly
+  , constraintRenderTest "false flag" "foo -bar" $
+      PF.constraintFlag "foo" PF.unqualifiedOnly False "bar"
+  , constraintRenderTest "true flag" "foo +bar" $
+      PF.constraintFlag "foo" PF.unqualifiedOnly True "bar"
+  ]
+
 main :: IO ()
 main = defaultMain $ testGroup "project-file tests"
   [ testGroup "parsing"
     [ packageParseTests
     , constraintParseTests
+    ]
+  , testGroup "rendering"
+    [ constraintRenderTests
     ]
   ]
