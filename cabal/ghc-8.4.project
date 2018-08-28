@@ -8,7 +8,6 @@ packages:
   packages/position
   packages/prelude
   packages/project-file
-  packages/refreeze
   packages/romnum
   packages/twofinger
   packages/xhtml2html

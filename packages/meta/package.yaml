@@ -23,12 +23,15 @@ library:
     - aeson
     - base
     - bytestring
+    - Cabal
     - containers
     - cryptohash-sha256
+    - hpack
     - optparse-applicative
+    - process
     - q4c12-mappend
     - q4c12-prelude
-    - q4c12-refreeze
+    - q4c12-project-file
     - q4c12-xml-core
     - q4c12-xml-desc
     - text
