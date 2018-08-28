@@ -7,6 +7,7 @@ import Control.Lens
   ( set
   )
 import qualified Data.ByteString as BS
+import qualified Data.Map as Map
 import qualified Data.Sequence as Seq
 import qualified Data.Text as ST
 import qualified Distribution.Compiler as Compiler
@@ -21,6 +22,9 @@ import Distribution.Parsec.Common
   ( showPError
   )
 import qualified Distribution.System as System
+import Distribution.Types.PackageName
+  ( PackageName
+  )
 import Distribution.Version
   ( mkVersion
   , thisVersion
@@ -41,6 +45,12 @@ import Q4C12.Defrost
   ( Env
   , env
   , defrost
+  , VersionPolicy
+  , pvpPolicy
+  , pvpLooseImportsPolicy
+  , semverPolicy
+  , semverLooseImportsPolicy
+  , exactPolicy
   )
 
 main :: IO ()
@@ -49,8 +59,8 @@ main = defaultMain $ testGroup "defrost tests"
   , testGroup "should fail" failureTests
   ]
 
-successTest :: [ PF.Constraint ] -> SByteString -> [ Env ] -> SByteString -> IO ()
-successTest extraConstraints input envs expected = do
+successTest :: Map PackageName VersionPolicy -> [ PF.Constraint ] -> SByteString -> [ Env ] -> SByteString -> IO ()
+successTest policy extraConstraints input envs expected = do
   let
     inputParseRes = parseGenericPackageDescription input
   case runParseResult inputParseRes of
@@ -62,7 +72,7 @@ successTest extraConstraints input envs expected = do
         (_warns, Left (_versionMay, errs)) ->
           fail $ foldMap (showPError "(expected)") errs
         (_warns, Right expectedGpd) -> do
-          defrost extraConstraints envs inputGpd @?= Right expectedGpd          
+          defrost policy extraConstraints envs inputGpd @?= Right expectedGpd          
 
 successTests :: [TestTree]
 successTests =
@@ -93,7 +103,7 @@ successTests =
           , "  build-depends:"
           , "    foo >=3 && <3.1"
           ]
-      successTest [] input freezes expected
+      successTest mempty [] input freezes expected
 
   , testCase "unqualified only" $ do
       let
@@ -122,7 +132,7 @@ successTests =
           , "  build-depends:"
           , "    foo >=3 && <3.1"
           ]
-      successTest [] input freezes expected
+      successTest mempty [] input freezes expected
 
   , testCase "unqualified and setup differ" $ do
       let
@@ -158,7 +168,7 @@ successTests =
           , "  build-depends:"
           , "    foo >=3 && <3.1"
           ]
-      successTest [] input freezes expected
+      successTest mempty [] input freezes expected
 
   , testCase "unqualified and all" $ do
       let
@@ -194,7 +204,7 @@ successTests =
           , "  build-depends:"
           , "    foo >=3 && <3.1 || >=5 && <5.1"
           ]
-      successTest [] input freezes expected
+      successTest mempty [] input freezes expected
 
   , testCase "leave internal libraries & self-deps alone" $ do
       let
@@ -235,7 +245,7 @@ successTests =
           , "    some-internal-library,"
           , "    example-test"
           ]
-      successTest [] input freezes expected
+      successTest mempty [] input freezes expected
 
 
   , testCase "setup-depends" $ do
@@ -273,7 +283,7 @@ successTests =
           , "    b >=3 && < 3.1,"
           , "    c >=4 && <4.1"
           ]
-      successTest [] input freezes expected
+      successTest mempty [] input freezes expected
 
   , testCase "preconstrained" $ do
       let
@@ -302,7 +312,7 @@ successTests =
           , "  build-depends:"
           , "    foo >=1 && <1.0.1 || >1.0.1 && < 1.1"
           ]
-      successTest [] input freezes expected
+      successTest mempty [] input freezes expected
 
   , testCase "conditional dependency" $ do
       let
@@ -333,7 +343,7 @@ successTests =
           , "    build-depends:"
           , "      foo >=1 && <1.1"
           ]
-      successTest [] input freezes expected
+      successTest mempty [] input freezes expected
 
   , testCase "conditional dependency multi-freeze" $ do
       let
@@ -378,7 +388,7 @@ successTests =
           , "    build-depends:"
           , "      foo >=1 && <1.1 || >= 2 && < 2.1"
           ]
-      successTest [] input freezes expected
+      successTest mempty [] input freezes expected
 
   , testCase "conditional dependency multi-freeze disjunction" $ do
       let
@@ -423,7 +433,7 @@ successTests =
           , "    build-depends:"
           , "      foo >=1 && <1.1 || >= 2 && < 2.1 || >= 3 && < 3.1"
           ]
-      successTest [] input freezes expected
+      successTest mempty [] input freezes expected
 
   , testCase "conditional dependency multi-freeze conjunction" $ do
       let
@@ -468,7 +478,7 @@ successTests =
           , "    build-depends:"
           , "      foo >=1 && <1.1"
           ]
-      successTest [] input freezes expected
+      successTest mempty [] input freezes expected
 
   , testCase "extra constraints" $ do
       let
@@ -500,7 +510,86 @@ successTests =
           , "  build-depends:"
           , "    foo >3.0.5 && <3.1"
           ]
-      successTest extraConstraints input freezes expected
+      successTest mempty extraConstraints input freezes expected
+
+  , testCase "versioning policy" $ do
+      let
+        versioningPolicy :: Map PackageName VersionPolicy
+        versioningPolicy = Map.fromList
+          [ ( "foo-pvp", pvpPolicy )
+          , ( "foo-semver", semverPolicy )
+          , ( "foo-pvp-loose-imports", pvpLooseImportsPolicy )
+          , ( "foo-semver-loose-imports", semverLooseImportsPolicy )
+          , ( "foo-exact", exactPolicy )
+          ]
+        input = BS.intercalate "\n"
+          [ "cabal-version: 2.2"
+          , "name: test"
+          , "version: 0"
+          , "library"
+          , "  build-depends:"
+          , "    foo-pvp, foo-semver, foo-pvp-loose-imports, foo-semver-loose-imports, foo-exact"
+          ]
+        freezes =
+          [ env System.Linux System.I386 (mkFlagAssignment []) Compiler.GHC (mkVersion [8, 4]) $
+              set PF.constraints
+                ( Seq.fromList
+                  [ PF.constraintVersion "foo-pvp" PF.qualifiedAll $ thisVersion (mkVersion [1,2,3,4])
+                  , PF.constraintVersion "foo-semver" PF.qualifiedAll $ thisVersion (mkVersion [1,2,3,4])
+                  , PF.constraintVersion "foo-pvp-loose-imports" PF.qualifiedAll $ thisVersion (mkVersion [1,2,3,4])
+                  , PF.constraintVersion "foo-semver-loose-imports" PF.qualifiedAll $ thisVersion (mkVersion [1,2,3,4])
+                  , PF.constraintVersion "foo-exact" PF.qualifiedAll $ thisVersion (mkVersion [1,2,3,4])
+                  ]
+                )
+                PF.emptyConfig
+          ]
+        expected = BS.intercalate "\n"
+          [ "cabal-version: 2.2"
+          , "name: test"
+          , "version: 0"
+          , "library"
+          , "  build-depends:"
+          , "    foo-pvp >= 1.2.3.4 && < 1.3,"
+          , "    foo-semver >= 1.2.3.4 && < 2,"
+          , "    foo-pvp-loose-imports >= 1.2.3.4 && < 1.2.4,"
+          , "    foo-semver-loose-imports >= 1.2.3.4 && < 1.3,"
+          , "    foo-exact == 1.2.3.4"
+          ]
+      successTest versioningPolicy [] input freezes expected
+
+  , testCase "versioning policy deep" $ do
+      let
+        versioningPolicy :: Map PackageName VersionPolicy
+        versioningPolicy = Map.fromList
+          [ ( "foo", pvpLooseImportsPolicy )
+          ]
+        input = BS.intercalate "\n"
+          [ "cabal-version: 2.2"
+          , "name: test"
+          , "version: 0"
+          , "library"
+          , "  build-depends:"
+          , "    foo"
+          ]
+        freezes =
+          [ env System.Linux System.I386 (mkFlagAssignment []) Compiler.GHC (mkVersion [8, 4]) $
+              set PF.constraints
+                ( Seq.fromList
+                  [ PF.constraintVersion "foo" PF.qualifiedAll $ thisVersion (mkVersion [1])
+                  ]
+                )
+                PF.emptyConfig
+          ]
+        expected = BS.intercalate "\n"
+          [ "cabal-version: 2.2"
+          , "name: test"
+          , "version: 0"
+          , "library"
+          , "  build-depends:"
+          , "    foo >= 1 && < 1.0.1"
+          ]
+      successTest versioningPolicy [] input freezes expected
+
   ]
 
 failureTests :: [TestTree]
@@ -590,4 +679,4 @@ failureTest input envs expected = do
     (_warns, Left (_versionMay, errs)) ->
       fail $ foldMap (showPError "(input)") errs
     (_warns, Right inputGpd) -> do
-      defrost [] envs inputGpd @?= Left expected
+      defrost mempty [] envs inputGpd @?= Left expected

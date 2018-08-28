@@ -4,6 +4,10 @@ module Q4C12.Defrost
   ( env
   , Env
   , defrost
+  , VersionPolicy
+  , pvpPolicy, pvpLooseImportsPolicy
+  , semverPolicy, semverLooseImportsPolicy
+  , exactPolicy
   )
   where
 
@@ -66,12 +70,15 @@ import Distribution.Types.VersionInterval
 import Distribution.Types.VersionRange
   ( VersionRange
   , intersectVersionRanges
-  , majorBoundVersion
+  , earlierVersion
   , noVersion
+  , orLaterVersion
+  , thisVersion
   , unionVersionRanges
   )
 import Distribution.Version
   ( Version
+  , alterVersion
   , withinRange
   )
 import Q4C12.ProjectFile
@@ -83,8 +90,6 @@ import Q4C12.ProjectFile
   , constraintPackageName
   , constraintToVersionRange
   )
-
---TODO: accept a config detailing which packages are semver, not PVP; we can default to PVP because PVP-bounding a semver package is safe (but conservative). So semver fixes one component and PVP fixes two; do I want to go one, two, N??
 
 data SystemEnv = SystemEnv
   { _systemEnvOS :: OS
@@ -104,6 +109,28 @@ env os arch flags compiler compilerVersion =
 -- Strictly speaking, we don't need to canonicalise. However, for output nicety (and test output stability), we do.
 canonicalVersionRange :: VersionRange -> VersionRange
 canonicalVersionRange = fromVersionIntervals . toVersionIntervals
+
+data VersionPolicy
+  = VersionPolicyFix Natural
+  -- ^ How many components of the version number should be fixed, after the first?
+  | VersionPolicyExact
+  -- ^ ...or, does the package refuse to commit to a versioning scheme that carries API information?
+
+pvpPolicy :: VersionPolicy
+pvpPolicy = VersionPolicyFix 1
+
+-- | Use for PVP packages that you import without explicit import lists.
+pvpLooseImportsPolicy :: VersionPolicy
+pvpLooseImportsPolicy = VersionPolicyFix 2
+
+semverPolicy :: VersionPolicy
+semverPolicy = VersionPolicyFix 0
+
+semverLooseImportsPolicy :: VersionPolicy
+semverLooseImportsPolicy = VersionPolicyFix 1
+
+exactPolicy :: VersionPolicy
+exactPolicy = VersionPolicyExact
 
 data DefrostingError
   = UnfrozenDependency QualificationType PackageName
@@ -281,29 +308,58 @@ matchesCondition ( SystemEnv os arch flags compiler compilerVersion ) =
 
 -- Make sure that the dependencies are actually frozen. The validation goes inside the map because we might not ever need those constraints; if there are imprecise or broken ones for non-immediate deps, we can just ignore those.
 checkFrozenDependencies
-  :: Map ( PackageName, QualificationType )
+  :: Map PackageName VersionPolicy
+  -> Map ( PackageName, QualificationType )
        ( Map SystemEnv VersionRange )
   -> FrozenDependencies
-checkFrozenDependencies =
+checkFrozenDependencies policy =
   Map.mapWithKey $ \ (pn, _) -> Map.mapWithKey $ \ systemEnv range ->
     case asVersionIntervals range of
       [(LowerBound lb InclusiveBound, UpperBound ub InclusiveBound)]
-        | lb == ub ->
-          pure $ majorBoundVersion lb
+        | lb == ub -> pure $ case fromMaybe pvpPolicy $ Map.lookup pn policy of
+            VersionPolicyFix n -> intersectVersionRanges
+              ( orLaterVersion lb )
+              ( earlierVersion $ alterVersion ( incrementVersionComponent n ) lb )
+            VersionPolicyExact -> thisVersion lb
       _ ->
           failure $ NEDL.singleton $ NotFullyFrozen pn systemEnv
+
+data Stream a = a :< Stream a
+
+streamRepeat :: a -> Stream a
+streamRepeat a = a :< streamRepeat a
+
+prepend :: [ a ] -> Stream a -> Stream a
+prepend as s = foldr (:<) s as
+
+streamTake :: Natural -> Stream a -> [a]
+streamTake = go []
+  where
+  go :: [a] -> Natural -> Stream a -> [a]
+  go acc 0 _ = List.reverse acc
+  go acc n (a :< as) = go (a : acc) (n - 1) as
+
+-- | 'streamAt :: Natural -> Lens' (Stream a) a'
+streamAt :: ( Functor f ) => Natural -> ( a -> f a ) -> Stream a -> f ( Stream a )
+streamAt 0 f (a :< as) = (:< as) <$> f a
+streamAt n f (a :< as) = (a :<) <$> streamAt (n - 1) f as
+
+incrementVersionComponent :: Natural -> [Int] -> [Int]
+incrementVersionComponent n as =
+  streamTake (n + 1) $ over ( streamAt n ) (+ 1) $ prepend as $ streamRepeat 0
 
 --TODO: build-tools, build-tool-depends
 gatherFreezes
   :: PackageName
   -- ^ Name of the package description we're defrosting.
+  -> Map PackageName VersionPolicy
   -> [ Env ]
   -> FrozenDependencies
-gatherFreezes pkgName
+gatherFreezes pkgName policy
     = fmap ( \ ( Env buildEnv config )
              -> fromConstraints pkgName ( view constraints config )
               & fmap ( Map.singleton buildEnv )
-              & checkFrozenDependencies
+              & checkFrozenDependencies policy
            )
   >>> Map.unionsWith ( Map.unionWith $ liftA2 unionVersionRanges )
 
@@ -362,12 +418,14 @@ fixCondBranchConstraints ( CondBranch cond true falseMay ) =
     ( fixCondTreeConstraints true )
     ( fixCondTreeConstraints <$> falseMay )
 
+-- TODO: it's possible that the loose bounds policy may only apply to one component, so we may be excessively strict in applying it to all components.
 defrost
-  :: [ Constraint ]
+  :: Map PackageName VersionPolicy
+  -> [ Constraint ]
   -> [ Env ]
   -> GenericPackageDescription
   -> Either SText GenericPackageDescription
-defrost extra envs gpd = do
+defrost versionPolicy extra envs gpd = do
   let
     pn = view ( Lenses.packageDescription . Lenses.package . Lenses.pkgName ) gpd
     combinedConstraints = Merge.merge
@@ -377,6 +435,6 @@ defrost extra envs gpd = do
           fmap (fmap $ intersectVersionRanges cstr) frozen
       )
       ( fromConstraints pn extra )
-      ( gatherFreezes pn envs )
+      ( gatherFreezes pn versionPolicy envs )
   --TODO: should be sorting the errors, for test stability
   bimap ( foldMap showDefrostingError ) fixGPDConstraints $ validationToEither $ applyConstraints combinedConstraints gpd

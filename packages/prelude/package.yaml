@@ -6,6 +6,8 @@ author: quasicomputational <quasicomputational@gmail.com>
 license: BSD2
 license-file:
   - LICENSE.BSD2
+extra-doc-files:
+  - README.markdown
 defaults:
   local: ../../hpack-defaults.yaml
 
