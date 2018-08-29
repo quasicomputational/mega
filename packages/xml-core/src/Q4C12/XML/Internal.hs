@@ -461,6 +461,43 @@ resolveMarkup
 resolveMarkup defaultNamespace namespaces (UMarkup tree) =
   Markup <$> bitraverse (resolveElement defaultNamespace namespaces) resolveContent tree
 
+data ClassifiedAttrs = ClassifiedAttrs
+  { _classifiedDefaultNamespaces :: DList (PositionRange, SText)
+  , _classifiedBoundNamespaces :: MapPend SText (NonEmptyDList (PositionRange, SText))
+  , _classifiedAttrs :: DList (PositionRange, RawQName, Seq (PositionRange, LText))
+  }
+
+instance Semigroup ClassifiedAttrs where
+  ClassifiedAttrs ds nss as <> ClassifiedAttrs ds' nss' as' =
+    ClassifiedAttrs (ds <> ds') (nss <> nss') (as <> as')
+
+instance Monoid ClassifiedAttrs where
+  mempty = ClassifiedAttrs mempty mempty mempty
+  mappend = (<>)
+
+classifyDefaultNamespace
+  :: PositionRange
+  -> SText
+  -> ClassifiedAttrs
+classifyDefaultNamespace pos ns =
+  ClassifiedAttrs (DList.singleton (pos, ns)) mempty mempty
+
+classifyNamespaceBinding
+  :: SText
+  -> PositionRange
+  -> SText
+  -> ClassifiedAttrs
+classifyNamespaceBinding local pos ns =
+  ClassifiedAttrs mempty (MapPend.singleton local $ NEDList.singleton (pos, ns)) mempty
+
+classifyAttr
+  :: PositionRange
+  -> RawQName
+  -> Seq (PositionRange, LText)
+  -> ClassifiedAttrs
+classifyAttr pos name val =
+  ClassifiedAttrs mempty mempty (DList.singleton (pos, name, val))
+
 resolveElement
   :: Maybe SText
   -> Map SText SText
@@ -472,52 +509,48 @@ resolveElement defaultNamespace namespaces (UElement rawName rawAttrs rawBody po
   -- First, we go over the attributes and split them into three categories: default namespace declarations, named namespace declarations, and content-bearing attributes.
   rawAttrs' <- validationToExcept $ for rawAttrs $ \(rawAttrName, attrPos, rawText) ->
     (,,) rawAttrName attrPos <$> resolveText rawText
-  let prepartitioned
-        :: [ HSum
-             '[ (PositionRange, SText)
-              , MapPend SText (NonEmpty (PositionRange, SText))
-              , (PositionRange, RawQName, Seq (PositionRange, LText))
-              ]
-           ]
-      prepartitioned = flip fmap rawAttrs' $ \(RawQName mpref local, nameRange, value) ->
+  let ClassifiedAttrs defaultNamespaces collatedNamespaceBindings otherAttrs = flip foldMap rawAttrs' $ \(RawQName mpref local, nameRange, value) ->
         case mpref of
-          Nothing | local == "xmlns" -> HSumHere (nameRange, LT.toStrict $ foldMap snd value)
-          Just "xmlns" -> HSumThere $ HSumHere $ MapPend.singleton local $ pure (nameRange, LT.toStrict $ foldMap snd value)
-          _ -> HSumThere $ HSumThere $ HSumHere (nameRange, RawQName mpref local, value)
+          Nothing | local == "xmlns" ->
+            classifyDefaultNamespace nameRange (LT.toStrict $ foldMap snd value)
+          Just "xmlns" ->
+            classifyNamespaceBinding local nameRange (LT.toStrict $ foldMap snd value)
+          _ ->
+            classifyAttr nameRange (RawQName mpref local) value
   -- Go over our three lists of attribute types and verify appropriate uniqueness and well-formedness for each of them.
-  case partitionHSum prepartitioned of
-    HProdListCons defaultNamespaces (HProdListCons collatedNamespaceBindings (HProdListCons otherAttrs HProdListNil)) -> do
-      defaultNamespace' <- validationToExcept $ case defaultNamespaces of
-        [] -> pure defaultNamespace
-        (_, "") : [] -> pure Nothing
-        (_, ns) : [] | isNormalized NFD ns -> pure (Just ns)
-        (r0, _) : [] -> failure $ NEDList.singleton $ NonNFDNamespace r0
-        (r0, _) : (r1, _) : rest -> failure $ NEDList.singleton $ DuplicateDefaultNamespaceDecls r0 (r1 :| fmap fst rest)
-      namespaceBindings <- validationToExcept $ flip Map.traverseWithKey (getMapPend $ fold collatedNamespaceBindings) $ \pref -> \case
+  defaultNamespace' <- validationToExcept $ case toList defaultNamespaces of
+    [] -> pure defaultNamespace
+    (_, "") : [] -> pure Nothing
+    (_, ns) : [] | isNormalized NFD ns -> pure (Just ns)
+    (r0, _) : [] -> failure $ NEDList.singleton $ NonNFDNamespace r0
+    (r0, _) : (r1, _) : rest -> failure $ NEDList.singleton $ DuplicateDefaultNamespaceDecls r0 (r1 :| fmap fst (toList rest))
+  namespaceBindings <- validationToExcept $
+    flip Map.traverseWithKey (getMapPend collatedNamespaceBindings) $ \pref binds ->
+      case toNonEmpty binds of
         (_, ns) :| [] | isNormalized NFD ns -> pure ns
         (r, _) :| [] -> failure $ NEDList.singleton $ NonNFDNamespace r
         (r0, _) :| ((r1, _) : rest) ->
           failure $ NEDList.singleton $ DuplicateNamespacePrefixDecls pref r0 (r1 :| fmap fst rest)
-      let namespaces' = namespaceBindings <> namespaces --Note: new on the left, to take precedence.
-      qname <- validationToExcept $ case rawName of
-        RawQName Nothing local -> pure $ QName defaultNamespace' local
-        RawQName (Just pref) local -> case Map.lookup pref namespaces' of
-          Nothing -> failure $ NEDList.singleton $ UnboundNamespace pos pref
-          Just ns -> pure $ QName (Just ns) local
-      attrSets <- validationToExcept $ fmap getMapPend $
-        flip foldMapM otherAttrs $ \(r, RawQName mpref local, value) ->
-          case mpref of
-            Nothing -> pure $ MapPend.singleton (QName Nothing local) $ pure (r, value)
-            Just pref -> case Map.lookup pref namespaces' of
-              Nothing -> failure $ NEDList.singleton $ UnboundNamespace r pref
-              Just ns -> pure $ MapPend.singleton (QName (Just ns) local) $ pure (r, value)
-      attrs <- validationToExcept $ for attrSets $ \case
-        (r, value) :| [] -> pure (r, value)
-        (r0, _) :| ((r1, _) : rest) -> failure $ NEDList.singleton $ DuplicateAttrs r0 (r1 :| fmap fst rest)
-      -- Finally, recurse into our children.
-      body <- validationToExcept $
-        resolveMarkup defaultNamespace' namespaces' rawBody
-      pure $ Element qname attrs body pos
+  let namespaces' = namespaceBindings <> namespaces --Note: new on the left, to take precedence.
+  qname <- validationToExcept $ case rawName of
+    RawQName Nothing local -> pure $ QName defaultNamespace' local
+    RawQName (Just pref) local -> case Map.lookup pref namespaces' of
+      Nothing -> failure $ NEDList.singleton $ UnboundNamespace pos pref
+      Just ns -> pure $ QName (Just ns) local
+  attrSets <- validationToExcept $ fmap getMapPend $
+    flip foldMapM otherAttrs $ \(r, RawQName mpref local, value) ->
+      case mpref of
+        Nothing -> pure $ MapPend.singleton (QName Nothing local) $ pure (r, value)
+        Just pref -> case Map.lookup pref namespaces' of
+          Nothing -> failure $ NEDList.singleton $ UnboundNamespace r pref
+          Just ns -> pure $ MapPend.singleton (QName (Just ns) local) $ pure (r, value)
+  attrs <- validationToExcept $ for attrSets $ \case
+    (r, value) :| [] -> pure (r, value)
+    (r0, _) :| ((r1, _) : rest) -> failure $ NEDList.singleton $ DuplicateAttrs r0 (r1 :| fmap fst rest)
+  -- Finally, recurse into our children.
+  body <- validationToExcept $
+    resolveMarkup defaultNamespace' namespaces' rawBody
+  pure $ Element qname attrs body pos
 
 data Parsed = Parsed
   { _preRootComments :: Seq (Comment PositionRange)
