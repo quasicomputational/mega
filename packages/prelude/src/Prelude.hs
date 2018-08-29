@@ -195,7 +195,7 @@ import Q4C12.FoldableUtils as Export
   , unfoldr'
   )
 import Q4C12.HList as Export
-  (HSum (HSumHere, HSumThere), absurdHSum, eliminateHSum, partitionHSum, _HSumHere, _HSumThere, eitherSum, HProd (HProdCons, HProdNil), headL, tailL, unitProd, singleProd, doubleProd, dropUnit, HProdList (HProdListCons, HProdListNil))
+  (HSum (HSumHere, HSumThere), absurdHSum, eliminateHSum, _HSumHere, _HSumThere, eitherSum, HProd (HProdCons, HProdNil), headL, tailL, unitProd, singleProd, doubleProd, dropUnit)
 import Q4C12.TwoFinger as Export
   (TwoFingerOddA, TwoFingerOddE, TwoFingerEvenA, TwoFingerEvenE)
 
