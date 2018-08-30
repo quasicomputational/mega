@@ -25,6 +25,7 @@ library:
   exposed-modules:
     - Q4C12.XML
     - Q4C12.XML.Internal
+    - Q4C12.XML.QQ
   # Suppress Paths_*
   other-modules: []
   dependencies:
@@ -37,6 +38,7 @@ library:
     - q4c12-position
     - q4c12-prelude
     - safe
+    - template-haskell
     - text
     - text-icu
     - transformers

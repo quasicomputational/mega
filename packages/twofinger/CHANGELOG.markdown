@@ -4,6 +4,7 @@ Next
 * Added `SUPPORT.markdown`, documenting which GHCs this package will build on.
 * Packaging: requiring `cabal-doctest` 1.0.5 cleans up some ugliness, and lets us DTRT.
 * GHC 8.4 compatibility (bounds) and various dependency bumps.
+* `Data` instances for all the flavours.
 
 q4c12-twofinger 0.2 (2018-01-17)
 ================================

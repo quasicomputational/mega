@@ -19,6 +19,7 @@ import Data.Bifunctor (Bifunctor (bimap), first, second)
 import Data.Bifoldable (Bifoldable (bifoldMap))
 import Data.Bitraversable
   (Bitraversable (bitraverse), bifoldMapDefault, bimapDefault)
+import Data.Data (Data)
 import Data.Functor.Alt (Alt ((<!>)))
 import Data.Functor.Apply
   ( Apply, (<.>), MaybeApply (MaybeApply)
@@ -101,7 +102,7 @@ liftEqSeq f as bs = case (Seq.viewl as, Seq.viewl bs) of
 
 -- | Isomorphic to @a, (e, a)*@
 data TwoFingerOddA e a = TwoFingerOddA (Seq (a, e)) a
-  deriving (Generic)
+  deriving (Generic, Data)
 
 instance Show2 TwoFingerOddA where
   liftShowsPrec2 f _ g _ d = go (d > 10)
@@ -188,7 +189,7 @@ instance Bitraversable1 TwoFingerOddA where
 
 -- | Isomorphic to @e, (a, e)*@
 data TwoFingerOddE e a = TwoFingerOddE e (Seq (a, e))
-  deriving (Generic)
+  deriving (Generic, Data)
 
 instance Show2 TwoFingerOddE where
   liftShowsPrec2 f _ g _ d = go (d > 10)
@@ -250,7 +251,7 @@ instance (NFData e, NFData a) => NFData (TwoFingerOddE e a)
 data TwoFingerEvenE e a
   = EmptyEvenE
   | TwoFingerEvenE e (Seq (a, e)) a
-  deriving (Generic)
+  deriving (Generic, Data)
 
 instance Show2 TwoFingerEvenE where
   liftShowsPrec2 f _ g _ d = go (d > 10)
@@ -310,7 +311,7 @@ instance Bitraversable TwoFingerEvenE where
 
 -- | Isomorphic to @(a, e)*@
 data TwoFingerEvenA e a = TwoFingerEvenA (Seq (a, e))
-  deriving (Generic)
+  deriving (Generic, Data)
 
 instance Show2 TwoFingerEvenA where
   liftShowsPrec2 f _ g _ d = go (d > 10)
