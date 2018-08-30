@@ -33,7 +33,7 @@ import Q4C12.TwoFinger (singletonOddA, unitOddA, consOddA)
 import Safe (toEnumMay)
 
 data QName = QName !(Maybe SText) !SText
-  deriving (Show, Eq, Ord, Generic)
+  deriving (Show, Eq, Ord, Generic, Data)
 
 instance NFData QName
 
@@ -69,13 +69,13 @@ isXMLSpace '\r' = True
 isXMLSpace _ = False
 
 newtype Comment pos = Comment { getComment :: Seq (pos, LText) }
-  deriving (Show, Generic)
+  deriving (Show, Generic, Data)
 
 instance (NFData pos) => NFData (Comment pos)
 
 -- Comments (of type cmt) and text.
 newtype Content cmt pos = Content { getContent :: TwoFingerOddA cmt (Seq (pos, LText)) }
-  deriving (Show, Generic)
+  deriving (Show, Generic, Data)
 
 instance (NFData cmt, NFData pos) => NFData (Content cmt pos)
 
@@ -113,7 +113,7 @@ contentComment :: cmt -> Content cmt pos
 contentComment = Content . unitOddA
 
 newtype Markup cmt pos = Markup { getMarkup :: TwoFingerOddA (Element cmt pos) (Content cmt pos)  }
-  deriving (Show, Generic)
+  deriving (Show, Generic, Data)
 
 instance (NFData cmt, NFData pos) => NFData (Markup cmt pos)
 
@@ -145,7 +145,7 @@ data Element cmt pos = Element
   , _ebody :: Markup cmt pos
   , elementPosition :: pos
   }
-  deriving (Show, Functor, Generic)
+  deriving (Show, Functor, Generic, Data)
 
 instance Bifunctor Element where
   bimap f g (Element name attrs body pos) =

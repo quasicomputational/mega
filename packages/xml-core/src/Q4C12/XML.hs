@@ -17,6 +17,7 @@ module Q4C12.XML
   , parseXML, parseXMLCommented
   , renderXML
   , parseXML'
+  , xmlqq
   )
   where
 
@@ -41,6 +42,9 @@ import Q4C12.XML.Internal
   , rootElement, preRootComments, postRootComments
   , parseXML, parseXMLCommented
   , renderXML
+  )
+import Q4C12.XML.QQ
+  ( xmlqq
   )
 
 parseXML'

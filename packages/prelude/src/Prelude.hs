@@ -38,6 +38,9 @@ import Data.Bool as Export
   (Bool (True, False), not, (||), (&&), otherwise)
 import Data.Char as Export
   (Char, isSpace, toUpper, isAlphaNum, isAscii)
+import Data.Data as Export
+  ( Data
+  )
 import Data.Either as Export
   (Either (Left, Right), either, partitionEithers)
 import Data.Eq as Export
@@ -186,6 +189,11 @@ import Data.Profunctor as Export
 -- either imports for re-export
 import Data.Either.Validation as Export
   (Validation, validationToEither, eitherToValidation)
+
+-- template-haskell imports for re-export
+import Language.Haskell.TH.Syntax as Export
+  ( Lift
+  )
 
 -- Q4C12 packages for re-export
 import Q4C12.FoldableUtils as Export

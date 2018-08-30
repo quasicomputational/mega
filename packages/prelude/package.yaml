@@ -39,6 +39,7 @@ library:
     - q4c12-hlist
     - q4c12-twofinger
     - semigroupoids
+    - template-haskell
     - text
     - transformers
     - transformers-compat
