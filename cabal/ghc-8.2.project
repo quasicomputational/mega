@@ -14,3 +14,6 @@ packages:
   packages/xml-core
   packages/xml-desc
 with-compiler: ghc-8.2.2
+optimization: False
+benchmarks: true
+tests: true

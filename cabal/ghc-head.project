@@ -14,6 +14,9 @@ packages:
   packages/xml-core
   packages/xml-desc
 with-compiler: ghc-head
+optimization: False
+benchmarks: true
+tests: true
 repository head.hackage
   url: http://head.hackage.haskell.org/
   secure: True

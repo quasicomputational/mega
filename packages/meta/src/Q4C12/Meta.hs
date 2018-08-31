@@ -210,7 +210,11 @@ generateProjectFiles = traverseWithKey_ $ \ buildName build -> do
       ]
     , flip fmap ( buildPackages build ) $ \ package ->
         "  " <> LT.pack package
-    , [ "with-compiler: ghc-" <> LT.fromStrict ( ghcVersion ( buildGHCVersion build ) ) ]
+    , [ "with-compiler: ghc-" <> LT.fromStrict ( ghcVersion ( buildGHCVersion build ) )
+      , "optimization: False"
+      , "benchmarks: true"
+      , "tests: true"
+      ]
     , case ghcRegularity $ buildGHCVersion build of
         PreRelease ->
           [ "repository head.hackage"

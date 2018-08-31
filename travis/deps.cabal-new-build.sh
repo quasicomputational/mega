@@ -2,8 +2,6 @@
 
 set -euxo pipefail
 
-CABALOPTS=$(./travis/options.cabal-new-build.sh)
+cabal new-update --project-file=cabal/"$PROJECT".project
 
-cabal new-update $CABALOPTS
-
-cabal new-build all --only-dependencies $CABALOPTS
+cabal new-build all --only-dependencies --project-file=cabal/"$PROJECT".project

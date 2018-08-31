@@ -2,10 +2,8 @@
 
 set -euxo pipefail
 
-CABALOPTS=$(./travis/options.cabal-new-build.sh)
+cabal new-build all --project-file=cabal/"$PROJECT".project
 
-cabal new-build all $CABALOPTS
-
-cabal new-test all $CABALOPTS
+cabal new-test all --project-file=cabal/"$PROJECT".project
 
 #TODO: run the benchmarks? Haddock?
