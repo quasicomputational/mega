@@ -15,7 +15,7 @@ module Q4C12.XML.Internal where
 
 import Control.Monad.Trans.Except (throwE)
 import Control.Monad.Trans.State (get, gets, put, modify)
-import Control.Monad.Trans.Writer (tell)
+import Control.Monad.Trans.Writer.CPS (tell)
 import qualified Data.DList as DList
 import qualified Data.DList.NonEmpty as NEDList
 import qualified Data.Map as Map

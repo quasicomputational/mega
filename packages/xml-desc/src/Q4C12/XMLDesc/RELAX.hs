@@ -7,7 +7,7 @@ module Q4C12.XMLDesc.RELAX
   ) where
 
 import qualified Control.Monad.Trans.Accum as Accum
-import qualified Control.Monad.Trans.Writer as Writer
+import qualified Control.Monad.Trans.Writer.CPS as Writer
 import qualified Data.DList as DList
 import qualified Data.Set as Set
 import qualified Data.Sequence as Seq

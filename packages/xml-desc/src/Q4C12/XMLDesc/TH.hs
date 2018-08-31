@@ -11,7 +11,7 @@ module Q4C12.XMLDesc.TH
   )
   where
 
-import qualified Control.Monad.Trans.Writer as Writer
+import qualified Control.Monad.Trans.Writer.CPS as Writer
 import qualified Data.DList as DList
 import qualified Data.List as List
 import Language.Haskell.TH (Q, Exp, Pat, Name)

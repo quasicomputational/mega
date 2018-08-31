@@ -7,7 +7,7 @@ module Q4C12.XMLDesc.Parse
   , Parse
   ) where
 
-import qualified Control.Monad.Trans.Writer as Writer
+import qualified Control.Monad.Trans.Writer.CPS as Writer
 import qualified Data.Map as Map
 import qualified Data.Text.Lazy as LT
 import qualified Data.Sequence as Seq
