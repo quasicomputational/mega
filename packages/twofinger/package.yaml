@@ -20,7 +20,6 @@ category: Data Structures
 extra-doc-files:
   - README.markdown
   - CHANGELOG.markdown
-  - SUPPORT.markdown
   #TODO: Should this file (i.e., package.yaml) be included in sdists? Question of what to do for the includes, in that case.
 defaults:
   local: ../../hpack-defaults.yaml
@@ -48,10 +47,6 @@ library:
     - deepseq
     - semigroupoids
   when:
-    #TODO: rm once 8.0 is unsupported
-    - condition: impl(ghc < 8.2)
-      dependencies:
-        - bifunctors
     - condition: "true"
       #Have to specify this in a conditional because of https://github.com/sol/hpack/issues/255 TODO remove once fixed
       ghc-options:

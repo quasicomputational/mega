@@ -54,17 +54,15 @@ import System.Process
 data Regularity = Regular | PreRelease
 
 data GHCVersion
-  = GHC8_0
-  | GHC8_2
+  = GHC8_2
   | GHC8_4
   | GHC8_6
   | GHCHEAD
   deriving ( Eq, Ord )
 
--- This is the version that the package name is build from, hence lowercase 'head'.
+-- This is the version that the package name is built from, hence lowercase 'head'.
 ghcVersion :: GHCVersion -> SText
 ghcVersion = \case
-  GHC8_0 -> "8.0.2"
   GHC8_2 -> "8.2.2"
   GHC8_4 -> "8.4.3"
   GHC8_6 -> "8.6.1"
@@ -72,7 +70,6 @@ ghcVersion = \case
 
 ghcRegularity :: GHCVersion -> Regularity
 ghcRegularity = \case
-  GHC8_0 -> Regular
   GHC8_2 -> Regular
   GHC8_4 -> Regular
   GHC8_6 -> PreRelease
@@ -297,8 +294,7 @@ data BuildConfig = BuildConfig
 
 configs :: Map SText BuildConfig
 configs = Map.fromList
-  [ ( "ghc-8.0", BuildConfig GHC8_0 OptOut MetaNo )
-  , ( "ghc-8.2", BuildConfig GHC8_2 OptOut MetaNo )
+  [ ( "ghc-8.2", BuildConfig GHC8_2 OptOut MetaNo )
   , ( "ghc-8.4", BuildConfig GHC8_4 OptOut MetaYes )
   -- TODO: regularise 8.6
   , ( "ghc-8.6", BuildConfig GHC8_6 OptOut MetaNo )
