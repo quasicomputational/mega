@@ -43,8 +43,12 @@ library:
     - text-icu
     - transformers
     - transformers-compat
+    - writer-cps-transformers
   verbatim:
-    mixins: "base hiding (Prelude)"
+    mixins: |
+      base hiding (Prelude),
+      -- Hide the leaky transformers
+      transformers hiding (Control.Monad.Trans.RWS, Control.Monad.Trans.Writer)
 
 tests:
   golden-tests:

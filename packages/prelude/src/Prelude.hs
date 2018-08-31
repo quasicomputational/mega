@@ -134,12 +134,14 @@ import Control.Monad.Trans.Class as Export
   (lift)
 import Control.Monad.Trans.State as Export
   (runStateT, execStateT, evalStateT, runState, StateT (StateT), State, state)
-import Control.Monad.Trans.Writer as Export
-  ( execWriter, execWriterT, runWriter, runWriterT, Writer, WriterT (WriterT)
-  , writer
-  )
 import Data.Functor.Reverse as Export
   (Reverse (Reverse), getReverse)
+
+-- writer-cps-transformers imports for re-export
+import Control.Monad.Trans.Writer.CPS as Export
+  ( execWriter, execWriterT, runWriter, runWriterT, Writer, WriterT
+  , writer, writerT
+  )
 
 -- containers imports for re-export
 import Data.Map as Export

@@ -111,4 +111,5 @@ constraints: any.Cabal ==2.2.0.1,
              any.void ==0.7.2,
              void -safe,
              any.wcwidth ==0.0.2,
-             wcwidth -cli +split-base
+             wcwidth -cli +split-base,
+             any.writer-cps-transformers ==0.1.1.4

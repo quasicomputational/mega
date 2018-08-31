@@ -43,9 +43,13 @@ library:
     - text
     - transformers
     - transformers-compat
+    - writer-cps-transformers
   when:
     condition: "!impl(ghc >= 8.6)"
     dependencies:
       - contravariant
   verbatim:
-    mixins: "base hiding (Prelude)"
+    mixins: |
+      base hiding (Prelude),
+      -- Hide the leaky transformers
+      transformers hiding (Control.Monad.Trans.RWS, Control.Monad.Trans.Writer)
