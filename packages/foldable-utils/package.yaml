@@ -27,10 +27,6 @@ library:
     - base
     - transformers
   when:
-    #TODO: rm once 8.0 is unsupported
-    - condition: impl(ghc < 8.2)
-      dependencies:
-        - bifunctors
     - condition: "true"
       #Have to specify this in a conditional because of https://github.com/sol/hpack/issues/255 TODO remove once fixed
       ghc-options:
