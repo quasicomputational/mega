@@ -13,3 +13,6 @@ packages:
   - location: ./packages/meta
   - location: ./packages/project-file
   - location: ./packages/defrost
+extra-deps:
+  #TODO: https://github.com/commercialhaskell/stackage/issues/3955
+  - megaparsec-7.0.0@rev:0
