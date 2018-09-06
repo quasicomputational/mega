@@ -214,8 +214,8 @@ renderError ( ParseError err ) = err
 parse :: SText -> Either ParseError Config
 parse = first prettify . MP.runParser parser "(input)"
   where
-    prettify :: MP.ParseError Char Void -> ParseError
-    prettify = ParseError . ST.pack . MPE.parseErrorPretty
+    prettify :: MPE.ParseErrorBundle SText Void -> ParseError
+    prettify = ParseError . ST.pack . MPE.errorBundlePretty
 
 parser :: (Ord e) => MP.Parsec e SText Config
 parser = do
