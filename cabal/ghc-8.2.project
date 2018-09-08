@@ -17,3 +17,5 @@ with-compiler: ghc-8.2.2
 optimization: False
 benchmarks: true
 tests: true
+constraints:
+  any.Cabal >= 2.2.0.1
