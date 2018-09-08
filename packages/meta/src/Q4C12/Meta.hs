@@ -229,6 +229,9 @@ generateProjectFiles = traverseWithKey_ $ \ buildName build -> do
           , "allow-newer: *"
           ]
         Regular -> []
+    , [ "constraints:" ]
+    , flip fmap extraConstraints $ \ constraint ->
+        LTB.toLazyText $ "  " <> PF.renderConstraint constraint
     ]
   where
     --TODO: https://github.com/haskell/containers/issues/422
@@ -467,9 +470,5 @@ refreeze builds = void $ flip Map.traverseWithKey builds $ \ buildName build -> 
   void $ tryJust
     ( guard . isDoesNotExistError )
     ( removeFile ( addExtension projectFile "freeze" ) )
-  let
-    args = fold
-      [ [ "--project-file", projectFile ]
-      , foldMap ( \ constr -> [ "--constraint", LT.unpack $ LTB.toLazyText $ PF.renderConstraint constr ] ) extraConstraints
-      ]
-  callProcess "cabal" $ "new-freeze" : args
+  callProcess "cabal"
+    [ "new-freeze" , "--project-file", projectFile ]
