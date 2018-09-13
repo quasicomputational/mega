@@ -1,0 +1,87 @@
+cabal-version: 1.24
+
+-- This file has been generated from package.yaml by hpack version 0.31.0.
+--
+-- see: https://github.com/sol/hpack
+--
+-- hash: bab14c37754a1b3bba6cc69a8abca290f804156002f3c65144ef5cb28f0418c7
+
+name:           q4c12-twofinger
+version:        0.2.0.1
+synopsis:       Efficient alternating finger trees
+description:    This package provides efficient alternating sequences based on finger trees. These can represent sequences made up of two types of element, @e@ and @a@  where two of the same type of element cannot follow each other directly.
+                .
+                Four different flavours are provided, isomorphic to @([(a, e)], a)@, @([(e, a)], e)@, @[(a, e)]@, and @[(e, a)]@.
+                .
+                Cons-like operations are /O(1)/ amortised, and append operations are /O(log(min(n, m)))/ amortised.
+                .
+                For more details, please see the Haddock documentation of "Q4C12.TwoFinger".
+category:       Data Structures
+homepage:       https://github.com/quasicomputational/mega/tree/master/packages/twofinger
+bug-reports:    https://github.com/quasicomputational/mega/issues
+author:         quasicomputational <quasicomputational@gmail.com>
+maintainer:     quasicomputational <quasicomputational@gmail.com>
+license:        BSD2
+license-file:   LICENSE.BSD2
+build-type:     Custom
+extra-doc-files:
+    README.markdown
+    CHANGELOG.markdown
+
+source-repository head
+  type: git
+  location: https://github.com/quasicomputational/mega
+
+custom-setup
+  setup-depends:
+      Cabal
+    , base
+    , cabal-doctest
+
+library
+  exposed-modules:
+      Q4C12.TwoFinger
+      Q4C12.TwoFinger.Internal
+  hs-source-dirs:
+      src
+  default-extensions: BinaryLiterals DataKinds DeriveDataTypeable DeriveGeneric DeriveLift DeriveTraversable DerivingStrategies EmptyCase EmptyDataDecls LambdaCase KindSignatures MonoLocalBinds NegativeLiterals NumDecimals OverloadedStrings PatternGuards PostfixOperators StandaloneDeriving TypeOperators ViewPatterns
+  ghc-options: -Weverything -Wno-implicit-prelude -Wno-unsafe -Wno-safe -Wno-missed-specialisations -Wno-all-missed-specialisations -Wno-missing-exported-signatures
+  build-depends:
+      base
+    , containers
+    , deepseq
+    , semigroupoids
+  if true
+    ghc-options: -Wno-redundant-constraints
+  default-language: Haskell2010
+
+test-suite doctests
+  type: exitcode-stdio-1.0
+  main-is: test/Doctest.hs
+  default-extensions: BinaryLiterals DataKinds DeriveDataTypeable DeriveGeneric DeriveLift DeriveTraversable DerivingStrategies EmptyCase EmptyDataDecls LambdaCase KindSignatures MonoLocalBinds NegativeLiterals NumDecimals OverloadedStrings PatternGuards PostfixOperators StandaloneDeriving TypeOperators ViewPatterns
+  ghc-options: -Weverything -Wno-implicit-prelude -Wno-unsafe -Wno-safe -Wno-missed-specialisations -Wno-all-missed-specialisations -Wno-missing-exported-signatures
+  build-depends:
+      base
+    , doctest
+    , lens
+    , q4c12-twofinger
+  if true
+    ghc-options: -Wno-missing-import-lists
+  if impl(ghc >= 8.4)
+    ghc-options: -Wno-missing-export-lists
+  default-language: Haskell2010
+
+test-suite properties
+  type: exitcode-stdio-1.0
+  main-is: test/Properties.hs
+  default-extensions: BinaryLiterals DataKinds DeriveDataTypeable DeriveGeneric DeriveLift DeriveTraversable DerivingStrategies EmptyCase EmptyDataDecls LambdaCase KindSignatures MonoLocalBinds NegativeLiterals NumDecimals OverloadedStrings PatternGuards PostfixOperators StandaloneDeriving TypeOperators ViewPatterns
+  ghc-options: -Weverything -Wno-implicit-prelude -Wno-unsafe -Wno-safe -Wno-missed-specialisations -Wno-all-missed-specialisations -Wno-missing-exported-signatures
+  build-depends:
+      QuickCheck
+    , base
+    , lens
+    , lens-properties
+    , q4c12-twofinger
+    , tasty
+    , tasty-quickcheck
+  default-language: Haskell2010

@@ -1,0 +1,234 @@
+cabal-version: 2.0
+
+-- This file has been generated from package.yaml by hpack version 0.31.0.
+--
+-- see: https://github.com/sol/hpack
+--
+-- hash: 37c6b4b80aa978eaa791724d89c399bf5f59059d52abab35d656ea1efd437163
+
+name:           q4c12-xml-core
+version:        0
+homepage:       https://github.com/quasicomputational/mega/tree/master/packages/xml-core
+bug-reports:    https://github.com/quasicomputational/mega/issues
+author:         quasicomputational <quasicomputational@gmail.com>
+license:        BSD2
+license-file:   LICENSE.BSD2
+build-type:     Simple
+extra-source-files:
+    test/golden/comments/eol-conversion.in
+    test/golden/comments/interleaved.in
+    test/golden/comments/multi-everywhere.in
+    test/golden/comments/nl.in
+    test/golden/comments/no-comments.in
+    test/golden/parse-render/attribute-normalisation-eol.in
+    test/golden/parse-render/attribute-normalisation.in
+    test/golden/parse-render/attribute-quote-styles.in
+    test/golden/parse-render/character.in
+    test/golden/parse-render/comment-before-root-element.in
+    test/golden/parse-render/comment-in-body.in
+    test/golden/parse-render/comment-variations.in
+    test/golden/parse-render/eol-conversion-2.in
+    test/golden/parse-render/eol-conversion.in
+    test/golden/parse-render/escaped-tab-in-attr.in
+    test/golden/parse-render/escaping-specials-in-attr.in
+    test/golden/parse-render/multi-namespaced-attrs.in
+    test/golden/parse-render/namespace-default-rebind.in
+    test/golden/parse-render/namespace-default-unbind.in
+    test/golden/parse-render/namespace-prefix-rebind.in
+    test/golden/parse-render/predefined.in
+    test/golden/parse-render/random-spaces.in
+    test/golden/parse-render/trailing-comment.in
+    test/golden/parse-render/xml-namespace.in
+    test/golden/comments/eol-conversion.out
+    test/golden/comments/interleaved.out
+    test/golden/comments/multi-everywhere.out
+    test/golden/comments/nl.out
+    test/golden/comments/no-comments.out
+    test/golden/parse-render/attribute-normalisation-eol.out
+    test/golden/parse-render/attribute-normalisation.out
+    test/golden/parse-render/attribute-quote-styles.out
+    test/golden/parse-render/bad-comment.out
+    test/golden/parse-render/char-ref-space-before-root.out
+    test/golden/parse-render/character.out
+    test/golden/parse-render/comment-before-root-element.out
+    test/golden/parse-render/comment-in-body.out
+    test/golden/parse-render/comment-overlap-open-close-2.out
+    test/golden/parse-render/comment-overlap-open-close.out
+    test/golden/parse-render/comment-triple-hyphen-close.out
+    test/golden/parse-render/comment-variations.out
+    test/golden/parse-render/doctype-in-element.out
+    test/golden/parse-render/doctype-no-elements.out
+    test/golden/parse-render/doctype-then-close-tag.out
+    test/golden/parse-render/double-doctype.out
+    test/golden/parse-render/duplicate-attr-namespaced.out
+    test/golden/parse-render/duplicate-attr.out
+    test/golden/parse-render/duplicate-default-namespace-decls.out
+    test/golden/parse-render/duplicate-namespace-prefix-decls.out
+    test/golden/parse-render/end-tag-pre-doctype.out
+    test/golden/parse-render/eol-conversion-2.out
+    test/golden/parse-render/eol-conversion.out
+    test/golden/parse-render/escaped-tab-in-attr.out
+    test/golden/parse-render/escaping-specials-in-attr.out
+    test/golden/parse-render/gt-never-works.out
+    test/golden/parse-render/lt-in-attr.out
+    test/golden/parse-render/misnested-tags-namespaced.out
+    test/golden/parse-render/misnested-tags.out
+    test/golden/parse-render/missing-spaces-attribute.out
+    test/golden/parse-render/missing-spaces-public-doctype-1.out
+    test/golden/parse-render/missing-spaces-public-doctype-2.out
+    test/golden/parse-render/missing-spaces-system-doctype.out
+    test/golden/parse-render/multi-namespaced-attrs.out
+    test/golden/parse-render/multi-unknown-named.out
+    test/golden/parse-render/named-in-attrs-without-doctype.out
+    test/golden/parse-render/named-without-doctype.out
+    test/golden/parse-render/namespace-default-rebind.out
+    test/golden/parse-render/namespace-default-unbind.out
+    test/golden/parse-render/namespace-prefix-rebind.out
+    test/golden/parse-render/non-nfd-name.out
+    test/golden/parse-render/non-nfd-namespace.out
+    test/golden/parse-render/nothing.out
+    test/golden/parse-render/predefined.out
+    test/golden/parse-render/random-spaces.out
+    test/golden/parse-render/stray-leading-content-with-newline.out
+    test/golden/parse-render/stray-leading-content.out
+    test/golden/parse-render/trailing-char-ref-space.out
+    test/golden/parse-render/trailing-close-tag.out
+    test/golden/parse-render/trailing-comment.out
+    test/golden/parse-render/trailing-content.out
+    test/golden/parse-render/trailing-doctype.out
+    test/golden/parse-render/trailing-element.out
+    test/golden/parse-render/trailing-entity.out
+    test/golden/parse-render/trailing-open-tag.out
+    test/golden/parse-render/trailing-predefined-entity.out
+    test/golden/parse-render/unbound-namespace-element.out
+    test/golden/parse-render/unbound-namespace.out
+    test/golden/parse-render/unclosed-element.out
+    test/golden/parse-render/unknown-named.out
+    test/golden/parse-render/xml-namespace.out
+    test/golden/parse-render/attribute-normalisation-eol.errout
+    test/golden/parse-render/attribute-normalisation.errout
+    test/golden/parse-render/attribute-quote-styles.errout
+    test/golden/parse-render/character.errout
+    test/golden/parse-render/comment-before-root-element.errout
+    test/golden/parse-render/comment-in-body.errout
+    test/golden/parse-render/comment-variations.errout
+    test/golden/parse-render/eol-conversion-2.errout
+    test/golden/parse-render/eol-conversion.errout
+    test/golden/parse-render/escaped-tab-in-attr.errout
+    test/golden/parse-render/escaping-specials-in-attr.errout
+    test/golden/parse-render/multi-namespaced-attrs.errout
+    test/golden/parse-render/namespace-default-rebind.errout
+    test/golden/parse-render/namespace-default-unbind.errout
+    test/golden/parse-render/namespace-prefix-rebind.errout
+    test/golden/parse-render/predefined.errout
+    test/golden/parse-render/random-spaces.errout
+    test/golden/parse-render/trailing-comment.errout
+    test/golden/parse-render/xml-namespace.errout
+    test/golden/parse-render/bad-comment.fails
+    test/golden/parse-render/char-ref-space-before-root.fails
+    test/golden/parse-render/comment-overlap-open-close-2.fails
+    test/golden/parse-render/comment-overlap-open-close.fails
+    test/golden/parse-render/comment-triple-hyphen-close.fails
+    test/golden/parse-render/doctype-in-element.fails
+    test/golden/parse-render/doctype-no-elements.fails
+    test/golden/parse-render/doctype-then-close-tag.fails
+    test/golden/parse-render/double-doctype.fails
+    test/golden/parse-render/duplicate-attr-namespaced.fails
+    test/golden/parse-render/duplicate-attr.fails
+    test/golden/parse-render/duplicate-default-namespace-decls.fails
+    test/golden/parse-render/duplicate-namespace-prefix-decls.fails
+    test/golden/parse-render/end-tag-pre-doctype.fails
+    test/golden/parse-render/gt-never-works.fails
+    test/golden/parse-render/lt-in-attr.fails
+    test/golden/parse-render/misnested-tags-namespaced.fails
+    test/golden/parse-render/misnested-tags.fails
+    test/golden/parse-render/missing-spaces-attribute.fails
+    test/golden/parse-render/missing-spaces-public-doctype-1.fails
+    test/golden/parse-render/missing-spaces-public-doctype-2.fails
+    test/golden/parse-render/missing-spaces-system-doctype.fails
+    test/golden/parse-render/multi-unknown-named.fails
+    test/golden/parse-render/named-in-attrs-without-doctype.fails
+    test/golden/parse-render/named-without-doctype.fails
+    test/golden/parse-render/non-nfd-name.fails
+    test/golden/parse-render/non-nfd-namespace.fails
+    test/golden/parse-render/nothing.fails
+    test/golden/parse-render/stray-leading-content-with-newline.fails
+    test/golden/parse-render/stray-leading-content.fails
+    test/golden/parse-render/trailing-char-ref-space.fails
+    test/golden/parse-render/trailing-close-tag.fails
+    test/golden/parse-render/trailing-content.fails
+    test/golden/parse-render/trailing-doctype.fails
+    test/golden/parse-render/trailing-element.fails
+    test/golden/parse-render/trailing-entity.fails
+    test/golden/parse-render/trailing-open-tag.fails
+    test/golden/parse-render/trailing-predefined-entity.fails
+    test/golden/parse-render/unbound-namespace-element.fails
+    test/golden/parse-render/unbound-namespace.fails
+    test/golden/parse-render/unclosed-element.fails
+    test/golden/parse-render/unknown-named.fails
+extra-doc-files:
+    README.markdown
+
+source-repository head
+  type: git
+  location: https://github.com/quasicomputational/mega
+
+library
+  exposed-modules:
+      Q4C12.XML
+      Q4C12.XML.Internal
+      Q4C12.XML.QQ
+  hs-source-dirs:
+      src
+  default-extensions: BinaryLiterals DataKinds DeriveDataTypeable DeriveGeneric DeriveLift DeriveTraversable DerivingStrategies EmptyCase EmptyDataDecls LambdaCase KindSignatures MonoLocalBinds NegativeLiterals NumDecimals OverloadedStrings PatternGuards PostfixOperators StandaloneDeriving TypeOperators ViewPatterns
+  ghc-options: -Weverything -Wno-implicit-prelude -Wno-unsafe -Wno-safe -Wno-missed-specialisations -Wno-all-missed-specialisations -Wno-missing-exported-signatures
+  build-depends:
+      base
+    , containers
+    , dlist
+    , dlist-nonempty
+    , q4c12-mappend
+    , q4c12-position
+    , q4c12-prelude
+    , q4c12-twofinger
+    , safe
+    , template-haskell
+    , text
+    , text-icu
+    , transformers
+    , transformers-compat
+    , writer-cps-transformers
+  default-language: Haskell2010
+  mixins:
+      base hiding (Prelude),
+      -- Hide the leaky transformers
+      transformers hiding (Control.Monad.Trans.RWS, Control.Monad.Trans.Writer)
+
+test-suite golden-tests
+  type: exitcode-stdio-1.0
+  main-is: test/Test.hs
+  default-extensions: BinaryLiterals DataKinds DeriveDataTypeable DeriveGeneric DeriveLift DeriveTraversable DerivingStrategies EmptyCase EmptyDataDecls LambdaCase KindSignatures MonoLocalBinds NegativeLiterals NumDecimals OverloadedStrings PatternGuards PostfixOperators StandaloneDeriving TypeOperators ViewPatterns
+  ghc-options: -Weverything -Wno-implicit-prelude -Wno-unsafe -Wno-safe -Wno-missed-specialisations -Wno-all-missed-specialisations -Wno-missing-exported-signatures -Wno-monomorphism-restriction -Wno-missing-local-signatures
+  build-depends:
+      containers
+    , filepath
+    , q4c12-prelude
+    , q4c12-xml-core
+    , tasty
+    , tasty-expected-failure
+    , tasty-golden
+    , text
+    , transformers
+  default-language: Haskell2010
+
+benchmark parse-xml
+  type: exitcode-stdio-1.0
+  main-is: bench/parse-xml.hs
+  default-extensions: BinaryLiterals DataKinds DeriveDataTypeable DeriveGeneric DeriveLift DeriveTraversable DerivingStrategies EmptyCase EmptyDataDecls LambdaCase KindSignatures MonoLocalBinds NegativeLiterals NumDecimals OverloadedStrings PatternGuards PostfixOperators StandaloneDeriving TypeOperators ViewPatterns
+  ghc-options: -Weverything -Wno-implicit-prelude -Wno-unsafe -Wno-safe -Wno-missed-specialisations -Wno-all-missed-specialisations -Wno-missing-exported-signatures
+  build-depends:
+      criterion
+    , q4c12-prelude
+    , q4c12-xml-core
+    , text
+  default-language: Haskell2010

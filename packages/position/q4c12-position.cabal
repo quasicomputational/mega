@@ -1,0 +1,34 @@
+cabal-version: 2.0
+
+-- This file has been generated from package.yaml by hpack version 0.31.0.
+--
+-- see: https://github.com/sol/hpack
+--
+-- hash: c8f174bf0e4c090397f98298b9010a92cd1df77f1e89af6f3128d0a8abc2d409
+
+name:           q4c12-position
+version:        0
+homepage:       https://github.com/quasicomputational/mega/tree/master/packages/position
+bug-reports:    https://github.com/quasicomputational/mega/issues
+author:         quasicomputational <quasicomputational@gmail.com>
+license:        BSD2
+license-file:   LICENSE.BSD2
+build-type:     Simple
+
+source-repository head
+  type: git
+  location: https://github.com/quasicomputational/mega
+
+library
+  exposed-modules:
+      Q4C12.Position
+  hs-source-dirs:
+      src
+  default-extensions: BinaryLiterals DataKinds DeriveDataTypeable DeriveGeneric DeriveLift DeriveTraversable DerivingStrategies EmptyCase EmptyDataDecls LambdaCase KindSignatures MonoLocalBinds NegativeLiterals NumDecimals OverloadedStrings PatternGuards PostfixOperators StandaloneDeriving TypeOperators ViewPatterns
+  ghc-options: -Weverything -Wno-implicit-prelude -Wno-unsafe -Wno-safe -Wno-missed-specialisations -Wno-all-missed-specialisations -Wno-missing-exported-signatures
+  build-depends:
+      base
+    , q4c12-prelude
+    , text
+  default-language: Haskell2010
+  mixins: base hiding (Prelude)
