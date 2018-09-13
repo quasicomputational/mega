@@ -1,0 +1,61 @@
+cabal-version: 2.0
+
+-- This file has been generated from package.yaml by hpack version 0.31.0.
+--
+-- see: https://github.com/sol/hpack
+--
+-- hash: fa29166a0f8258e88debfb9f233d7efc0cd137da719bd590eed8fc118e29ce55
+
+name:           q4c12-defrost
+version:        0
+homepage:       https://github.com/quasicomputational/mega/tree/master/packages/defrost
+bug-reports:    https://github.com/quasicomputational/mega/issues
+author:         quasicomputational <quasicomputational@gmail.com>
+license:        BSD2
+license-file:   LICENSE.BSD2
+build-type:     Simple
+extra-doc-files:
+    README.markdown
+
+source-repository head
+  type: git
+  location: https://github.com/quasicomputational/mega
+
+library
+  exposed-modules:
+      Q4C12.Defrost
+  hs-source-dirs:
+      src
+  default-extensions: BinaryLiterals DataKinds DeriveDataTypeable DeriveGeneric DeriveLift DeriveTraversable DerivingStrategies EmptyCase EmptyDataDecls LambdaCase KindSignatures MonoLocalBinds NegativeLiterals NumDecimals OverloadedStrings PatternGuards PostfixOperators StandaloneDeriving TypeOperators ViewPatterns
+  ghc-options: -Weverything -Wno-implicit-prelude -Wno-unsafe -Wno-safe -Wno-missed-specialisations -Wno-all-missed-specialisations -Wno-missing-exported-signatures
+  build-depends:
+      Cabal
+    , base
+    , containers
+    , dlist-nonempty
+    , lens
+    , q4c12-prelude
+    , q4c12-project-file
+    , text
+  default-language: Haskell2010
+  mixins: base hiding (Prelude)
+
+test-suite tasty
+  type: exitcode-stdio-1.0
+  main-is: test/tasty.hs
+  default-extensions: BinaryLiterals DataKinds DeriveDataTypeable DeriveGeneric DeriveLift DeriveTraversable DerivingStrategies EmptyCase EmptyDataDecls LambdaCase KindSignatures MonoLocalBinds NegativeLiterals NumDecimals OverloadedStrings PatternGuards PostfixOperators StandaloneDeriving TypeOperators ViewPatterns
+  ghc-options: -Weverything -Wno-implicit-prelude -Wno-unsafe -Wno-safe -Wno-missed-specialisations -Wno-all-missed-specialisations -Wno-missing-exported-signatures
+  build-depends:
+      Cabal
+    , base
+    , bytestring
+    , containers
+    , lens
+    , q4c12-defrost
+    , q4c12-prelude
+    , q4c12-project-file
+    , tasty
+    , tasty-hunit
+    , text
+  default-language: Haskell2010
+  mixins: base hiding (Prelude)

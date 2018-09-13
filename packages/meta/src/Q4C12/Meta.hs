@@ -95,7 +95,6 @@ beforeInstallNewBuild :: Aeson.Series
 beforeInstallNewBuild = Aeson.pair "before_install" $ Aeson.list Aeson.text
   [ "mkdir -p \"$HOME/.local/bin\""
   , "export PATH=/opt/ghc/bin:$PATH"
-  , "HPACKVER=0.28.2 ./travis/hpack-setup.sh"
   ]
 
 --TODO: pin stack version?
@@ -366,6 +365,7 @@ data Command
   = GenTravis
   | CheckHash
   | Refreeze
+  | CheckStaleCabal
 
 commandParser :: OA.Parser Command
 commandParser = OA.hsubparser $ fold
@@ -375,6 +375,8 @@ commandParser = OA.hsubparser $ fold
       OA.info ( pure CheckHash ) ( OA.progDesc "Check that gen-travis has been run recently." )
   , OA.command "refreeze" $
       OA.info ( pure Refreeze ) ( OA.progDesc "Regenerate the freeze files." )
+  , OA.command "check-stale-cabal" $
+      OA.info ( pure CheckStaleCabal ) ( OA.progDesc "Make sure none of the .cabal files are stale." )
   ]
 
 main :: IO ()
@@ -388,6 +390,7 @@ main = do
     GenTravis -> runGenTravis packageData
     CheckHash -> runCheckHash packageData
     Refreeze -> runRefreeze packageData
+    CheckStaleCabal -> runCheckStaleCabal packageData
 
 runGenTravis :: [(FilePath, PackageConfig)] -> IO ()
 runGenTravis packageData = do
@@ -472,3 +475,18 @@ refreeze builds = void $ flip Map.traverseWithKey builds $ \ buildName build -> 
     ( removeFile ( addExtension projectFile "freeze" ) )
   callProcess "cabal"
     [ "new-freeze" , "--project-file", projectFile ]
+
+runCheckStaleCabal :: [(FilePath, PackageConfig)] -> IO ()
+runCheckStaleCabal = traverse_ $ \ (packagePath, _) -> do
+  let
+    packageYaml = packagePath </> "package.yaml"
+    options = Hpack.setTarget packageYaml Hpack.defaultOptions
+  packageYamlExists <- doesFileExist packageYaml
+  when packageYamlExists $ do
+    res <- Hpack.hpackResult options
+    case Hpack.resultStatus res of
+      Hpack.OutputUnchanged ->
+        pure ()
+      _ -> do
+        LTIO.putStrLn $ LT.pack packageYaml <> " has been modified but the corresponding .cabal files has not been regenerated and checked in."
+        exitFailure
