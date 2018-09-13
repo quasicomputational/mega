@@ -21,34 +21,34 @@ library:
   # Suppress Paths_*
   other-modules: []
   dependencies:
-    - name: base
+    base:
       mixin:
         - hiding (Prelude)
-    - bifunctors
-    - bytestring
-    - containers
-    - deepseq
-    - directory
-    - dlist
-    - dlist-nonempty
-    - either
-    - filepath
-    - invariant
-    - lens
-    - profunctors
-    - q4c12-foldable-utils
-    - q4c12-hlist
-    - q4c12-twofinger
-    - semigroupoids
-    - template-haskell
-    - text
-    - name: transformers
+    bifunctors:
+    bytestring:
+    containers:
+    deepseq:
+    directory:
+    dlist:
+    dlist-nonempty:
+    either:
+    filepath:
+    invariant:
+    lens:
+    profunctors:
+    q4c12-foldable-utils:
+    q4c12-hlist:
+    q4c12-twofinger:
+    semigroupoids:
+    template-haskell:
+    text:
+    transformers:
       mixin:
         # Hide the leaky writer versions
         - hiding (Control.Monad.Trans.RWS, Control.Monad.Trans.Writer)
-    - transformers-compat
-    - writer-cps-transformers
+    transformers-compat:
+    writer-cps-transformers:
   when:
     condition: "!impl(ghc >= 8.6)"
     dependencies:
-      - contravariant
+      contravariant:

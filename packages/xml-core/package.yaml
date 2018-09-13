@@ -28,26 +28,26 @@ library:
   # Suppress Paths_*
   other-modules: []
   dependencies:
-    - name: base
+    base:
       mixin:
         - hiding (Prelude)
-    - containers
-    - dlist
-    - dlist-nonempty
-    - q4c12-twofinger
-    - q4c12-mappend
-    - q4c12-position
-    - q4c12-prelude
-    - safe
-    - template-haskell
-    - text
-    - text-icu
-    - name: transformers
+    containers:
+    dlist:
+    dlist-nonempty:
+    q4c12-twofinger:
+    q4c12-mappend:
+    q4c12-position:
+    q4c12-prelude:
+    safe:
+    template-haskell:
+    text:
+    text-icu:
+    transformers:
       # Hide the leaky WriterT
       mixin:
         - hiding (Control.Monad.Trans.RWS, Control.Monad.Trans.Writer)
-    - transformers-compat
-    - writer-cps-transformers
+    transformers-compat:
+    writer-cps-transformers:
 
 tests:
   golden-tests:
@@ -58,24 +58,24 @@ tests:
       - "-Wno-monomorphism-restriction"
       - "-Wno-missing-local-signatures"
     dependencies:
-      - q4c12-xml-core
-      - containers
-      - filepath
-      - q4c12-prelude
-      - tasty
-      - tasty-expected-failure
-      - tasty-golden
-      - text
-      - transformers
+      q4c12-xml-core:
+      containers:
+      filepath:
+      q4c12-prelude:
+      tasty:
+      tasty-expected-failure:
+      tasty-golden:
+      text:
+      transformers:
 
 benchmarks:
   parse-xml:
     main: bench/parse-xml.hs
     other-modules: []
     dependencies:
-      - q4c12-xml-core
-      - criterion
-      - q4c12-prelude
-      - text
+      q4c12-xml-core:
+      criterion:
+      q4c12-prelude:
+      text:
 
 #TODO: property-based testing. Round-trip render/parse.

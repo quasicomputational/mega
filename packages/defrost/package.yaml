@@ -20,32 +20,32 @@ library:
     - Q4C12.Defrost
   other-modules: []
   dependencies:
-    - name: base
+    base:
       mixin:
         - hiding (Prelude)
-    - Cabal
-    - containers
-    - dlist-nonempty
-    - lens
-    - q4c12-prelude
-    - q4c12-project-file
-    - text
+    Cabal:
+    containers:
+    dlist-nonempty:
+    lens:
+    q4c12-prelude:
+    q4c12-project-file:
+    text:
 
 tests:
   tasty:
     main: test/tasty.hs
     other-modules: []
     dependencies:
-      - q4c12-defrost
-      - name: base
+      q4c12-defrost:
+      base:
         mixin:
           - hiding (Prelude)
-      - bytestring
-      - Cabal
-      - containers
-      - lens
-      - q4c12-prelude
-      - q4c12-project-file
-      - tasty
-      - tasty-hunit
-      - text
+      bytestring:
+      Cabal:
+      containers:
+      lens:
+      q4c12-prelude:
+      q4c12-project-file:
+      tasty:
+      tasty-hunit:
+      text:

@@ -19,28 +19,28 @@ library:
   # Suppress Paths_*
   other-modules: []
   dependencies:
-    - name: base
+    base:
       mixin:
         - hiding (Prelude)
-    - Cabal
-    - containers
-    - megaparsec
-    - parser-combinators
-    - q4c12-prelude
-    - text
+    Cabal:
+    containers:
+    megaparsec:
+    parser-combinators:
+    q4c12-prelude:
+    text:
 
 tests:
   unit-tests:
     main: test/tasty.hs
     other-modules: []
     dependencies:
-      - q4c12-project-file
-      - name: base
+      q4c12-project-file:
+      base:
         mixin:
           - hiding (Prelude)
-      - Cabal
-      - containers
-      - q4c12-prelude
-      - tasty
-      - tasty-hunit
-      - text
+      Cabal:
+      containers:
+      q4c12-prelude:
+      tasty:
+      tasty-hunit:
+      text:

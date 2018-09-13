@@ -19,8 +19,8 @@ library:
   # Suppress Paths_*
   other-modules: []
   dependencies:
-    - name: base
+    base:
       mixin:
         - hiding (Prelude)
-    - q4c12-prelude
-    - text
+    q4c12-prelude:
+    text:

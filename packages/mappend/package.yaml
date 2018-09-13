@@ -1,3 +1,4 @@
+spec-version: "0.31"
 name: q4c12-mappend
 version: "0"
 homepage: https://github.com/quasicomputational/mega/tree/master/packages/mappend
@@ -18,6 +19,6 @@ library:
   # Suppress Paths_*
   other-modules: []
   dependencies:
-    - base
-    - containers
-    - lens
+    base:
+    containers:
+    lens:

@@ -4,7 +4,7 @@ cabal-version: 2.2
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 083d8a961dc5f1db8e2198b90d321e25da9cc0369658c021e648014b6b109b7a
+-- hash: 945dbbd48aad80a39c8304624f727c6bef06226ea6a799023d13103feff7206f
 
 name:           q4c12-foldable-utils
 version:        0
@@ -36,6 +36,8 @@ library
   build-depends:
       base
     , transformers
+  mixins:
+      transformers hiding (Control.Monad.Trans.RWS, Control.Monad.Trans.Writer)
   if true
     ghc-options: -Wno-redundant-constraints
   default-language: Haskell2010
