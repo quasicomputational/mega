@@ -1,3 +1,4 @@
+spec-version: "0.31"
 name: q4c12-project-file
 version: "0"
 homepage: https://github.com/quasicomputational/mega/tree/master/packages/project-file
@@ -18,15 +19,15 @@ library:
   # Suppress Paths_*
   other-modules: []
   dependencies:
-    - base
+    - name: base
+      mixin:
+        - hiding (Prelude)
     - Cabal
     - containers
     - megaparsec
     - parser-combinators
     - q4c12-prelude
     - text
-  verbatim:
-    mixins: "base hiding (Prelude)"
 
 tests:
   unit-tests:
@@ -34,12 +35,12 @@ tests:
     other-modules: []
     dependencies:
       - q4c12-project-file
-      - base
+      - name: base
+        mixin:
+          - hiding (Prelude)
       - Cabal
       - containers
       - q4c12-prelude
       - tasty
       - tasty-hunit
       - text
-    verbatim:
-      mixins: "base hiding (Prelude)"

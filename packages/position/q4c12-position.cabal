@@ -4,7 +4,7 @@ cabal-version: 2.2
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: cc10d4715aae0b4d2daf6028561fb29ed451a8959f25f829fbd0b1911abd9213
+-- hash: acc50431f35a4658ba3968fa6c801c55389ede5c46b86b24bb96592d86002a9d
 
 name:           q4c12-position
 version:        0
@@ -31,5 +31,6 @@ library
       base
     , q4c12-prelude
     , text
+  mixins:
+      base hiding (Prelude)
   default-language: Haskell2010
-  mixins: base hiding (Prelude)

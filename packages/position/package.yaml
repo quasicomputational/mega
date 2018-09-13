@@ -1,3 +1,4 @@
+spec-version: "0.31"
 name: q4c12-position
 version: "0"
 homepage: https://github.com/quasicomputational/mega/tree/master/packages/position
@@ -18,8 +19,8 @@ library:
   # Suppress Paths_*
   other-modules: []
   dependencies:
-    - base
+    - name: base
+      mixin:
+        - hiding (Prelude)
     - q4c12-prelude
     - text
-  verbatim:
-    mixins: "base hiding (Prelude)"

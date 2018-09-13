@@ -1,3 +1,4 @@
+spec-version: "0.31"
 name: q4c12-meta
 version: "0"
 homepage: https://github.com/quasicomputational/mega/tree/master/packages/meta
@@ -19,7 +20,9 @@ library:
   other-modules: []
   dependencies:
     - aeson
-    - base
+    - name: base
+      mixin:
+        - hiding (Prelude)
     - bytestring
     - Cabal
     - containers
@@ -33,8 +36,6 @@ library:
     - q4c12-xml-core
     - q4c12-xml-desc
     - text
-  verbatim:
-    mixins: "base hiding (Prelude)"
 
 executables:
   meta:

@@ -1,3 +1,4 @@
+spec-version: "0.31"
 name: q4c12-defrost
 version: "0"
 homepage: https://github.com/quasicomputational/mega/tree/master/packages/defrost
@@ -19,7 +20,9 @@ library:
     - Q4C12.Defrost
   other-modules: []
   dependencies:
-    - base
+    - name: base
+      mixin:
+        - hiding (Prelude)
     - Cabal
     - containers
     - dlist-nonempty
@@ -27,8 +30,6 @@ library:
     - q4c12-prelude
     - q4c12-project-file
     - text
-  verbatim:
-    mixins: "base hiding (Prelude)"
 
 tests:
   tasty:
@@ -36,7 +37,9 @@ tests:
     other-modules: []
     dependencies:
       - q4c12-defrost
-      - base
+      - name: base
+        mixin:
+          - hiding (Prelude)
       - bytestring
       - Cabal
       - containers
@@ -46,5 +49,3 @@ tests:
       - tasty
       - tasty-hunit
       - text
-    verbatim:
-      mixins: "base hiding (Prelude)"
