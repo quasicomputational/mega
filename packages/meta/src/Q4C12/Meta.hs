@@ -453,20 +453,10 @@ runRefreeze packageData = do
       refreeze buildsWithFreezeFiles
 
 refreeze :: Map SText Build -> IO ()
-refreeze builds = void $ flip Map.traverseWithKey builds $ \ buildName build -> do
+refreeze builds = void $ flip Map.traverseWithKey builds $ \ buildName _build -> do
   STIO.putStrLn $ "Refreezing " <> buildName <> "."
   let
     projectFile = addExtension ( "cabal" </> ST.unpack buildName ) "project"
-
-  -- Go over the packages and run hpack on them if needed.
-  -- TODO: do this once per package, even if the package is in multiple projects
-  for_ ( buildPackages build ) $ \ package -> do
-    let
-      packageYaml = package </> "package.yaml"
-    packageYamlExists <- doesFileExist packageYaml
-    when packageYamlExists $ do
-      Hpack.hpack Hpack.Verbose $
-        Hpack.setTarget packageYaml Hpack.defaultOptions
 
   -- TODO: this is a hack working around cabal-install 2.2's bug in how it doesn't properly rebuild when the project file is changed, which is going to be fixed in 2.4 (at which point we'd also have new-clean, but that's moot!)
   removeDirectoryRecursive "dist-newstyle"
