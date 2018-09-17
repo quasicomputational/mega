@@ -1,18 +1,19 @@
-cabal-version: 2.0
+cabal-version: 2.2
 
 -- This file has been generated from package.yaml by hpack version 0.31.0.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: fa29166a0f8258e88debfb9f233d7efc0cd137da719bd590eed8fc118e29ce55
+-- hash: c6feeeb25b642979b7ea1b1552199a253719a07d308f11edae38287ee2fa9482
 
 name:           q4c12-defrost
 version:        0
 homepage:       https://github.com/quasicomputational/mega/tree/master/packages/defrost
 bug-reports:    https://github.com/quasicomputational/mega/issues
 author:         quasicomputational <quasicomputational@gmail.com>
-license:        BSD2
-license-file:   LICENSE.BSD2
+license:        (Apache-2.0 OR LGPL-2.1-or-later)
+license-files:  LICENSE.APACHE-2.0,
+                LICENSE.LGPL-2.1
 build-type:     Simple
 extra-doc-files:
     README.markdown

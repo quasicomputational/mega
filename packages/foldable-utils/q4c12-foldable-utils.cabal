@@ -1,18 +1,19 @@
-cabal-version: 1.24
+cabal-version: 2.2
 
 -- This file has been generated from package.yaml by hpack version 0.31.0.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: f24bcc9e9e544167541f56f74c1fb34a7ac3ab9b2698ffb85eae92e7eace5633
+-- hash: 083d8a961dc5f1db8e2198b90d321e25da9cc0369658c021e648014b6b109b7a
 
 name:           q4c12-foldable-utils
 version:        0
 homepage:       https://github.com/quasicomputational/mega/tree/master/packages/foldable-utils
 bug-reports:    https://github.com/quasicomputational/mega/issues
 author:         quasicomputational <quasicomputational@gmail.com>
-license:        BSD2
-license-file:   LICENSE.BSD2
+license:        (Apache-2.0 OR LGPL-2.1-or-later)
+license-files:  LICENSE.APACHE-2.0,
+                LICENSE.LGPL-2.1
 build-type:     Custom
 
 source-repository head

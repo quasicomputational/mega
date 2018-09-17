@@ -1,18 +1,19 @@
-cabal-version: 1.12
+cabal-version: 2.2
 
 -- This file has been generated from package.yaml by hpack version 0.31.0.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 72cca72cf7be943f540743dd66d4f026d316cbcfbe9315841a20375726829324
+-- hash: a3de2f33b1a54c7ad8613dea209268da543ba455fd38e51cecdb0425898ae896
 
 name:           q4c12-mappend
 version:        0
 homepage:       https://github.com/quasicomputational/mega/tree/master/packages/mappend
 bug-reports:    https://github.com/quasicomputational/mega/issues
 author:         quasicomputational <quasicomputational@gmail.com>
-license:        BSD2
-license-file:   LICENSE.BSD2
+license:        (Apache-2.0 OR LGPL-2.1-or-later)
+license-files:  LICENSE.APACHE-2.0,
+                LICENSE.LGPL-2.1
 build-type:     Simple
 
 source-repository head

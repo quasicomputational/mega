@@ -1,18 +1,19 @@
-cabal-version: 1.18
+cabal-version: 2.2
 
 -- This file has been generated from package.yaml by hpack version 0.31.0.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: a5b7c2dff8b9ceafa9640d2453eca04b7b97842949c63de7efa0946ad68428f2
+-- hash: 639f8f3c8c208ac9df76f429caaf04a33a5a5344fd354f04eecb595e09587966
 
 name:           q4c12-xhtml2html
 version:        0
 homepage:       https://github.com/quasicomputational/mega/tree/master/packages/xhtml2html
 bug-reports:    https://github.com/quasicomputational/mega/issues
 author:         quasicomputational <quasicomputational@gmail.com>
-license:        BSD2
-license-file:   LICENSE.BSD2
+license:        (Apache-2.0 OR LGPL-2.1-or-later)
+license-files:  LICENSE.APACHE-2.0,
+                LICENSE.LGPL-2.1
 build-type:     Simple
 extra-source-files:
     test/golden/xhtml2html/basic.in

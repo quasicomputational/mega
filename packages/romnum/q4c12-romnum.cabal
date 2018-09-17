@@ -1,18 +1,19 @@
-cabal-version: 1.12
+cabal-version: 2.2
 
 -- This file has been generated from package.yaml by hpack version 0.31.0.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 3bce5e6c90064fe2b607863cda11e516b5a8e810f77acffaf04756555d045145
+-- hash: 323e0e73303296cfdfa47bc1ae2abf0aee27a3b7b5e61ec562d18003fc9e412c
 
 name:           q4c12-romnum
 version:        0
 homepage:       https://github.com/quasicomputational/mega/tree/master/packages/romnum
 bug-reports:    https://github.com/quasicomputational/mega/issues
 author:         quasicomputational <quasicomputational@gmail.com>
-license:        BSD2
-license-file:   LICENSE.BSD2
+license:        (Apache-2.0 OR LGPL-2.1-or-later)
+license-files:  LICENSE.APACHE-2.0,
+                LICENSE.LGPL-2.1
 build-type:     Simple
 
 source-repository head
