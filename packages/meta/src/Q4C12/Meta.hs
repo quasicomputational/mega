@@ -174,7 +174,7 @@ travisConfiguration buildMap = Aeson.pairs $ fold
         , Aeson.pair "packages" $ Aeson.list Aeson.text
           [ "ghc-" <> ghcVersion ghc
           , case ghcRegularity ghc of
-              Regular -> "cabal-install-2.2"
+              Regular -> "cabal-install-2.4"
               PreRelease -> "cabal-install-head"
           ]
         ]
@@ -458,8 +458,6 @@ refreeze builds = void $ flip Map.traverseWithKey builds $ \ buildName _build ->
   let
     projectFile = addExtension ( "cabal" </> ST.unpack buildName ) "project"
 
-  -- TODO: this is a hack working around cabal-install 2.2's bug in how it doesn't properly rebuild when the project file is changed, which is going to be fixed in 2.4 (at which point we'd also have new-clean, but that's moot!)
-  removeDirectoryRecursive "dist-newstyle"
   void $ tryJust
     ( guard . isDoesNotExistError )
     ( removeFile ( addExtension projectFile "freeze" ) )
