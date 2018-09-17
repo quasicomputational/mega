@@ -1,18 +1,19 @@
-cabal-version: 2.0
+cabal-version: 2.2
 
 -- This file has been generated from package.yaml by hpack version 0.31.0.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 12f4c9002c6d73cdc2694df9cfcdf43014be1852ba5646d8a82ca7b33652c318
+-- hash: b2e66d781d4bd0506e262d536e50adfd79a4929da1839677638bdda4361b4b8b
 
 name:           q4c12-project-file
 version:        0
 homepage:       https://github.com/quasicomputational/mega/tree/master/packages/project-file
 bug-reports:    https://github.com/quasicomputational/mega/issues
 author:         quasicomputational <quasicomputational@gmail.com>
-license:        BSD2
-license-file:   LICENSE.BSD2
+license:        (Apache-2.0 OR LGPL-2.1-or-later)
+license-files:  LICENSE.APACHE-2.0,
+                LICENSE.LGPL-2.1
 build-type:     Simple
 
 source-repository head

@@ -39,3 +39,8 @@ Miscellanea
   It's not very comprehensive: I'm adding things as I find I need them.
 
 * [q4c12-romnum](packages/romnum) is a Roman numeral generator.
+
+License
+=======
+
+The contents of this repository are dual-licensed under either the [Apache license, version 2.0](LICENSE.APACHE-2.0), or the [GNU Lesser General Public License, version 2.1 or later](LICENSE.LGPL-2.1), at the recepient's choice.

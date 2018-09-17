@@ -13,9 +13,10 @@ homepage: https://github.com/quasicomputational/mega/tree/master/packages/twofin
 github: quasicomputational/mega
 author: quasicomputational <quasicomputational@gmail.com>
 maintainer: quasicomputational <quasicomputational@gmail.com>
-license: BSD2
+license: Apache-2.0 OR LGPL-2.1-or-later
 license-file:
-  - LICENSE.BSD2
+  - LICENSE.APACHE-2.0
+  - LICENSE.LGPL-2.1
 category: Data Structures
 extra-doc-files:
   - README.markdown
