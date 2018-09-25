@@ -72,7 +72,7 @@ ghcRegularity :: GHCVersion -> Regularity
 ghcRegularity = \case
   GHC8_2 -> Regular
   GHC8_4 -> Regular
-  GHC8_6 -> PreRelease
+  GHC8_6 -> Regular
   GHCHEAD -> PreRelease
 
 data RunMetaChecks = MetaNo | MetaYes
@@ -302,7 +302,6 @@ configs :: Map SText BuildConfig
 configs = Map.fromList
   [ ( "ghc-8.2", BuildConfig GHC8_2 OptOut MetaNo )
   , ( "ghc-8.4", BuildConfig GHC8_4 OptOut MetaYes )
-  -- TODO: regularise 8.6
   , ( "ghc-8.6", BuildConfig GHC8_6 OptOut MetaNo )
   , ( "ghc-head", BuildConfig GHCHEAD OptOut MetaNo )
   ]
