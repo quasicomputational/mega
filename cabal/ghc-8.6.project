@@ -19,3 +19,29 @@ benchmarks: true
 tests: true
 constraints:
   any.Cabal >= 2.2.0.1
+package q4c12-defrost
+  ghc-options: -Werror
+package q4c12-foldable-utils
+  ghc-options: -Werror
+package q4c12-hlist
+  ghc-options: -Werror
+package q4c12-mappend
+  ghc-options: -Werror
+package q4c12-meta
+  ghc-options: -Werror
+package q4c12-position
+  ghc-options: -Werror
+package q4c12-prelude
+  ghc-options: -Werror
+package q4c12-project-file
+  ghc-options: -Werror
+package q4c12-romnum
+  ghc-options: -Werror
+package q4c12-twofinger
+  ghc-options: -Werror
+package q4c12-xhtml2html
+  ghc-options: -Werror
+package q4c12-xml-core
+  ghc-options: -Werror
+package q4c12-xml-desc
+  ghc-options: -Werror
