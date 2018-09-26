@@ -105,15 +105,6 @@ beforeInstallNewBuild = Aeson.pair "before_install" $ Aeson.list Aeson.text
   , "export PATH=/opt/ghc/bin:$PATH"
   ]
 
---TODO: pin stack version?
-beforeInstallStack :: Aeson.Series
-beforeInstallStack = Aeson.pair "before_install" $ Aeson.list Aeson.text
-  [ "mkdir -p \"$HOME/.local/bin\""
-  , "export PATH=$HOME/.local/bin:/opt/ghc/bin:$PATH"
-  , "curl -sL https://www.stackage.org/stack/linux-x86_64 | tar xz --wildcards --strip-components=1 -C \"$HOME\"/.local/bin '*/stack'"
-  , "stack setup"
-  ]
-
 buildAllowFailures :: SText -> Build -> [Aeson.Encoding]
 buildAllowFailures buildName build = do
   guard $ case ghcRegularity ( buildGHCVersion build ) of
@@ -135,43 +126,19 @@ travisConfiguration buildMap = Aeson.pairs $ fold
   -- travis emails are really annoying
   , Aeson.pair "notifications" $ Aeson.pairs $
       Aeson.pair "email" $ Aeson.bool False
-  -- cache stack and new-build's package stores
+  -- cache new-build's package stores
   , Aeson.pair "cache" $ Aeson.pairs $ fold
       [ Aeson.pair "directories" $ Aeson.list Aeson.text
         [ "$HOME/.cabal/store"
         , "$HOME/.cabal/bin"
-        , "$HOME/.stack/bin"
-        , "$HOME/.stack/precompiled"
-        , "$HOME/.stack/programs"
-        , "$HOME/.stack/setup-exe-cache"
-        , "$HOME/.stack/snapshots"
         ]
-      -- storing a full cache by stack takes a while and tends to over-run the default 180 second budget. Bump it up to a more comfortable level.
-      , Aeson.pair "timeout" $ Aeson.word 300
       ]
   , Aeson.pair "matrix" $ Aeson.pairs $ fold
     [ Aeson.pair "fast_finish" $ Aeson.bool True
-    , Aeson.pair "allow_failures" $ Aeson.list id $ fold
-      [ [ Aeson.pairs $ Aeson.pair "env" $ Aeson.text "CMD=stack-nightly" ]
-      , foldMap (uncurry buildAllowFailures) buildMap
-      ]
+    , Aeson.pair "allow_failures" $ Aeson.list id $
+      foldMap (uncurry buildAllowFailures) buildMap
     ]
-  , Aeson.pair "jobs" $ Aeson.pairs $ Aeson.pair "include" $ Aeson.list id $ fold
-    [ [ Aeson.pairs $ fold
-        [ Aeson.pair "env" $ Aeson.text "CMD=stack-werror"
-        , Aeson.pair "install" $ Aeson.text "./travis/deps.stack.sh" 
-        , Aeson.pair "script" $ Aeson.text "./travis/build.stack.sh --ghc-options=-Werror"
-        , beforeInstallStack
-        ]
-      , Aeson.pairs $ fold
-        [ Aeson.pair "env" $ Aeson.text "CMD=stack-nightly"
-        , Aeson.pair "install" $ Aeson.text "./travis/deps.stack.sh --resolver nightly"
-        , Aeson.pair "script" $ Aeson.text "./travis/build.stack.sh --resolver nightly"
-        , beforeInstallStack
-        ]
-      ]
-    , buildJobs
-    ]
+  , Aeson.pair "jobs" $ Aeson.pairs $ Aeson.pair "include" $ Aeson.list id buildJobs
   ]
   where
 
