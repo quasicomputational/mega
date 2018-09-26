@@ -1,3 +1,4 @@
+spec-version: "0.31"
 name: q4c12-meta
 version: "0"
 homepage: https://github.com/quasicomputational/mega/tree/master/packages/meta
@@ -18,27 +19,27 @@ library:
   # Suppress Paths_*
   other-modules: []
   dependencies:
-    - aeson
-    - base
-    - bytestring
-    - Cabal
-    - containers
-    - cryptohash-sha256
-    - hpack
-    - optparse-applicative
-    - process
-    - q4c12-mappend
-    - q4c12-prelude
-    - q4c12-project-file
-    - q4c12-xml-core
-    - q4c12-xml-desc
-    - text
-  verbatim:
-    mixins: "base hiding (Prelude)"
+    aeson:
+    base:
+      mixin:
+        - hiding (Prelude)
+    bytestring:
+    Cabal:
+    containers:
+    cryptohash-sha256:
+    hpack:
+    optparse-applicative:
+    process:
+    q4c12-mappend:
+    q4c12-prelude:
+    q4c12-project-file:
+    q4c12-xml-core:
+    q4c12-xml-desc:
+    text:
 
 executables:
   meta:
     main: driver/meta.hs
     other-modules: []
     dependencies:
-      - "q4c12-meta"
+      q4c12-meta:

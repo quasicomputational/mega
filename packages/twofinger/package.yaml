@@ -1,3 +1,4 @@
+spec-version: "0.31"
 name: q4c12-twofinger
 version: "0.2.0.1"
 synopsis: Efficient alternating finger trees
@@ -30,9 +31,9 @@ defaults:
 custom-setup:
   dependencies:
     #TODO: remove Cabal dep once https://github.com/haskell/cabal/issues/4288 is fixed
-    - Cabal
-    - base
-    - cabal-doctest
+    Cabal:
+    base:
+    cabal-doctest:
 
 library:
   source-dirs:
@@ -43,10 +44,10 @@ library:
   # Suppress Paths_*
   other-modules: []
   dependencies:
-    - base
-    - containers
-    - deepseq
-    - semigroupoids
+    base:
+    containers:
+    deepseq:
+    semigroupoids:
   when:
     - condition: "true"
       #Have to specify this in a conditional because of https://github.com/sol/hpack/issues/255 TODO remove once fixed
@@ -60,13 +61,14 @@ tests:
     main: test/Properties.hs
     other-modules: []
     dependencies:
-      - q4c12-twofinger
-      - base
-      - lens
-      - lens-properties
-      - QuickCheck
-      - tasty
-      - tasty-quickcheck
+      q4c12-twofinger:
+      base:
+      lens:
+      lens-properties:
+      QuickCheck:
+      tasty:
+      tasty-quickcheck:
+
   doctests:
     main: test/Doctest.hs
     other-modules: []
@@ -82,9 +84,9 @@ tests:
           - "-Wno-missing-export-lists"
     dependencies:
       #https://github.com/phadej/cabal-doctest/issues/19
-      - q4c12-twofinger
-      - base
-      - doctest
-      - lens
+      q4c12-twofinger:
+      base:
+      doctest:
+      lens:
 
 #TODO: Benchmarks!

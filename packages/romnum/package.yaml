@@ -1,3 +1,4 @@
+spec-version: "0.31"
 name: q4c12-romnum
 version: "0"
 homepage: https://github.com/quasicomputational/mega/tree/master/packages/romnum
@@ -18,15 +19,15 @@ library:
   # Suppress Paths_*
   other-modules: []
   dependencies:
-    - q4c12-prelude
+    q4c12-prelude:
 
 tests:
   unit-tests:
     main: test/UnitTests.hs
     other-modules: []
     dependencies:
-      - q4c12-romnum
-      - q4c12-prelude
-      - tasty
-      - tasty-hunit
-      - text
+      q4c12-romnum:
+      q4c12-prelude:
+      tasty:
+      tasty-hunit:
+      text:

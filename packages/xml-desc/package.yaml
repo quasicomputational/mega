@@ -1,3 +1,4 @@
+spec-version: "0.31"
 name: q4c12-xml-desc
 version: "0"
 homepage: https://github.com/quasicomputational/mega/tree/master/packages/xml-desc
@@ -26,26 +27,26 @@ library:
   # Suppress Paths_*
   other-modules: []
   dependencies:
-    - base
-    - containers
-    - dlist
-    - dlist-nonempty
-    - q4c12-twofinger
-    - q4c12-mappend
-    - q4c12-position
-    - q4c12-prelude
-    - q4c12-xml-core
-    - safe
-    - template-haskell
-    - text
-    - text-icu
-    - transformers
-    - transformers-compat
-    - writer-cps-transformers
-  verbatim:
-    mixins: |
-      base hiding (Prelude),
-      -- Hide the leaky transformers
-      transformers hiding (Control.Monad.Trans.RWS, Control.Monad.Trans.Writer)
+    base:
+      mixin:
+        - hiding (Prelude)
+    containers:
+    dlist:
+    dlist-nonempty:
+    q4c12-twofinger:
+    q4c12-mappend:
+    q4c12-position:
+    q4c12-prelude:
+    q4c12-xml-core:
+    safe:
+    template-haskell:
+    text:
+    text-icu:
+    transformers:
+      # Hide the leaky WriterT
+      mixin:
+        - hiding (Control.Monad.Trans.RWS, Control.Monad.Trans.Writer)
+    transformers-compat:
+    writer-cps-transformers:
 
 #TODO: tests

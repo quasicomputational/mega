@@ -4,7 +4,7 @@ cabal-version: 2.2
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: c6feeeb25b642979b7ea1b1552199a253719a07d308f11edae38287ee2fa9482
+-- hash: 9f3fe63080724f7c4910bfaea0bbb95fb7c9280e9230fa7008a1ab52ec9064ac
 
 name:           q4c12-defrost
 version:        0
@@ -38,8 +38,9 @@ library
     , q4c12-prelude
     , q4c12-project-file
     , text
+  mixins:
+      base hiding (Prelude)
   default-language: Haskell2010
-  mixins: base hiding (Prelude)
 
 test-suite tasty
   type: exitcode-stdio-1.0
@@ -58,5 +59,6 @@ test-suite tasty
     , tasty
     , tasty-hunit
     , text
+  mixins:
+      base hiding (Prelude)
   default-language: Haskell2010
-  mixins: base hiding (Prelude)

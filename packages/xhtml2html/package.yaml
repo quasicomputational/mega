@@ -1,3 +1,4 @@
+spec-version: "0.31"
 name: q4c12-xhtml2html
 version: "0"
 homepage: https://github.com/quasicomputational/mega/tree/master/packages/xhtml2html
@@ -24,12 +25,12 @@ library:
   # Suppress Paths_*
   other-modules: []
   dependencies:
-    - containers
-    - q4c12-position
-    - q4c12-prelude
-    - q4c12-twofinger
-    - q4c12-xml-core
-    - text
+    containers:
+    q4c12-position:
+    q4c12-prelude:
+    q4c12-twofinger:
+    q4c12-xml-core:
+    text:
 
 executables:
   xhtml2html:
@@ -37,10 +38,10 @@ executables:
     # Suppress Paths_*
     other-modules: []
     dependencies:
-      - q4c12-xhtml2html
-      - q4c12-prelude
-      - q4c12-xml-core
-      - text
+      q4c12-xhtml2html:
+      q4c12-prelude:
+      q4c12-xml-core:
+      text:
 
 tests:
   golden-tests:
@@ -51,13 +52,13 @@ tests:
       - "-Wno-monomorphism-restriction"
       - "-Wno-missing-local-signatures"
     dependencies:
-      - q4c12-xhtml2html
-      - filepath
-      - q4c12-prelude
-      - q4c12-xml-core
-      - tasty
-      - tasty-golden
-      - text
-      - transformers
+      q4c12-xhtml2html:
+      filepath:
+      q4c12-prelude:
+      q4c12-xml-core:
+      tasty:
+      tasty-golden:
+      text:
+      transformers:
 
 #TODO: property-based testing. Round-trip render/parse.

@@ -4,7 +4,7 @@ cabal-version: 2.2
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: b34c2c90d29043bff0decf8008b6100d17d973a8b25ddb2397b0d72fa117ee11
+-- hash: 98d097cb9981a3882a9140560bb8e2d34ccae8d7313aa29c1b406265e2fe9ef1
 
 name:           q4c12-meta
 version:        0
@@ -43,8 +43,9 @@ library
     , q4c12-xml-core
     , q4c12-xml-desc
     , text
+  mixins:
+      base hiding (Prelude)
   default-language: Haskell2010
-  mixins: base hiding (Prelude)
 
 executable meta
   main-is: driver/meta.hs

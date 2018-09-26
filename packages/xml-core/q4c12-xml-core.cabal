@@ -4,7 +4,7 @@ cabal-version: 2.2
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: fef942313c5b4f898d904ed249543e91dad613ada37da6f8792a266414bc3d04
+-- hash: 3987b09626022241cfec911366887820c293604dd79d66862b3bd50e9411e04f
 
 name:           q4c12-xml-core
 version:        0
@@ -199,11 +199,10 @@ library
     , transformers
     , transformers-compat
     , writer-cps-transformers
-  default-language: Haskell2010
   mixins:
-      base hiding (Prelude),
-      -- Hide the leaky transformers
-      transformers hiding (Control.Monad.Trans.RWS, Control.Monad.Trans.Writer)
+      base hiding (Prelude)
+    , transformers hiding (Control.Monad.Trans.RWS, Control.Monad.Trans.Writer)
+  default-language: Haskell2010
 
 test-suite golden-tests
   type: exitcode-stdio-1.0
