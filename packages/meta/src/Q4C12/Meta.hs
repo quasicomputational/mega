@@ -77,10 +77,18 @@ ghcRegularity = \case
 
 data RunMetaChecks = MetaNo | MetaYes
 
+data WError = WErrorNo | WErrorYes
+
+data Package = Package
+  { packageDirectory :: FilePath
+  , packageName :: ST.Text
+  }
+
 data Build = Build
   { buildGHCVersion :: GHCVersion
-  , buildPackages :: [FilePath]
+  , buildPackages :: [Package]
   , buildRunMeta :: RunMetaChecks
+  , buildWError :: WError
   }
 
 env :: SText -> SText
@@ -95,15 +103,6 @@ beforeInstallNewBuild :: Aeson.Series
 beforeInstallNewBuild = Aeson.pair "before_install" $ Aeson.list Aeson.text
   [ "mkdir -p \"$HOME/.local/bin\""
   , "export PATH=/opt/ghc/bin:$PATH"
-  ]
-
---TODO: pin stack version?
-beforeInstallStack :: Aeson.Series
-beforeInstallStack = Aeson.pair "before_install" $ Aeson.list Aeson.text
-  [ "mkdir -p \"$HOME/.local/bin\""
-  , "export PATH=$HOME/.local/bin:/opt/ghc/bin:$PATH"
-  , "curl -sL https://www.stackage.org/stack/linux-x86_64 | tar xz --wildcards --strip-components=1 -C \"$HOME\"/.local/bin '*/stack'"
-  , "stack setup"
   ]
 
 buildAllowFailures :: SText -> Build -> [Aeson.Encoding]
@@ -127,43 +126,19 @@ travisConfiguration buildMap = Aeson.pairs $ fold
   -- travis emails are really annoying
   , Aeson.pair "notifications" $ Aeson.pairs $
       Aeson.pair "email" $ Aeson.bool False
-  -- cache stack and new-build's package stores
+  -- cache new-build's package stores
   , Aeson.pair "cache" $ Aeson.pairs $ fold
       [ Aeson.pair "directories" $ Aeson.list Aeson.text
         [ "$HOME/.cabal/store"
         , "$HOME/.cabal/bin"
-        , "$HOME/.stack/bin"
-        , "$HOME/.stack/precompiled"
-        , "$HOME/.stack/programs"
-        , "$HOME/.stack/setup-exe-cache"
-        , "$HOME/.stack/snapshots"
         ]
-      -- storing a full cache by stack takes a while and tends to over-run the default 180 second budget. Bump it up to a more comfortable level.
-      , Aeson.pair "timeout" $ Aeson.word 300
       ]
   , Aeson.pair "matrix" $ Aeson.pairs $ fold
     [ Aeson.pair "fast_finish" $ Aeson.bool True
-    , Aeson.pair "allow_failures" $ Aeson.list id $ fold
-      [ [ Aeson.pairs $ Aeson.pair "env" $ Aeson.text "CMD=stack-nightly" ]
-      , foldMap (uncurry buildAllowFailures) buildMap
-      ]
+    , Aeson.pair "allow_failures" $ Aeson.list id $
+      foldMap (uncurry buildAllowFailures) buildMap
     ]
-  , Aeson.pair "jobs" $ Aeson.pairs $ Aeson.pair "include" $ Aeson.list id $ fold
-    [ [ Aeson.pairs $ fold
-        [ Aeson.pair "env" $ Aeson.text "CMD=stack-werror"
-        , Aeson.pair "install" $ Aeson.text "./travis/deps.stack.sh" 
-        , Aeson.pair "script" $ Aeson.text "./travis/build.stack.sh --ghc-options=-Werror"
-        , beforeInstallStack
-        ]
-      , Aeson.pairs $ fold
-        [ Aeson.pair "env" $ Aeson.text "CMD=stack-nightly"
-        , Aeson.pair "install" $ Aeson.text "./travis/deps.stack.sh --resolver nightly"
-        , Aeson.pair "script" $ Aeson.text "./travis/build.stack.sh --resolver nightly"
-        , beforeInstallStack
-        ]
-      ]
-    , buildJobs
-    ]
+  , Aeson.pair "jobs" $ Aeson.pairs $ Aeson.pair "include" $ Aeson.list id buildJobs
   ]
   where
 
@@ -208,7 +183,7 @@ generateProjectFiles = traverseWithKey_ $ \ buildName build -> do
       , "packages:"
       ]
     , flip fmap ( buildPackages build ) $ \ package ->
-        "  " <> LT.pack package
+        "  " <> LT.pack ( packageDirectory package )
     , [ "with-compiler: ghc-" <> LT.fromStrict ( ghcVersion ( buildGHCVersion build ) )
       , "optimization: False"
       , "benchmarks: true"
@@ -231,6 +206,14 @@ generateProjectFiles = traverseWithKey_ $ \ buildName build -> do
     , [ "constraints:" ]
     , flip fmap extraConstraints $ \ constraint ->
         LTB.toLazyText $ "  " <> PF.renderConstraint constraint
+    , case buildWError build of
+        WErrorNo -> []
+        WErrorYes ->
+          -- This is a hack around https://github.com/haskell/cabal/issues/3883: we can't specify ghc-options for all local packages only, so instead specify ghc-options for each, individual local package.
+          flip foldMap ( buildPackages build ) $ \ package ->
+            [ "package " <> LT.fromStrict ( packageName package )
+            , "  ghc-options: -Werror"
+            ]
     ]
   where
     --TODO: https://github.com/haskell/containers/issues/422
@@ -296,27 +279,29 @@ data BuildConfig = BuildConfig
   { _buildConfigGHCVersion :: GHCVersion
   , _buildConfigOptability :: Optability
   , _buildConfigRunMetaChecks :: RunMetaChecks
+  , _buildConfigWError :: WError
   }
 
 configs :: Map SText BuildConfig
 configs = Map.fromList
-  [ ( "ghc-8.2", BuildConfig GHC8_2 OptOut MetaNo )
-  , ( "ghc-8.4", BuildConfig GHC8_4 OptOut MetaYes )
-  , ( "ghc-8.6", BuildConfig GHC8_6 OptOut MetaNo )
-  , ( "ghc-head", BuildConfig GHCHEAD OptOut MetaNo )
+  [ ( "ghc-8.2", BuildConfig GHC8_2 OptOut MetaNo WErrorNo )
+  , ( "ghc-8.4", BuildConfig GHC8_4 OptOut MetaYes WErrorNo )
+  , ( "ghc-8.6", BuildConfig GHC8_6 OptOut MetaNo WErrorYes )
+  , ( "ghc-head", BuildConfig GHCHEAD OptOut MetaNo WErrorNo )
   ]
 
 constructBuilds
-  :: [ (FilePath, PackageConfig) ]
+  :: [ (Package, PackageConfig) ]
   -> Either SText ( Map SText Build )
 constructBuilds packageData = do
-  let allMentionedConfigs = MapPend.getMapPend $
-        flip foldMap packageData $ \ ( dir, packageConfig ) -> fold
-          [ flip foldMap ( packageConfigIncluded packageConfig ) $ \ config ->
-              MapPend.singleton config $ Set.singleton dir
-          , flip foldMap ( packageConfigExcluded packageConfig ) $ \ config ->
-              MapPend.singleton config $ Set.singleton dir
-          ]
+  let
+    allMentionedConfigs = MapPend.getMapPend $
+      flip foldMap packageData $ \ ( package, packageConfig ) -> fold
+        [ flip foldMap ( packageConfigIncluded packageConfig ) $ \ config ->
+            MapPend.singleton config $ Set.singleton $ packageDirectory package
+        , flip foldMap ( packageConfigExcluded packageConfig ) $ \ config ->
+            MapPend.singleton config $ Set.singleton $ packageDirectory package
+        ]
   --TODO: ask for a mergeA_?
   void $ mergeA
     dropMissing
@@ -326,27 +311,29 @@ constructBuilds packageData = do
     ( zipWithMatched $ \ _ _ _ -> () )
     configs
     allMentionedConfigs
-  pure $ flip Map.mapWithKey configs $ \ configName ( BuildConfig ghc opt runMeta ) ->
-    let packages = flip mapMaybe packageData $ \ ( dir, packageConfig ) ->
+  pure $ flip Map.mapWithKey configs $ \ configName ( BuildConfig ghc opt runMeta werror ) ->
+    let packages = flip mapMaybe packageData $ \ ( package, packageConfig ) ->
           if | not ( Set.member configName ( packageConfigIncluded packageConfig ) )
              , OptIn <- opt
              -> Nothing
              | Set.member configName ( packageConfigExcluded packageConfig )
              -> Nothing
              | otherwise
-             -> Just dir
-    in Build ghc packages runMeta
+             -> Just package
+    in Build ghc packages runMeta werror
 
-generateHash :: [(FilePath, PackageConfig)] -> BS.ByteString
+generateHash :: [(Package, PackageConfig)] -> BS.ByteString
 generateHash = SHA256.hash . LBS.toStrict . BSB.toLazyByteString . foldMap (uncurry serialise)
   where
     -- fromIntegral is scary, but we have no choice.
     setLength :: Set a -> Word64
     setLength = fromIntegral . length
 
-    serialise :: FilePath -> PackageConfig -> BSBuilder
-    serialise path ( PackageConfig incl excl ) = fold
+    serialise :: Package -> PackageConfig -> BSBuilder
+    serialise ( Package path name ) ( PackageConfig incl excl ) = fold
       [ BSB.stringUtf8 path
+      , BSB.word8 0
+      , STEnc.encodeUtf8Builder name
       , BSB.word8 0
       , BSB.word64BE $ setLength incl
       , flip foldMap incl $ \ buildName -> fold
@@ -384,14 +371,29 @@ main = do
   packageDirectories <- List.sort . fmap ("packages" </>) <$> listDirectory "packages"
   packageData <- for packageDirectories $ \ dir -> do
     config <- parsePackageConfig ( dir </> "config.xml" )
-    pure ( dir, config )
+    name <- do
+      files <- listDirectory dir
+      let
+        candidates = mapMaybe ( stripExtension "cabal" ) files
+      case candidates of
+        [] -> do
+          LTIO.putStrLn $
+            "No .cabal file found in " <> LT.pack dir <> "."
+          exitFailure
+        [ name ] ->
+          pure $ ST.pack name
+        _ -> do
+          LTIO.putStrLn $
+            "Multiple .cabal files found in " <> LT.pack dir <> "."
+          exitFailure
+    pure ( Package dir name, config )
   OA.execParser ( OA.info commandParser mempty ) >>= \case
     GenTravis -> runGenTravis packageData
     CheckHash -> runCheckHash packageData
     Refreeze -> runRefreeze packageData
     CheckStaleCabal -> runCheckStaleCabal packageData
 
-runGenTravis :: [(FilePath, PackageConfig)] -> IO ()
+runGenTravis :: [(Package, PackageConfig)] -> IO ()
 runGenTravis packageData = do
   case constructBuilds packageData of
     Left err -> do
@@ -412,7 +414,7 @@ runGenTravis packageData = do
       BS.writeFile "travis/hash" $ generateHash packageData
       STIO.putStrLn "Written hash."
 
-runCheckHash :: [(FilePath, PackageConfig)] -> IO ()
+runCheckHash :: [(Package, PackageConfig)] -> IO ()
 runCheckHash packageData = do
   let
     expectedHash = generateHash packageData
@@ -428,7 +430,7 @@ extraConstraints =
       orLaterVersion ( mkVersion [ 2, 2, 0, 1 ] )
   ]
 
-runRefreeze :: [(FilePath, PackageConfig)] -> IO ()
+runRefreeze :: [(Package, PackageConfig)] -> IO ()
 runRefreeze packageData = do
   runCheckHash packageData
   case constructBuilds packageData of
@@ -463,10 +465,10 @@ refreeze builds = void $ flip Map.traverseWithKey builds $ \ buildName _build ->
   callProcess "cabal"
     [ "new-freeze" , "--project-file", projectFile ]
 
-runCheckStaleCabal :: [(FilePath, PackageConfig)] -> IO ()
-runCheckStaleCabal = traverse_ $ \ (packagePath, _) -> do
+runCheckStaleCabal :: [(Package, PackageConfig)] -> IO ()
+runCheckStaleCabal = traverse_ $ \ (package, _) -> do
   let
-    packageYaml = packagePath </> "package.yaml"
+    packageYaml = packageDirectory package </> "package.yaml"
     options = Hpack.setTarget packageYaml Hpack.defaultOptions
   packageYamlExists <- doesFileExist packageYaml
   when packageYamlExists $ do
