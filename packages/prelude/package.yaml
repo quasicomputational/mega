@@ -41,6 +41,7 @@ library:
     q4c12-twofinger:
     semigroupoids:
     template-haskell:
+    temporary:
     text:
     transformers:
       mixin:

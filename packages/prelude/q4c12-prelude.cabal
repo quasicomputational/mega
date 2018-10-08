@@ -4,7 +4,7 @@ cabal-version: 2.2
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 12ca1253aa6bc8c2a0645294871ad11de69f0fc5d53041806630d708c49ce2c8
+-- hash: b331439e1505ff49e1da13236e2f930a072f7c56e78abd08278ef28157af791a
 
 name:           q4c12-prelude
 version:        0
@@ -48,6 +48,7 @@ library
     , q4c12-twofinger
     , semigroupoids
     , template-haskell
+    , temporary
     , text
     , transformers
     , transformers-compat

@@ -8,6 +8,7 @@ module Prelude
   , (<&>)
   , FilePathComponent
   , validationToExcept, exceptToValidation, failure
+  , isExtensionOf
   )
   where
 
@@ -73,7 +74,7 @@ import Data.List as Export
 import Data.List.NonEmpty as Export
   (NonEmpty ((:|)), unzip)
 import Data.Maybe as Export
-  (Maybe (Just, Nothing), maybe, fromMaybe, mapMaybe, catMaybes, isNothing)
+  (Maybe (Just, Nothing), maybe, fromMaybe, mapMaybe, catMaybes, isNothing, isJust)
 import Data.Monoid as Export
   (Monoid (mempty, mappend), Endo (Endo), appEndo, Dual (Dual), getDual)
 import Data.Ord as Export
@@ -107,7 +108,7 @@ import GHC.Real as Export
 import Numeric.Natural as Export
   (Natural)
 import System.Exit as Export
-  (exitFailure)
+  (exitFailure, ExitCode (ExitFailure, ExitSuccess))
 import System.IO as Export
   (IO, FilePath, stdin, stdout, stderr, withFile, IOMode (ReadMode, WriteMode, AppendMode, ReadWriteMode))
 import System.IO.Error as Export
@@ -123,7 +124,7 @@ import Control.DeepSeq as Export
 -- filepath imports for re-export
 --TODO: consider dropping the String-based ones?
 import System.FilePath.Posix as Export
-  (addExtension, dropExtension, stripExtension, (</>))
+  (addExtension, dropExtension, hasExtension, stripExtension, (</>))
 
 -- transformers imports for re-export
 import Control.Monad.Trans.Accum as Export
@@ -197,6 +198,11 @@ import Language.Haskell.TH.Syntax as Export
   ( Lift
   )
 
+-- temporary imports for re-export
+import System.IO.Temp as Export
+  ( withSystemTempDirectory
+  )
+
 -- Q4C12 packages for re-export
 import Q4C12.FoldableUtils as Export
   ( intercalate0, intercalateMap0, biintercalateMap0
@@ -251,3 +257,7 @@ exceptToValidation = eitherToValidation . runExcept
 
 failure :: e -> Validation e a
 failure = eitherToValidation . Left
+
+-- TODO: this was added with 8.4's filepath, so rm and re-export once it's in the window
+isExtensionOf :: String -> FilePath -> Bool
+isExtensionOf ext = isJust . stripExtension ext
