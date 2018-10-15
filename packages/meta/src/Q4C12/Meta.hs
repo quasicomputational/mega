@@ -64,7 +64,7 @@ data GHCVersion
 ghcVersion :: GHCVersion -> SText
 ghcVersion = \case
   GHC8_2 -> "8.2.2"
-  GHC8_4 -> "8.4.3"
+  GHC8_4 -> "8.4.4"
   GHC8_6 -> "8.6.1"
   GHCHEAD -> "head"
 
