@@ -37,6 +37,7 @@ import Control.Applicative.Combinators
   ( sepBy
   , sepBy1
   )
+import qualified Data.Aeson as Aeson
 import qualified Data.Sequence as Seq
 import qualified Data.Text as ST
 import qualified Data.Text.Lazy.Builder as LTB
@@ -79,6 +80,7 @@ import Distribution.Version
   , version0
   , versionNumbers
   )
+import Q4C12.AesonCabal ()
 import qualified Text.Megaparsec as MP
 import qualified Text.Megaparsec.Char as MPC
 import qualified Text.Megaparsec.Char.Lexer as Lexer
@@ -105,14 +107,22 @@ packages f config =
   (\ ps -> config { configPackages = ps } ) <$> f ( configPackages config )
 
 data Constraint = Constraint PackageName Qualification PackageConstraint
-  deriving ( Eq, Ord, Show )
+  deriving ( Eq, Generic, Ord, Show )
+
+instance Aeson.FromJSON Constraint
+instance Aeson.ToJSON Constraint where
+  toEncoding = Aeson.genericToEncoding Aeson.defaultOptions
 
 data Qualification
   = UnqualifiedOnly
   | QualifiedAll
   | QualifiedSetupAll
   | QualifiedSetup PackageName
-  deriving ( Eq, Ord, Show )
+  deriving ( Eq, Generic, Ord, Show )
+
+instance Aeson.FromJSON Qualification
+instance Aeson.ToJSON Qualification where
+  toEncoding = Aeson.genericToEncoding Aeson.defaultOptions
 
 unqualifiedOnly :: Qualification
 unqualifiedOnly = UnqualifiedOnly
@@ -126,14 +136,68 @@ qualifiedSetupAll = QualifiedSetupAll
 qualifiedSetup :: PackageName -> Qualification
 qualifiedSetup = QualifiedSetup
 
+data LB
+  = LBInclusive Version
+  | LBExclusive Version
+  deriving ( Eq, Generic, Ord, Show )
+
+instance Aeson.FromJSON LB
+instance Aeson.ToJSON LB where
+  toEncoding = Aeson.genericToEncoding Aeson.defaultOptions
+
+data UB
+  = UBOpen
+  | UBInclusive Version
+  | UBExclusive Version
+  deriving ( Eq, Generic, Ord, Show )
+
+instance Aeson.FromJSON UB
+instance Aeson.ToJSON UB where
+  toEncoding = Aeson.genericToEncoding Aeson.defaultOptions
+
+data Interval = Interval LB UB
+  deriving ( Eq, Generic, Ord, Show )
+
+instance Aeson.FromJSON Interval
+instance Aeson.ToJSON Interval where
+  toEncoding = Aeson.genericToEncoding Aeson.defaultOptions
+
+-- TODO: test that fromInterval and toInterval are inverses
+-- TODO: offer these as an Iso?
+fromInterval :: Interval -> VersionInterval
+fromInterval (Interval lb ub) = (lb', ub')
+  where
+    lb' = case lb of
+      LBInclusive v -> LowerBound v InclusiveBound
+      LBExclusive v -> LowerBound v ExclusiveBound
+    ub' = case ub of
+      UBOpen -> NoUpperBound
+      UBInclusive v -> UpperBound v InclusiveBound
+      UBExclusive v -> UpperBound v ExclusiveBound
+
+toInterval :: VersionInterval -> Interval
+toInterval (lb, ub) = Interval lb' ub'
+  where
+    lb' = case lb of
+      LowerBound v InclusiveBound -> LBInclusive v
+      LowerBound v ExclusiveBound -> LBExclusive v
+    ub' = case ub of
+      NoUpperBound -> UBOpen
+      UpperBound v InclusiveBound -> UBInclusive v
+      UpperBound v ExclusiveBound -> UBExclusive v
+
 data PackageConstraint
-  = PackageConstraintVersion [VersionInterval]
+  = PackageConstraintVersion [Interval]
   | PackageConstraintTest
   | PackageConstraintBench
   | PackageConstraintSource
   | PackageConstraintInstalled
   | PackageConstraintFlag Bool FlagName
-  deriving ( Eq, Ord, Show )
+  deriving ( Eq, Generic, Ord, Show )
+
+instance Aeson.FromJSON PackageConstraint
+instance Aeson.ToJSON PackageConstraint where
+  toEncoding = Aeson.genericToEncoding Aeson.defaultOptions
 
 constraintVersion
   :: PackageName
@@ -143,6 +207,7 @@ constraintVersion
 constraintVersion pn qual
   = Constraint pn qual
   . PackageConstraintVersion
+  . fmap toInterval
   . asVersionIntervals
 
 constraintTest
@@ -183,7 +248,7 @@ constraintToVersionRange
   -> VersionRange
 constraintToVersionRange ( Constraint _ _ inner ) = case inner of
   PackageConstraintVersion intervals ->
-    fromVersionIntervals $ mkVersionIntervals intervals
+    fromVersionIntervals $ mkVersionIntervals $ fromInterval <$> intervals
   _ ->
     anyVersion
 
@@ -307,7 +372,7 @@ pPackageConstraints
   <|> pFlagConstraints
 
 pVersionConstraint :: (Ord e) => MP.Parsec e SText PackageConstraint
-pVersionConstraint = fmap (PackageConstraintVersion . asVersionIntervals) $
+pVersionConstraint = fmap (PackageConstraintVersion . fmap toInterval . asVersionIntervals) $
       MP.try pUnionVersionRanges
   <|> MP.try pIntersectVersionRanges
   <|> pVersionRangeAtom
@@ -451,7 +516,7 @@ renderConstraint ( Constraint pkg qual constr ) = fold
         [] ->
           "-none"
         _ ->
-          intercalateMap0 " || " renderVersionInterval intervals
+          intercalateMap0 " || " (renderVersionInterval . fromInterval) intervals
       PackageConstraintTest -> "test"
       PackageConstraintBench -> "bench"
       PackageConstraintInstalled -> "installed"

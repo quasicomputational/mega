@@ -19,6 +19,7 @@ library:
   # Suppress Paths_*
   other-modules: []
   dependencies:
+    aeson:
     base:
       mixin:
         - hiding (Prelude)
@@ -26,6 +27,7 @@ library:
     containers:
     megaparsec:
     parser-combinators:
+    q4c12-aeson-cabal:
     q4c12-prelude:
     text:
 
