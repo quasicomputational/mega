@@ -4,7 +4,7 @@ cabal-version: 2.2
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 7ac5ca36fba89a5da7948b666098e66848a194f17cae04485b46547ceb7d15bc
+-- hash: 6312d6b82e4231eb2ed432bd73159a56376243ae54ab5637402952383d803928
 
 name:           q4c12-defrost
 version:        0
@@ -31,12 +31,14 @@ library
   ghc-options: -Weverything -Wno-implicit-prelude -Wno-unsafe -Wno-safe -Wno-missed-specialisations -Wno-all-missed-specialisations -Wno-missing-exported-signatures
   build-depends:
       Cabal
+    , aeson
     , base
     , bytestring
     , containers
     , dlist-nonempty
     , lens
     , process
+    , q4c12-aeson-cabal
     , q4c12-prelude
     , q4c12-project-file
     , text
@@ -54,7 +56,6 @@ test-suite tasty
     , base
     , bytestring
     , containers
-    , lens
     , q4c12-defrost
     , q4c12-prelude
     , q4c12-project-file

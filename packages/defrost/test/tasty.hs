@@ -3,9 +3,6 @@ module Main
   )
   where
 
-import Control.Lens
-  ( set
-  )
 import qualified Data.ByteString as BS
 import qualified Data.Map as Map
 import qualified Data.Sequence as Seq
@@ -88,12 +85,9 @@ successTests =
           ]
         freezes =
           [ env System.Linux System.I386 (mkFlagAssignment []) Compiler.GHC (mkVersion [8, 4]) $
-              set PF.constraints
-                ( Seq.fromList
-                  [ PF.constraintVersion "foo" PF.qualifiedAll $ thisVersion (mkVersion [3])
-                  ]
-                )
-                PF.emptyConfig
+              Seq.fromList
+                [ PF.constraintVersion "foo" PF.qualifiedAll $ thisVersion (mkVersion [3])
+                ]
           ]
         expected = BS.intercalate "\n"
           [ "cabal-version: 2.2"
@@ -117,12 +111,9 @@ successTests =
           ]
         freezes =
           [ env System.Linux System.I386 (mkFlagAssignment []) Compiler.GHC (mkVersion [8, 4]) $
-              set PF.constraints
-                ( Seq.fromList
-                  [ PF.constraintVersion "foo" PF.unqualifiedOnly $ thisVersion (mkVersion [3])
-                  ]
-                )
-                PF.emptyConfig
+              Seq.fromList
+                [ PF.constraintVersion "foo" PF.unqualifiedOnly $ thisVersion (mkVersion [3])
+                ]
           ]
         expected = BS.intercalate "\n"
           [ "cabal-version: 2.2"
@@ -149,13 +140,10 @@ successTests =
           ]
         freezes =
           [ env System.Linux System.I386 (mkFlagAssignment []) Compiler.GHC (mkVersion [8, 4]) $
-              set PF.constraints
-                ( Seq.fromList
-                  [ PF.constraintVersion "foo" PF.unqualifiedOnly $ thisVersion (mkVersion [3])
-                  , PF.constraintVersion "foo" PF.qualifiedSetupAll $ thisVersion (mkVersion [4])
-                  ]
-                )
-                PF.emptyConfig
+              Seq.fromList
+                [ PF.constraintVersion "foo" PF.unqualifiedOnly $ thisVersion (mkVersion [3])
+                , PF.constraintVersion "foo" PF.qualifiedSetupAll $ thisVersion (mkVersion [4])
+                ]
           ]
         expected = BS.intercalate "\n"
           [ "cabal-version: 2.2"
@@ -182,19 +170,13 @@ successTests =
           ]
         freezes =
           [ env System.Linux System.I386 (mkFlagAssignment []) Compiler.GHC (mkVersion [8, 4]) $
-              set PF.constraints
-                ( Seq.fromList
-                  [ PF.constraintVersion "foo" PF.unqualifiedOnly $ thisVersion (mkVersion [3])
-                  ]
-                )
-                PF.emptyConfig
+              Seq.fromList
+                [ PF.constraintVersion "foo" PF.unqualifiedOnly $ thisVersion (mkVersion [3])
+                ]
           , env System.OpenBSD System.X86_64 (mkFlagAssignment []) Compiler.GHC (mkVersion [8, 2]) $
-              set PF.constraints
-                ( Seq.fromList
-                  [ PF.constraintVersion "foo" PF.qualifiedAll $ thisVersion (mkVersion [5])
-                  ]
-                )
-                PF.emptyConfig
+              Seq.fromList
+                [ PF.constraintVersion "foo" PF.qualifiedAll $ thisVersion (mkVersion [5])
+                ]
           ]
         expected = BS.intercalate "\n"
           [ "cabal-version: 2.2"
@@ -224,12 +206,9 @@ successTests =
           ]
         freezes =
           [ env System.Linux System.I386 (mkFlagAssignment []) Compiler.GHC (mkVersion [8, 4]) $
-              set PF.constraints
-                ( Seq.fromList
-                  [ PF.constraintVersion "foo" PF.unqualifiedOnly $ thisVersion (mkVersion [3])
-                  ]
-                )
-                PF.emptyConfig
+              Seq.fromList
+                [ PF.constraintVersion "foo" PF.unqualifiedOnly $ thisVersion (mkVersion [3])
+                ]
           ]
         expected = BS.intercalate "\n"
           [ "cabal-version: 2.2"
@@ -247,7 +226,6 @@ successTests =
           ]
       successTest mempty [] input freezes expected
 
-
   , testCase "setup-depends" $ do
       let
         input = BS.intercalate "\n"
@@ -262,16 +240,13 @@ successTests =
           ]
         freezes =
           [ env System.Linux System.I386 (mkFlagAssignment []) Compiler.GHC (mkVersion [8, 4]) $
-              set PF.constraints
-                ( Seq.fromList
-                  [ PF.constraintVersion "a" PF.unqualifiedOnly $ thisVersion (mkVersion [1])
-                  , PF.constraintVersion "a" PF.qualifiedAll $ thisVersion (mkVersion [2])
-                  , PF.constraintVersion "b" PF.qualifiedSetupAll $ thisVersion (mkVersion [3])
-                  , PF.constraintVersion "c" (PF.qualifiedSetup "test") $ thisVersion (mkVersion [4])
-                  , PF.constraintVersion "c" (PF.qualifiedSetup "other") $ thisVersion (mkVersion [5])
-                  ]
-                )
-                PF.emptyConfig
+              Seq.fromList
+                [ PF.constraintVersion "a" PF.unqualifiedOnly $ thisVersion (mkVersion [1])
+                , PF.constraintVersion "a" PF.qualifiedAll $ thisVersion (mkVersion [2])
+                , PF.constraintVersion "b" PF.qualifiedSetupAll $ thisVersion (mkVersion [3])
+                , PF.constraintVersion "c" (PF.qualifiedSetup "test") $ thisVersion (mkVersion [4])
+                , PF.constraintVersion "c" (PF.qualifiedSetup "other") $ thisVersion (mkVersion [5])
+                ]
           ]
         expected = BS.intercalate "\n"
           [ "cabal-version: 2.2"
@@ -297,12 +272,9 @@ successTests =
           ]
         freezes =
           [ env System.Linux System.I386 (mkFlagAssignment []) Compiler.GHC (mkVersion [8, 4]) $
-              set PF.constraints
-                ( Seq.fromList
-                  [ PF.constraintVersion "foo" PF.qualifiedAll $ thisVersion (mkVersion [1])
-                  ]
-                )
-                PF.emptyConfig
+              Seq.fromList
+                [ PF.constraintVersion "foo" PF.qualifiedAll $ thisVersion (mkVersion [1])
+                ]
           ]
         expected = BS.intercalate "\n"
           [ "cabal-version: 2.2"
@@ -327,12 +299,9 @@ successTests =
           ]
         freezes =
           [ env System.Linux System.I386 (mkFlagAssignment []) Compiler.GHC (mkVersion [8, 4]) $
-              set PF.constraints
-                ( Seq.fromList
-                  [ PF.constraintVersion "foo" PF.qualifiedAll $ thisVersion (mkVersion [1])
-                  ]
-                )
-                PF.emptyConfig
+              Seq.fromList
+                [ PF.constraintVersion "foo" PF.qualifiedAll $ thisVersion (mkVersion [1])
+                ]
           ]
         expected = BS.intercalate "\n"
           [ "cabal-version: 2.2"
@@ -358,26 +327,17 @@ successTests =
           ]
         freezes =
           [ env System.Linux System.I386 (mkFlagAssignment []) Compiler.GHC (mkVersion [8, 4]) $
-              set PF.constraints
-                ( Seq.fromList
-                  [ PF.constraintVersion "foo" PF.qualifiedAll $ thisVersion (mkVersion [1])
-                  ]
-                )
-                PF.emptyConfig
+              Seq.fromList
+                [ PF.constraintVersion "foo" PF.qualifiedAll $ thisVersion (mkVersion [1])
+                ]
           , env System.Linux System.I386 (mkFlagAssignment []) Compiler.GHC (mkVersion [8, 6]) $
-              set PF.constraints
-                ( Seq.fromList
-                  [ PF.constraintVersion "foo" PF.qualifiedAll $ thisVersion (mkVersion [2])
-                  ]
-                )
-                PF.emptyConfig
+              Seq.fromList
+                [ PF.constraintVersion "foo" PF.qualifiedAll $ thisVersion (mkVersion [2])
+                ]
           , env System.Linux System.I386 (mkFlagAssignment []) Compiler.GHC (mkVersion [8, 2]) $
-              set PF.constraints
-                ( Seq.fromList
-                  [ PF.constraintVersion "foo" PF.qualifiedAll $ thisVersion (mkVersion [3])
-                  ]
-                )
-                PF.emptyConfig
+              Seq.fromList
+                [ PF.constraintVersion "foo" PF.qualifiedAll $ thisVersion (mkVersion [3])
+                ]
           ]
         expected = BS.intercalate "\n"
           [ "cabal-version: 2.2"
@@ -403,26 +363,17 @@ successTests =
           ]
         freezes =
           [ env System.Linux System.I386 (mkFlagAssignment []) Compiler.GHC (mkVersion [8, 4]) $
-              set PF.constraints
-                ( Seq.fromList
-                  [ PF.constraintVersion "foo" PF.qualifiedAll $ thisVersion (mkVersion [1])
-                  ]
-                )
-                PF.emptyConfig
+              Seq.fromList
+                [ PF.constraintVersion "foo" PF.qualifiedAll $ thisVersion (mkVersion [1])
+                ]
           , env System.Linux System.I386 (mkFlagAssignment []) Compiler.GHC (mkVersion [8, 2]) $
-              set PF.constraints
-                ( Seq.fromList
-                  [ PF.constraintVersion "foo" PF.qualifiedAll $ thisVersion (mkVersion [2])
-                  ]
-                )
-                PF.emptyConfig
+              Seq.fromList
+                [ PF.constraintVersion "foo" PF.qualifiedAll $ thisVersion (mkVersion [2])
+                ]
           , env System.Windows System.I386 (mkFlagAssignment []) Compiler.GHC (mkVersion [8, 4]) $
-              set PF.constraints
-                ( Seq.fromList
-                  [ PF.constraintVersion "foo" PF.qualifiedAll $ thisVersion (mkVersion [3])
-                  ]
-                )
-                PF.emptyConfig
+              Seq.fromList
+                [ PF.constraintVersion "foo" PF.qualifiedAll $ thisVersion (mkVersion [3])
+                ]
           ]
         expected = BS.intercalate "\n"
           [ "cabal-version: 2.2"
@@ -448,26 +399,17 @@ successTests =
           ]
         freezes =
           [ env System.Linux System.I386 (mkFlagAssignment []) Compiler.GHC (mkVersion [8, 4]) $
-              set PF.constraints
-                ( Seq.fromList
-                  [ PF.constraintVersion "foo" PF.qualifiedAll $ thisVersion (mkVersion [1])
-                  ]
-                )
-                PF.emptyConfig
+              Seq.fromList
+                [ PF.constraintVersion "foo" PF.qualifiedAll $ thisVersion (mkVersion [1])
+                ]
           , env System.Windows System.I386 (mkFlagAssignment []) Compiler.GHC (mkVersion [8, 6]) $
-              set PF.constraints
-                ( Seq.fromList
-                  [ PF.constraintVersion "foo" PF.qualifiedAll $ thisVersion (mkVersion [2])
-                  ]
-                )
-                PF.emptyConfig
+              Seq.fromList
+                [ PF.constraintVersion "foo" PF.qualifiedAll $ thisVersion (mkVersion [2])
+                ]
           , env System.Windows System.I386 (mkFlagAssignment []) Compiler.GHC (mkVersion [8, 2]) $
-              set PF.constraints
-                ( Seq.fromList
-                  [ PF.constraintVersion "foo" PF.qualifiedAll $ thisVersion (mkVersion [3])
-                  ]
-                )
-                PF.emptyConfig
+              Seq.fromList
+                [ PF.constraintVersion "foo" PF.qualifiedAll $ thisVersion (mkVersion [3])
+                ]
           ]
         expected = BS.intercalate "\n"
           [ "cabal-version: 2.2"
@@ -495,12 +437,9 @@ successTests =
           ]
         freezes =
           [ env System.Linux System.I386 (mkFlagAssignment []) Compiler.GHC (mkVersion [8, 4]) $
-              set PF.constraints
-                ( Seq.fromList
-                  [ PF.constraintVersion "foo" PF.qualifiedAll $ thisVersion (mkVersion [3])
-                  ]
-                )
-                PF.emptyConfig
+              Seq.fromList
+                [ PF.constraintVersion "foo" PF.qualifiedAll $ thisVersion (mkVersion [3])
+                ]
           ]
         expected = BS.intercalate "\n"
           [ "cabal-version: 2.2"
@@ -532,16 +471,13 @@ successTests =
           ]
         freezes =
           [ env System.Linux System.I386 (mkFlagAssignment []) Compiler.GHC (mkVersion [8, 4]) $
-              set PF.constraints
-                ( Seq.fromList
-                  [ PF.constraintVersion "foo-pvp" PF.qualifiedAll $ thisVersion (mkVersion [1,2,3,4])
-                  , PF.constraintVersion "foo-semver" PF.qualifiedAll $ thisVersion (mkVersion [1,2,3,4])
-                  , PF.constraintVersion "foo-pvp-loose-imports" PF.qualifiedAll $ thisVersion (mkVersion [1,2,3,4])
-                  , PF.constraintVersion "foo-semver-loose-imports" PF.qualifiedAll $ thisVersion (mkVersion [1,2,3,4])
-                  , PF.constraintVersion "foo-exact" PF.qualifiedAll $ thisVersion (mkVersion [1,2,3,4])
-                  ]
-                )
-                PF.emptyConfig
+              Seq.fromList
+                [ PF.constraintVersion "foo-pvp" PF.qualifiedAll $ thisVersion (mkVersion [1,2,3,4])
+                , PF.constraintVersion "foo-semver" PF.qualifiedAll $ thisVersion (mkVersion [1,2,3,4])
+                , PF.constraintVersion "foo-pvp-loose-imports" PF.qualifiedAll $ thisVersion (mkVersion [1,2,3,4])
+                , PF.constraintVersion "foo-semver-loose-imports" PF.qualifiedAll $ thisVersion (mkVersion [1,2,3,4])
+                , PF.constraintVersion "foo-exact" PF.qualifiedAll $ thisVersion (mkVersion [1,2,3,4])
+                ]
           ]
         expected = BS.intercalate "\n"
           [ "cabal-version: 2.2"
@@ -573,12 +509,9 @@ successTests =
           ]
         freezes =
           [ env System.Linux System.I386 (mkFlagAssignment []) Compiler.GHC (mkVersion [8, 4]) $
-              set PF.constraints
-                ( Seq.fromList
-                  [ PF.constraintVersion "foo" PF.qualifiedAll $ thisVersion (mkVersion [1])
-                  ]
-                )
-                PF.emptyConfig
+              Seq.fromList
+                [ PF.constraintVersion "foo" PF.qualifiedAll $ thisVersion (mkVersion [1])
+                ]
           ]
         expected = BS.intercalate "\n"
           [ "cabal-version: 2.2"
@@ -605,12 +538,9 @@ failureTests =
           ]
         freezes =
           [ env System.Linux System.I386 (mkFlagAssignment []) Compiler.GHC (mkVersion [8, 4]) $
-              set PF.constraints
-                ( Seq.fromList
-                  [ PF.constraintVersion "foo" PF.qualifiedAll $ thisVersion (mkVersion [1])
-                  ]
-                )
-                PF.emptyConfig
+              Seq.fromList
+                [ PF.constraintVersion "foo" PF.qualifiedAll $ thisVersion (mkVersion [1])
+                ]
           ]
         expected = ST.unlines
           [ "Unfrozen build dependency: bar"
@@ -629,12 +559,9 @@ failureTests =
           ]
         freezes =
           [ env System.Linux System.I386 (mkFlagAssignment []) Compiler.GHC (mkVersion [8, 4]) $
-              set PF.constraints
-                ( Seq.fromList
-                  [ PF.constraintVersion "foo" PF.qualifiedAll $ thisVersion (mkVersion [1])
-                  ]
-                )
-                PF.emptyConfig
+              Seq.fromList
+                [ PF.constraintVersion "foo" PF.qualifiedAll $ thisVersion (mkVersion [1])
+                ]
           ]
         expected = ST.unlines
           [ "Unfrozen setup dependency: bar"
@@ -655,12 +582,9 @@ failureTests =
           ]
         freezes =
           [ env System.Windows System.I386 (mkFlagAssignment []) Compiler.GHC (mkVersion [8, 4]) $
-              set PF.constraints
-                ( Seq.fromList
-                  [ PF.constraintVersion "foo" PF.qualifiedAll $ thisVersion (mkVersion [1])
-                  ]
-                )
-                PF.emptyConfig
+              Seq.fromList
+                [ PF.constraintVersion "foo" PF.qualifiedAll $ thisVersion (mkVersion [1])
+                ]
           ]
         expected = ST.unlines
           [ "Unfrozen build dependency: foo"

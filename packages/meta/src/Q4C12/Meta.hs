@@ -285,8 +285,8 @@ data BuildConfig = BuildConfig
 configs :: Map SText BuildConfig
 configs = Map.fromList
   [ ( "ghc-8.2", BuildConfig GHC8_2 OptOut MetaNo WErrorNo )
-  , ( "ghc-8.4", BuildConfig GHC8_4 OptOut MetaYes WErrorNo )
-  , ( "ghc-8.6", BuildConfig GHC8_6 OptOut MetaNo WErrorYes )
+  , ( "ghc-8.4", BuildConfig GHC8_4 OptOut MetaNo WErrorNo )
+  , ( "ghc-8.6", BuildConfig GHC8_6 OptOut MetaYes WErrorYes )
   , ( "ghc-head", BuildConfig GHCHEAD OptOut MetaNo WErrorNo )
   ]
 

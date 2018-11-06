@@ -16,6 +16,7 @@ import Control.Lens
   ( _1
   , _2
   )
+import qualified Data.Aeson as Aeson
 import qualified Data.ByteString as BS
 import qualified Data.DList.NonEmpty as NEDL
 import qualified Data.List as List
@@ -94,10 +95,9 @@ import Distribution.Version
   , alterVersion
   , withinRange
   )
+import Q4C12.AesonCabal ()
 import Q4C12.ProjectFile
-  ( Config
-  , Constraint
-  , constraints
+  ( Constraint
   , constraintAppliesToSetup
   , constraintAppliesToUnqualified
   , constraintPackageName
@@ -112,11 +112,20 @@ data SystemEnv = SystemEnv
   , _systemEnvCompilerFlavor :: CompilerFlavor
   , _systemEnvCompilerVersion :: Version
   }
-  deriving ( Eq, Ord )
+  deriving ( Eq, Generic, Ord )
 
-data Env = Env SystemEnv Config
+instance Aeson.FromJSON SystemEnv
+instance Aeson.ToJSON SystemEnv where
+  toEncoding = Aeson.genericToEncoding Aeson.defaultOptions
 
-env :: OS -> Arch -> FlagAssignment -> CompilerFlavor -> Version -> Config -> Env
+data Env = Env SystemEnv ( Seq Constraint )
+  deriving ( Generic )
+
+instance Aeson.FromJSON Env
+instance Aeson.ToJSON Env where
+  toEncoding = Aeson.genericToEncoding Aeson.defaultOptions
+
+env :: OS -> Arch -> FlagAssignment -> CompilerFlavor -> Version -> Seq Constraint -> Env
 env os arch flags compiler compilerVersion =
   Env ( SystemEnv os arch flags compiler compilerVersion )
 
@@ -370,8 +379,8 @@ gatherFreezes
   -> [ Env ]
   -> FrozenDependencies
 gatherFreezes pkgName policy
-    = fmap ( \ ( Env buildEnv config )
-             -> fromConstraints pkgName ( view constraints config )
+    = fmap ( \ ( Env buildEnv constrs )
+             -> fromConstraints pkgName constrs
               & fmap ( Map.singleton buildEnv )
               & checkFrozenDependencies policy
            )
