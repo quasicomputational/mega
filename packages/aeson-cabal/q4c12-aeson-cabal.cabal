@@ -1,0 +1,35 @@
+cabal-version: 2.2
+
+-- This file has been generated from package.yaml by hpack version 0.31.0.
+--
+-- see: https://github.com/sol/hpack
+--
+-- hash: 00c49272b5261c5c5ddd7332d2af1c3cce7e402082f59e599815a93f05e26c00
+
+name:           q4c12-aeson-cabal
+version:        0
+homepage:       https://github.com/quasicomputational/mega/tree/master/packages/aeson-cabal
+bug-reports:    https://github.com/quasicomputational/mega/issues
+author:         quasicomputational <quasicomputational@gmail.com>
+license:        (Apache-2.0 OR LGPL-2.1-or-later)
+license-files:  LICENSE.APACHE-2.0,
+                LICENSE.LGPL-2.1
+build-type:     Simple
+
+source-repository head
+  type: git
+  location: https://github.com/quasicomputational/mega
+
+library
+  exposed-modules:
+      Q4C12.AesonCabal
+  hs-source-dirs:
+      src
+  default-extensions: BinaryLiterals DataKinds DeriveDataTypeable DeriveGeneric DeriveLift DeriveTraversable DerivingStrategies EmptyCase EmptyDataDecls LambdaCase KindSignatures MonoLocalBinds NegativeLiterals NumDecimals OverloadedStrings PatternGuards PostfixOperators StandaloneDeriving TypeOperators ViewPatterns
+  ghc-options: -Weverything -Wno-implicit-prelude -Wno-unsafe -Wno-safe -Wno-missed-specialisations -Wno-all-missed-specialisations -Wno-missing-exported-signatures
+  build-depends:
+      Cabal
+    , aeson
+    , base
+    , text
+  default-language: Haskell2010
