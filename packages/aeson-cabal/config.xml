@@ -1,0 +1,8 @@
+<package-config>
+  <exclude>
+    <build>ghc-8.2</build>
+    <build>ghc-8.4</build>
+  </exclude>
+  <include>
+  </include>
+</package-config>
