@@ -49,7 +49,12 @@ elementDT :: (Desc tag) => QName -> DT tag a -> El tag a
 elementDT qn = elementE qn . CompleteFlowDT
 
 --Invariants: For (Datatype f g _ _) and some endomorphism h: f . g . h === fmap h; if f a = Right x, then g x === a; if a == b, then g a == g b. (TODO: that last law doesn't seem right.) (TODO: I think we want to put a 'Right' back in that first law, maybe?) (TODO: compare with Prisms... Ooh, or 'affine traversals'?)
-data Datatype a = Datatype (LText -> Either LText a) (a -> LText) LText LText
+data Datatype a = Datatype
+  { datatypeFrom :: LText -> Either LText a
+  , datatypeTo :: a -> LText
+  , datatypeNamespace :: LText
+  , datatypeLocal :: LText
+  }
 
 naturalZeroDT :: (Desc tag) => DT tag Natural
 naturalZeroDT = datatypeDT $ Datatype prs prnt "http://www.w3.org/2001/XMLSchema-datatypes" "nonNegativeInteger"
@@ -139,6 +144,7 @@ class (RAlternative (EvenFlow tag), RPlus (El tag), RAlternative (DT tag),
 
   --Note: must not contain whitespace! Also, take care with the empty string.
   --TODO: replace this with something like valueDT :: (Eq a) => Datatype a -> a -> DT tag ()?
+  -- TODO: why is this a class method? Can't we implement with datatypeDT?
   tokenDT :: LText -> DT tag ()
 
   elementE :: QName -> CompleteFlow tag a -> El tag a
