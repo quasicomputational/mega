@@ -20,6 +20,7 @@ library:
     - Q4C12.Defrost
   other-modules: []
   dependencies:
+    aeson:
     base:
       mixin:
         - hiding (Prelude)
@@ -29,6 +30,7 @@ library:
     dlist-nonempty:
     lens:
     process:
+    q4c12-aeson-cabal:
     q4c12-prelude:
     q4c12-project-file:
     text:
@@ -45,7 +47,6 @@ tests:
       bytestring:
       Cabal:
       containers:
-      lens:
       q4c12-prelude:
       q4c12-project-file:
       tasty:
