@@ -16,6 +16,8 @@ Data structures & related utilities
 Cabal stuff
 ===========
 
+* [q4c12-aeson-cabal](packages/aeson-cabal) is my locally canonical place for orphan instances of classes from `aeson` for types from `Cabal`.
+
 * [q4c12-defrost](packages/defrost) is like Stack's [`pvp-bounds` feature](https://docs.haskellstack.org/en/stable/yaml_configuration/#pvp-bounds), except it works on Cabal's freeze files instead. If you test your code against a set of freeze files, `defrost` can add the PVP bounds to your `.cabal` file corresponding to the dependency versions in those freeze files.
 
 * [q4c12-project-file](packages/project-file) is a horribly incomplete parser and renderer for Cabal's [`.project` configuration files](http://cabal.readthedocs.io/en/latest/nix-local-build.html#configuring-builds-with-cabal-project).
