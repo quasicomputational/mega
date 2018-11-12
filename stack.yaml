@@ -1,4 +1,4 @@
-resolver: nightly-2018-07-11
+resolver: nightly-2018-11-12
 packages:
   - location: ./packages/xml-core
   - location: ./packages/xml-desc
@@ -14,6 +14,3 @@ packages:
   - location: ./packages/project-file
   - location: ./packages/defrost
   - location: ./packages/aeson-cabal
-extra-deps:
-  #TODO: https://github.com/commercialhaskell/stackage/issues/3955
-  - megaparsec-7.0.0@rev:0
