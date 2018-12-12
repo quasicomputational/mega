@@ -15,6 +15,7 @@ packages:
   packages/xml-core
   packages/xml-desc
 with-compiler: ghc-head
+with-hc-pkg: ghc-pkg-head
 optimization: False
 benchmarks: true
 tests: true
