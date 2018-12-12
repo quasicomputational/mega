@@ -11,6 +11,7 @@ packages:
   packages/xml-core
   packages/xml-desc
 with-compiler: ghc-8.4.4
+with-hc-pkg: ghc-pkg-8.4.4
 optimization: False
 benchmarks: true
 tests: true

@@ -172,6 +172,8 @@ generateProjectFiles = traverseWithKey_ $ \ buildName build -> do
     , flip fmap ( buildPackages build ) $ \ package ->
         "  " <> LT.pack ( packageDirectory package )
     , [ "with-compiler: ghc-" <> LT.fromStrict ( ghcVersion ( buildGHCVersion build ) )
+      -- Needed or else Cabal's autodetection of the ghc-pkg command goes wrong. See haskell/cabal#5792.
+      , "with-hc-pkg: ghc-pkg-" <> LT.fromStrict ( ghcVersion ( buildGHCVersion build ) )
       , "optimization: False"
       , "benchmarks: true"
       , "tests: true"
