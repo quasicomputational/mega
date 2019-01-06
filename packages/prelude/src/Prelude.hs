@@ -134,7 +134,7 @@ import Control.Monad.Trans.Except as Export
 import Control.Monad.Trans.Class as Export
   (lift)
 import Control.Monad.Trans.State as Export
-  (runStateT, execStateT, evalStateT, runState, StateT (StateT), State, state)
+  (runStateT, execStateT, evalStateT, runState, StateT (StateT), State, state, evalState)
 import Data.Functor.Reverse as Export
   (Reverse (Reverse), getReverse)
 
