@@ -49,7 +49,7 @@
 --
 -- Many of the functions in this package follow laws, which are not
 -- documented inline. [tests/Properties.hs](https://github.com/quasicomputational/mega/blob/master/packages/twofinger/test/Properties.hs)
---is an  automatically-tested QuickCheck suite of properties.
+-- is an  automatically-tested QuickCheck suite of properties.
 module Q4C12.TwoFinger
   ( -- * TwoFingerOddA
     TwoFingerOddA,
