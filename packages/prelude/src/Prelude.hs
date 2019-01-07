@@ -102,7 +102,7 @@ import GHC.Err as Export
 import GHC.Generics as Export
   (Generic)
 import GHC.Num as Export
-  ((*), (+), (-), Integer, negate)
+  ((*), (+), (-), Integer, negate, subtract)
 import GHC.Real as Export
   (Integral)
 import Numeric.Natural as Export
