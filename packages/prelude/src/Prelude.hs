@@ -104,7 +104,7 @@ import GHC.Generics as Export
 import GHC.Num as Export
   ((*), (+), (-), Integer, negate, subtract)
 import GHC.Real as Export
-  (Integral)
+  (Integral, quot)
 import Numeric.Natural as Export
   (Natural)
 import System.Exit as Export
