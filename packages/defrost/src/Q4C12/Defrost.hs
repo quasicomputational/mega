@@ -270,7 +270,6 @@ instance Semigroup UnionRanges where
 
 instance Monoid UnionRanges where
   mempty = UnionRanges noVersion
-  mappend = (<>)
 
 applyConstraints
   :: FrozenDependencies

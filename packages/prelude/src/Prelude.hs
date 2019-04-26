@@ -12,7 +12,6 @@ module Prelude
   )
   where
 
---TODO: consider eliminating mappend as an export, in favour of (<>)? Slightly awkward since we need it visible when we define new Monoid instances (until GHC 8.4). So maybe stick on the 'do later' pile...
 -- base imports for re-export
 import Control.Applicative as Export
   (Applicative, pure, (<*>), (*>), (<*), liftA2, many, empty, (<|>))
@@ -76,7 +75,7 @@ import Data.List.NonEmpty as Export
 import Data.Maybe as Export
   (Maybe (Just, Nothing), maybe, fromMaybe, mapMaybe, catMaybes, isNothing, isJust)
 import Data.Monoid as Export
-  (Monoid (mempty, mappend), Endo (Endo), appEndo, Dual (Dual), getDual)
+  (Monoid (mempty), Endo (Endo), appEndo, Dual (Dual), getDual)
 import Data.Ord as Export
   (Ord, (>=), (<=), (>), (<), min, max, Ordering (LT, EQ, GT))
 --TODO: get rid of Option once Maybe's Monoid instance changes

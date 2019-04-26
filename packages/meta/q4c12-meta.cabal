@@ -4,7 +4,7 @@ cabal-version: 2.2
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: b3bdf5a25bb3d4498a12fdf9e80aa140ee79c0896342042badd9d5bf91c33c41
+-- hash: e62f0283b986a235205c3b38e66b15abd69019770f38e05c24360088a060eea7
 
 name:           q4c12-meta
 version:        0
@@ -26,7 +26,7 @@ library
       Q4C12.Meta
   hs-source-dirs:
       src
-  default-extensions: BinaryLiterals DataKinds DeriveDataTypeable DeriveGeneric DeriveLift DeriveTraversable DerivingStrategies EmptyCase EmptyDataDecls LambdaCase KindSignatures MonoLocalBinds NegativeLiterals NumDecimals OverloadedStrings PatternGuards PostfixOperators StandaloneDeriving TypeOperators ViewPatterns
+  default-extensions: BinaryLiterals DataKinds DeriveDataTypeable DeriveGeneric DeriveLift DeriveTraversable DerivingStrategies EmptyCase EmptyDataDecls EmptyDataDeriving HexFloatLiterals LambdaCase KindSignatures MonoLocalBinds NegativeLiterals NumDecimals OverloadedStrings PatternGuards PostfixOperators StandaloneDeriving TypeOperators ViewPatterns
   ghc-options: -Weverything -Wno-implicit-prelude -Wno-unsafe -Wno-safe -Wno-missed-specialisations -Wno-all-missed-specialisations -Wno-missing-exported-signatures
   build-depends:
       Cabal
@@ -50,7 +50,7 @@ library
 
 executable meta
   main-is: driver/meta.hs
-  default-extensions: BinaryLiterals DataKinds DeriveDataTypeable DeriveGeneric DeriveLift DeriveTraversable DerivingStrategies EmptyCase EmptyDataDecls LambdaCase KindSignatures MonoLocalBinds NegativeLiterals NumDecimals OverloadedStrings PatternGuards PostfixOperators StandaloneDeriving TypeOperators ViewPatterns
+  default-extensions: BinaryLiterals DataKinds DeriveDataTypeable DeriveGeneric DeriveLift DeriveTraversable DerivingStrategies EmptyCase EmptyDataDecls EmptyDataDeriving HexFloatLiterals LambdaCase KindSignatures MonoLocalBinds NegativeLiterals NumDecimals OverloadedStrings PatternGuards PostfixOperators StandaloneDeriving TypeOperators ViewPatterns
   ghc-options: -Weverything -Wno-implicit-prelude -Wno-unsafe -Wno-safe -Wno-missed-specialisations -Wno-all-missed-specialisations -Wno-missing-exported-signatures
   build-depends:
       q4c12-meta

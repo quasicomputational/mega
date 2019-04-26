@@ -4,7 +4,7 @@ cabal-version: 2.2
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: fe0600e3e983492a4eb851561c802a0304246ac6049c8480aa052b1901815098
+-- hash: 2b9ba427d73669d1e7a6c4c05809e990c9c26c612aea57b3541154d04ea2f8d9
 
 name:           q4c12-defrost
 version:        0
@@ -28,7 +28,7 @@ library
       Q4C12.Defrost
   hs-source-dirs:
       src
-  default-extensions: BinaryLiterals DataKinds DeriveDataTypeable DeriveGeneric DeriveLift DeriveTraversable DerivingStrategies EmptyCase EmptyDataDecls LambdaCase KindSignatures MonoLocalBinds NegativeLiterals NumDecimals OverloadedStrings PatternGuards PostfixOperators StandaloneDeriving TypeOperators ViewPatterns
+  default-extensions: BinaryLiterals DataKinds DeriveDataTypeable DeriveGeneric DeriveLift DeriveTraversable DerivingStrategies EmptyCase EmptyDataDecls EmptyDataDeriving HexFloatLiterals LambdaCase KindSignatures MonoLocalBinds NegativeLiterals NumDecimals OverloadedStrings PatternGuards PostfixOperators StandaloneDeriving TypeOperators ViewPatterns
   ghc-options: -Weverything -Wno-implicit-prelude -Wno-unsafe -Wno-safe -Wno-missed-specialisations -Wno-all-missed-specialisations -Wno-missing-exported-signatures
   build-depends:
       Cabal
@@ -50,7 +50,7 @@ library
 test-suite tasty
   type: exitcode-stdio-1.0
   main-is: test/tasty.hs
-  default-extensions: BinaryLiterals DataKinds DeriveDataTypeable DeriveGeneric DeriveLift DeriveTraversable DerivingStrategies EmptyCase EmptyDataDecls LambdaCase KindSignatures MonoLocalBinds NegativeLiterals NumDecimals OverloadedStrings PatternGuards PostfixOperators StandaloneDeriving TypeOperators ViewPatterns
+  default-extensions: BinaryLiterals DataKinds DeriveDataTypeable DeriveGeneric DeriveLift DeriveTraversable DerivingStrategies EmptyCase EmptyDataDecls EmptyDataDeriving HexFloatLiterals LambdaCase KindSignatures MonoLocalBinds NegativeLiterals NumDecimals OverloadedStrings PatternGuards PostfixOperators StandaloneDeriving TypeOperators ViewPatterns
   ghc-options: -Weverything -Wno-implicit-prelude -Wno-unsafe -Wno-safe -Wno-missed-specialisations -Wno-all-missed-specialisations -Wno-missing-exported-signatures
   build-depends:
       Cabal

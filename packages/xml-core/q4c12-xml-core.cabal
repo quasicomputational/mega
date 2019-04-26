@@ -4,7 +4,7 @@ cabal-version: 2.2
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 823b2d87a2aef714edce3c6ea0e3bb500b60edd5dc7b4e24f2d250def2da5ef5
+-- hash: 85c6662aa5c2cd04c603dfe324560b14f8958b656912587c6adc017553deb171
 
 name:           q4c12-xml-core
 version:        0
@@ -182,7 +182,7 @@ library
       Q4C12.XML.QQ
   hs-source-dirs:
       src
-  default-extensions: BinaryLiterals DataKinds DeriveDataTypeable DeriveGeneric DeriveLift DeriveTraversable DerivingStrategies EmptyCase EmptyDataDecls LambdaCase KindSignatures MonoLocalBinds NegativeLiterals NumDecimals OverloadedStrings PatternGuards PostfixOperators StandaloneDeriving TypeOperators ViewPatterns
+  default-extensions: BinaryLiterals DataKinds DeriveDataTypeable DeriveGeneric DeriveLift DeriveTraversable DerivingStrategies EmptyCase EmptyDataDecls EmptyDataDeriving HexFloatLiterals LambdaCase KindSignatures MonoLocalBinds NegativeLiterals NumDecimals OverloadedStrings PatternGuards PostfixOperators StandaloneDeriving TypeOperators ViewPatterns
   ghc-options: -Weverything -Wno-implicit-prelude -Wno-unsafe -Wno-safe -Wno-missed-specialisations -Wno-all-missed-specialisations -Wno-missing-exported-signatures
   build-depends:
       base
@@ -208,7 +208,7 @@ library
 test-suite golden-tests
   type: exitcode-stdio-1.0
   main-is: test/Test.hs
-  default-extensions: BinaryLiterals DataKinds DeriveDataTypeable DeriveGeneric DeriveLift DeriveTraversable DerivingStrategies EmptyCase EmptyDataDecls LambdaCase KindSignatures MonoLocalBinds NegativeLiterals NumDecimals OverloadedStrings PatternGuards PostfixOperators StandaloneDeriving TypeOperators ViewPatterns
+  default-extensions: BinaryLiterals DataKinds DeriveDataTypeable DeriveGeneric DeriveLift DeriveTraversable DerivingStrategies EmptyCase EmptyDataDecls EmptyDataDeriving HexFloatLiterals LambdaCase KindSignatures MonoLocalBinds NegativeLiterals NumDecimals OverloadedStrings PatternGuards PostfixOperators StandaloneDeriving TypeOperators ViewPatterns
   ghc-options: -Weverything -Wno-implicit-prelude -Wno-unsafe -Wno-safe -Wno-missed-specialisations -Wno-all-missed-specialisations -Wno-missing-exported-signatures -Wno-monomorphism-restriction -Wno-missing-local-signatures
   build-depends:
       containers
@@ -225,7 +225,7 @@ test-suite golden-tests
 benchmark parse-xml
   type: exitcode-stdio-1.0
   main-is: bench/parse-xml.hs
-  default-extensions: BinaryLiterals DataKinds DeriveDataTypeable DeriveGeneric DeriveLift DeriveTraversable DerivingStrategies EmptyCase EmptyDataDecls LambdaCase KindSignatures MonoLocalBinds NegativeLiterals NumDecimals OverloadedStrings PatternGuards PostfixOperators StandaloneDeriving TypeOperators ViewPatterns
+  default-extensions: BinaryLiterals DataKinds DeriveDataTypeable DeriveGeneric DeriveLift DeriveTraversable DerivingStrategies EmptyCase EmptyDataDecls EmptyDataDeriving HexFloatLiterals LambdaCase KindSignatures MonoLocalBinds NegativeLiterals NumDecimals OverloadedStrings PatternGuards PostfixOperators StandaloneDeriving TypeOperators ViewPatterns
   ghc-options: -Weverything -Wno-implicit-prelude -Wno-unsafe -Wno-safe -Wno-missed-specialisations -Wno-all-missed-specialisations -Wno-missing-exported-signatures
   build-depends:
       criterion

@@ -81,7 +81,6 @@ instance Semigroup Productions where
 
 instance Monoid Productions where
   mempty = Productions mempty mempty mempty
-  mappend = (<>)
 
 data RELAX
 
@@ -92,9 +91,9 @@ data DefinitionNamespace
   deriving (Show, Eq, Ord)
 
 dfnName :: DefinitionNamespace -> LText -> LText
-dfnName DfnNsP = mappend "fp_"
-dfnName DfnNsC = mappend "fc_"
-dfnName DfnNsE = mappend "e_"
+dfnName DfnNsP = ("fp_" <>)
+dfnName DfnNsC = ("fc_" <>)
+dfnName DfnNsE = ("e_" <>)
 
 type SeenNames = Set (DefinitionNamespace, LText)
 

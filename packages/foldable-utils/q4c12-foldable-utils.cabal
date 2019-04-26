@@ -4,7 +4,7 @@ cabal-version: 2.2
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: d045c536aafd9e12e84d31a8a0e351f730bc85ddb14afc1f647ad7d9c3e0be9f
+-- hash: e7941c33fc144619455d884e3fc31099dda9ff212c7e98e92be82d163e10fa9e
 
 name:           q4c12-foldable-utils
 version:        0
@@ -32,21 +32,19 @@ library
       Q4C12.FoldableUtils
   hs-source-dirs:
       src
-  default-extensions: BinaryLiterals DataKinds DeriveDataTypeable DeriveGeneric DeriveLift DeriveTraversable DerivingStrategies EmptyCase EmptyDataDecls LambdaCase KindSignatures MonoLocalBinds NegativeLiterals NumDecimals OverloadedStrings PatternGuards PostfixOperators StandaloneDeriving TypeOperators ViewPatterns
+  default-extensions: BinaryLiterals DataKinds DeriveDataTypeable DeriveGeneric DeriveLift DeriveTraversable DerivingStrategies EmptyCase EmptyDataDecls EmptyDataDeriving HexFloatLiterals LambdaCase KindSignatures MonoLocalBinds NegativeLiterals NumDecimals OverloadedStrings PatternGuards PostfixOperators StandaloneDeriving TypeOperators ViewPatterns
   ghc-options: -Weverything -Wno-implicit-prelude -Wno-unsafe -Wno-safe -Wno-missed-specialisations -Wno-all-missed-specialisations -Wno-missing-exported-signatures
   build-depends:
       base
     , transformers
   mixins:
       transformers hiding (Control.Monad.Trans.RWS, Control.Monad.Trans.Writer)
-  if true
-    ghc-options: -Wno-redundant-constraints
   default-language: Haskell2010
 
 test-suite doctests
   type: exitcode-stdio-1.0
   main-is: test/Doctest.hs
-  default-extensions: BinaryLiterals DataKinds DeriveDataTypeable DeriveGeneric DeriveLift DeriveTraversable DerivingStrategies EmptyCase EmptyDataDecls LambdaCase KindSignatures MonoLocalBinds NegativeLiterals NumDecimals OverloadedStrings PatternGuards PostfixOperators StandaloneDeriving TypeOperators ViewPatterns
+  default-extensions: BinaryLiterals DataKinds DeriveDataTypeable DeriveGeneric DeriveLift DeriveTraversable DerivingStrategies EmptyCase EmptyDataDecls EmptyDataDeriving HexFloatLiterals LambdaCase KindSignatures MonoLocalBinds NegativeLiterals NumDecimals OverloadedStrings PatternGuards PostfixOperators StandaloneDeriving TypeOperators ViewPatterns
   ghc-options: -Weverything -Wno-implicit-prelude -Wno-unsafe -Wno-safe -Wno-missed-specialisations -Wno-all-missed-specialisations -Wno-missing-exported-signatures
   build-depends:
       base

@@ -97,7 +97,6 @@ instance Semigroup (IsoConstruction a b) where
 
 instance Monoid (IsoConstruction a b) where
   mempty = IsoConstruction mempty mempty mempty
-  mappend = (<>)
 
 instance Bifunctor IsoConstruction where
   bimap f g (IsoConstruction ms r2l l2r) =

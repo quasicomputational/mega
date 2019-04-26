@@ -4,7 +4,7 @@ cabal-version: 2.2
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 1bc003e8acd2e56ed5db3286c463f98f3132c36fb14be85bc312c6dd975e608c
+-- hash: 7ae903e03c2ea8a56f09ecb8adf28a93a8ce19f7ce6a96d0c7dfbc1c87548bf7
 
 name:           q4c12-aeson-cabal
 version:        0
@@ -26,7 +26,7 @@ library
       Q4C12.AesonCabal
   hs-source-dirs:
       src
-  default-extensions: BinaryLiterals DataKinds DeriveDataTypeable DeriveGeneric DeriveLift DeriveTraversable DerivingStrategies EmptyCase EmptyDataDecls LambdaCase KindSignatures MonoLocalBinds NegativeLiterals NumDecimals OverloadedStrings PatternGuards PostfixOperators StandaloneDeriving TypeOperators ViewPatterns
+  default-extensions: BinaryLiterals DataKinds DeriveDataTypeable DeriveGeneric DeriveLift DeriveTraversable DerivingStrategies EmptyCase EmptyDataDecls EmptyDataDeriving HexFloatLiterals LambdaCase KindSignatures MonoLocalBinds NegativeLiterals NumDecimals OverloadedStrings PatternGuards PostfixOperators StandaloneDeriving TypeOperators ViewPatterns
   ghc-options: -Weverything -Wno-implicit-prelude -Wno-unsafe -Wno-safe -Wno-missed-specialisations -Wno-all-missed-specialisations -Wno-missing-exported-signatures
   build-depends:
       Cabal

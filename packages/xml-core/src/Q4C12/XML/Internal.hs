@@ -91,7 +91,6 @@ instance Semigroup (Content cmt pos) where
 
 instance Monoid (Content cmd pos) where
   mempty = Content mempty
-  mappend = (<>)
 
 instance (pos ~ ()) => IsString (Content cmt pos) where
   fromString = contentText . fromString
@@ -129,7 +128,6 @@ instance Semigroup (Markup cmt pos) where
 
 instance Monoid (Markup cmt pos) where
   mempty = Markup mempty
-  mappend = (<>)
 
 instance (pos ~ ()) => IsString (Markup cmt pos) where
   fromString = markupText . fromString
@@ -399,7 +397,6 @@ instance Semigroup UMarkup where
 
 instance Monoid UMarkup where
   mempty = UMarkup mempty
-  mappend = (<>)
 
 umarkupText :: PositionRange -> SText -> UMarkup
 umarkupText pos t = UMarkup $ singletonOddA $ ucontentText pos t
@@ -412,7 +409,6 @@ instance Semigroup UContent where
 
 instance Monoid UContent where
   mempty = UContent mempty
-  mappend = (<>)
 
 ucontentText :: PositionRange -> SText -> UContent
 ucontentText pos t = UContent $ singletonOddA $ utext pos t
@@ -429,7 +425,6 @@ instance Semigroup UText where
 
 instance Monoid UText where
   mempty = UText mempty
-  mappend = (<>)
 
 utext :: PositionRange -> SText -> UText
 utext pos t = UText $ singletonOddA $ Seq.singleton (pos, t)
@@ -473,7 +468,6 @@ instance Semigroup ClassifiedAttrs where
 
 instance Monoid ClassifiedAttrs where
   mempty = ClassifiedAttrs mempty mempty mempty
-  mappend = (<>)
 
 classifyDefaultNamespace
   :: PositionRange
