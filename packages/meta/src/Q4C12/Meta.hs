@@ -51,7 +51,11 @@ import System.Process
 
 -- There's a certain amount of duplicated work going on when two builds share a GHC version, but downloading from the PPA is SO SLOW that it's worth it; after the first slow runs it gets cached just fine. If the per-container overhead was reduced, then we could move back to aiming for no redundant builds of dependencies, but it's just too much as it is.
 
-data Regularity = Regular | PreRelease
+data Regularity
+  = Regular
+  | PreRelease
+    { _preReleaseCabal :: SText
+    }
 
 data GHCVersion
   = GHC8_2
@@ -73,7 +77,7 @@ ghcRegularity = \case
   GHC8_2 -> Regular
   GHC8_4 -> Regular
   GHC8_6 -> Regular
-  GHCHEAD -> PreRelease
+  GHCHEAD -> PreRelease "head"
 
 data RunMetaChecks = MetaNo | MetaYes
 
@@ -101,7 +105,7 @@ buildAllowFailures :: SText -> Build -> [Aeson.Encoding]
 buildAllowFailures buildName build = do
   guard $ case ghcRegularity ( buildGHCVersion build ) of
     Regular -> False
-    PreRelease -> True
+    PreRelease _ -> True
   pure $ Aeson.pairs $
     Aeson.pair "env" $ Aeson.text $ env buildName
 
@@ -142,7 +146,7 @@ travisConfiguration buildMap = Aeson.pairs $ fold
           [ "ghc-" <> ghcVersion ghc
           , case ghcRegularity ghc of
               Regular -> "cabal-install-2.4"
-              PreRelease -> "cabal-install-head"
+              PreRelease ver -> "cabal-install-" <> ver
           ]
         ]
 
@@ -186,7 +190,7 @@ generateProjectFiles = traverseWithKey_ $ \ buildName build -> do
       , "tests: true"
       ]
     , case ghcRegularity $ buildGHCVersion build of
-        PreRelease ->
+        PreRelease _ ->
           [ "repository head.hackage"
           , "  url: http://head.hackage.haskell.org/"
           , "  secure: True"
@@ -440,7 +444,7 @@ runRefreeze packageData = do
             & Map.filter
                 ( \ build ->
                     case ghcRegularity $ buildGHCVersion build of
-                      PreRelease ->
+                      PreRelease _ ->
                         False
                       Regular ->
                         True
