@@ -314,14 +314,14 @@ pPackages = Lexer.nonIndented spaceNL $ do
     ensureIndented
     MP.takeWhile1P Nothing $ not . isSpace
   spaceNL
-  pure $ Endo $ over packages $ mappend $ Seq.fromList pkgs
+  pure $ Endo $ packages <>~ Seq.fromList pkgs
 
 pConstraints :: (Ord e) => MP.Parsec e SText (Endo Config)
 pConstraints = Lexer.nonIndented spaceNL $ do
   void $ MPC.string "constraints:"
   cstrss <- sepBy singleConstraint ( MP.try $ ensureIndented *> MPC.string "," )
   spaceNL
-  pure $ Endo $ over constraints $ mappend $ foldMap Seq.fromList cstrss
+  pure $ Endo $ constraints <>~ foldMap Seq.fromList cstrss
   where
     singleConstraint :: (Ord e) => MP.Parsec e SText [Constraint]
     singleConstraint = MP.try $ do

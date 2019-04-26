@@ -58,8 +58,7 @@ data Regularity
     }
 
 data GHCVersion
-  = GHC8_2
-  | GHC8_4
+  = GHC8_4
   | GHC8_6
   | GHC8_8
   | GHCHEAD
@@ -68,7 +67,6 @@ data GHCVersion
 -- This is the version that the package name is built from, hence lowercase 'head'.
 ghcVersion :: GHCVersion -> SText
 ghcVersion = \case
-  GHC8_2 -> "8.2.2"
   GHC8_4 -> "8.4.4"
   GHC8_6 -> "8.6.5"
   GHC8_8 -> "8.8.1"
@@ -76,7 +74,6 @@ ghcVersion = \case
 
 ghcRegularity :: GHCVersion -> Regularity
 ghcRegularity = \case
-  GHC8_2 -> Regular
   GHC8_4 -> Regular
   GHC8_6 -> Regular
   GHC8_8 -> PreRelease "3.0"
@@ -287,8 +284,7 @@ data BuildConfig = BuildConfig
 
 configs :: Map SText BuildConfig
 configs = Map.fromList
-  [ ( "ghc-8.2", BuildConfig GHC8_2 OptOut MetaNo WErrorNo )
-  , ( "ghc-8.4", BuildConfig GHC8_4 OptOut MetaNo WErrorNo )
+  [ ( "ghc-8.4", BuildConfig GHC8_4 OptOut MetaNo WErrorNo )
   , ( "ghc-8.6", BuildConfig GHC8_6 OptOut MetaYes WErrorYes )
   , ( "ghc-8.8", BuildConfig GHC8_8 OptOut MetaNo WErrorYes )
   , ( "ghc-head", BuildConfig GHCHEAD OptOut MetaNo WErrorNo )

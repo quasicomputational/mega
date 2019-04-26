@@ -543,7 +543,7 @@ singletonOddA = TwoFingerOddA mempty
 --
 -- >>> unitOddA 3 :: TwoFingerOddA Int String
 -- consOddA "" 3 (singletonOddA "")
-unitOddA :: (Monoid a, Semigroup a) => e -> TwoFingerOddA e a
+unitOddA :: (Monoid a) => e -> TwoFingerOddA e a
 unitOddA a = consOddA mempty a mempty
 
 --TODO: this isn't needed any more in q4c12-xml; remove?
@@ -573,9 +573,8 @@ singletonOddE e = TwoFingerOddE e mempty
 instance (Semigroup a) => Semigroup (TwoFingerOddA e a) where
   (<>) = appendOddA
 
-instance (Monoid a, Semigroup a) => Monoid (TwoFingerOddA e a) where
+instance (Monoid a) => Monoid (TwoFingerOddA e a) where
   mempty = singletonOddA mempty
-  mappend = (<>)
 
 appendOddA
   :: (Semigroup a)
@@ -597,7 +596,6 @@ instance Alt (TwoFingerEvenE e) where
 
 instance Monoid (TwoFingerEvenE e a) where
   mempty = EmptyEvenE
-  mappend = (<>)
 
 instance Plus (TwoFingerEvenE e) where
   zero = EmptyEvenE
@@ -618,7 +616,6 @@ instance Alt (TwoFingerEvenA e) where
 
 instance Monoid (TwoFingerEvenA e a) where
   mempty = TwoFingerEvenA mempty
-  mappend = (<>)
 
 instance Plus (TwoFingerEvenA e) where
   zero = TwoFingerEvenA mempty

@@ -31,12 +31,6 @@ library:
       mixin:
         # Hide the leaky writer versions
         - hiding (Control.Monad.Trans.RWS, Control.Monad.Trans.Writer)
-  when:
-    - condition: "true"
-      #Have to specify this in a conditional because of https://github.com/sol/hpack/issues/255 TODO remove once fixed
-      ghc-options:
-        #Post-SMP, our signatures strictly are redundant. However, for implementation sanity, they need to be that way on 8.2. TODO: remove this once 8.2 is out of the window.
-        - "-Wno-redundant-constraints"
 
 tests:
   doctests:

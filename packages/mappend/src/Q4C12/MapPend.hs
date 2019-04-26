@@ -21,7 +21,6 @@ instance (Semigroup v, Ord k) => Semigroup (MapPend k v) where
 
 instance (Semigroup v, Ord k) => Monoid (MapPend k v) where
   mempty = MapPend mempty
-  mappend = (<>)
 
 _MapPend :: Iso (MapPend k v) (MapPend k' v') (Map k v) (Map k' v')
 _MapPend = iso getMapPend MapPend

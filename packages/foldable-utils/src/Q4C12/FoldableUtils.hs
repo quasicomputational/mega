@@ -32,7 +32,7 @@ instance (Semigroup a) => Semigroup (Joined a) where
 --
 -- >>> getSum $ intercalate0 (Sum 100) ((Sum 3) :| [Sum 5, Sum 9])
 -- 217
-intercalate0 :: (Monoid a, Semigroup a, Foldable f) => a -> f a -> a
+intercalate0 :: (Monoid a, Foldable f) => a -> f a -> a
 intercalate0 a = intercalateMap0 a id
 
 --TODO: this might be a candidate for upstreaming in base? Maybe even going directly in as a Foldable method, since it's 100% conceivable that a more efficient implementation exists for a specific type. (Especially since you can derive a good default foldMap from it...)
@@ -44,7 +44,7 @@ intercalate0 a = intercalateMap0 a id
 -- >>> intercalateMap0 "-" (map toUpper) ["example", "string"]
 -- "EXAMPLE-STRING"
 intercalateMap0
-  :: (Monoid m, Semigroup m, Foldable f)
+  :: (Monoid m, Foldable f)
   => m
   -> (a -> m)
   -> f a
@@ -58,7 +58,7 @@ intercalateMap0 a f
 -- >>> getSum $ biintercalateMap0 (Sum 100) (Sum . (* 3)) (Sum . (* 4)) (20, 1)
 -- 164
 biintercalateMap0
-  :: (Monoid m, Semigroup m, Bifoldable p)
+  :: (Monoid m, Bifoldable p)
   => m
   -> (a -> m)
   -> (b -> m)
@@ -75,9 +75,8 @@ newtype MonoidA f m = MonoidA { getMonoidA :: f m }
 instance (Applicative f, Semigroup m) => Semigroup (MonoidA f m) where
   MonoidA a <> MonoidA b = MonoidA $ (<>) <$> a <*> b
 
-instance (Applicative f, Semigroup m, Monoid m) => Monoid (MonoidA f m) where
+instance (Applicative f, Monoid m) => Monoid (MonoidA f m) where
   mempty = MonoidA $ pure mempty
-  mappend = (<>)
 
 -- | Applicative 'foldMap'.
 --
@@ -86,7 +85,7 @@ instance (Applicative f, Semigroup m, Monoid m) => Monoid (MonoidA f m) where
 -- more words
 -- "WORDSMORE WORDS"
 foldMapM
-  :: (Semigroup m, Monoid m, Foldable t, Applicative f)
+  :: (Monoid m, Foldable t, Applicative f)
   => (a -> f m)
   -> t a
   -> f m
@@ -99,14 +98,14 @@ foldMapM f = getMonoidA . foldMap (MonoidA . f)
 -- bar
 -- [1,2]
 foldSequence
-  :: (Semigroup m, Monoid m, Foldable t, Applicative f)
+  :: (Monoid m, Foldable t, Applicative f)
   => t (f m)
   -> f m
 foldSequence = foldMapM id
 
 -- | 'foldMapM', extended to 'Bifoldable'. An applicative version of 'bifoldMap'.
 bifoldMapM
-  :: (Semigroup m, Monoid m, Bifoldable t, Applicative f)
+  :: (Monoid m, Bifoldable t, Applicative f)
   => (a -> f m)
   -> (b -> f m)
   -> t a b
