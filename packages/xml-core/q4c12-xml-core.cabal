@@ -1,16 +1,17 @@
 cabal-version: 2.2
 
--- This file has been generated from package.yaml by hpack version 0.31.0.
+-- This file has been generated from package.yaml by hpack version 0.31.2.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 3987b09626022241cfec911366887820c293604dd79d66862b3bd50e9411e04f
+-- hash: 823b2d87a2aef714edce3c6ea0e3bb500b60edd5dc7b4e24f2d250def2da5ef5
 
 name:           q4c12-xml-core
 version:        0
 homepage:       https://github.com/quasicomputational/mega/tree/master/packages/xml-core
 bug-reports:    https://github.com/quasicomputational/mega/issues
 author:         quasicomputational <quasicomputational@gmail.com>
+maintainer:     quasicomputational <quasicomputational@gmail.com>
 license:        (Apache-2.0 OR LGPL-2.1-or-later)
 license-files:  LICENSE.APACHE-2.0,
                 LICENSE.LGPL-2.1

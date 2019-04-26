@@ -1,16 +1,17 @@
 cabal-version: 2.2
 
--- This file has been generated from package.yaml by hpack version 0.31.0.
+-- This file has been generated from package.yaml by hpack version 0.31.2.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 639f8f3c8c208ac9df76f429caaf04a33a5a5344fd354f04eecb595e09587966
+-- hash: 084749bda97f393236942161a1fc478f8445d83f76441349a9ba9eb2f0c4ba48
 
 name:           q4c12-xhtml2html
 version:        0
 homepage:       https://github.com/quasicomputational/mega/tree/master/packages/xhtml2html
 bug-reports:    https://github.com/quasicomputational/mega/issues
 author:         quasicomputational <quasicomputational@gmail.com>
+maintainer:     quasicomputational <quasicomputational@gmail.com>
 license:        (Apache-2.0 OR LGPL-2.1-or-later)
 license-files:  LICENSE.APACHE-2.0,
                 LICENSE.LGPL-2.1
