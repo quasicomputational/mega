@@ -14,8 +14,8 @@ packages:
   packages/xhtml2html
   packages/xml-core
   packages/xml-desc
-with-compiler: ghc-8.6.3
-with-hc-pkg: ghc-pkg-8.6.3
+with-compiler: ghc-8.6.5
+with-hc-pkg: ghc-pkg-8.6.5
 optimization: False
 benchmarks: true
 tests: true
