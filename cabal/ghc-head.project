@@ -29,5 +29,8 @@ repository head.hackage
   key-threshold: 3
 
 allow-newer: *
+
+keep-going: true
+
 constraints:
   any.Cabal >= 2.2.0.1

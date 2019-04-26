@@ -201,6 +201,9 @@ generateProjectFiles = traverseWithKey_ $ \ buildName build -> do
           , "  key-threshold: 3"
           , ""
           , "allow-newer: *"
+          , ""
+          , "keep-going: true"
+          , ""
           ]
         Regular -> []
     , [ "constraints:" ]
