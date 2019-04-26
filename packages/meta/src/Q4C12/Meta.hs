@@ -108,7 +108,7 @@ buildAllowFailures buildName build = do
 travisConfiguration :: [(SText, Build)] -> Aeson.Encoding
 travisConfiguration buildMap = Aeson.pairs $ fold
   [ Aeson.pair "sudo" $ Aeson.bool False
-  , Aeson.pair "language" $ Aeson.text "haskell"
+  , Aeson.pair "language" $ Aeson.text "generic"
   -- bors-ng configuration
   , Aeson.pair "branches" $ Aeson.pairs $
       Aeson.pair "only" $ Aeson.list Aeson.text
@@ -134,18 +134,25 @@ travisConfiguration buildMap = Aeson.pairs $ fold
   ]
   where
 
-    configPairs :: GHCVersion -> Aeson.Series
-    configPairs ghc = fold
-      [ Aeson.pair "ghc" $ Aeson.text $ ghcVersion ghc
-      , Aeson.pair "cabal" $ Aeson.text $ case ghcRegularity ghc of
-          Regular -> "2.4"
-          PreRelease -> "head"
-      ]
+    aptPair :: GHCVersion -> Aeson.Series
+    aptPair ghc =
+      Aeson.pair "addons" $  Aeson.pairs $ Aeson.pair "apt" $ Aeson.pairs $ fold
+        [ Aeson.pair "sources" $ Aeson.list Aeson.text [ "hvr-ghc" ]
+        , Aeson.pair "packages" $ Aeson.list Aeson.text
+          [ "ghc-" <> ghcVersion ghc
+          , case ghcRegularity ghc of
+              Regular -> "cabal-install-2.4"
+              PreRelease -> "cabal-install-head"
+          ]
+        ]
 
     buildJobs = flip fmap buildMap $ \ ( buildName, build ) ->
       Aeson.pairs $ fold
         [ Aeson.pair "env" $ Aeson.text $ env buildName
-        , configPairs $ buildGHCVersion build
+        , aptPair $ buildGHCVersion build
+        , Aeson.pair "before_install" $ Aeson.list Aeson.text
+          [ "export PATH=/opt/ghc/bin:$PATH"
+          ]
         , Aeson.pair "install" $ Aeson.text "./travis/deps.cabal-new-build.sh"
         , Aeson.pair "script" $ buildScript build
         ]
