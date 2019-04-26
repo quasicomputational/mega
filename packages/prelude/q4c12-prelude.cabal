@@ -1,16 +1,17 @@
 cabal-version: 2.2
 
--- This file has been generated from package.yaml by hpack version 0.31.0.
+-- This file has been generated from package.yaml by hpack version 0.31.2.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: b331439e1505ff49e1da13236e2f930a072f7c56e78abd08278ef28157af791a
+-- hash: caecd5c7ec8c38940b1f95f8b7c59f1434b1e0a14c308ad55e4481a2deabca78
 
 name:           q4c12-prelude
 version:        0
 homepage:       https://github.com/quasicomputational/mega/tree/master/packages/optic
 bug-reports:    https://github.com/quasicomputational/prelude/issues
 author:         quasicomputational <quasicomputational@gmail.com>
+maintainer:     quasicomputational <quasicomputational@gmail.com>
 license:        (Apache-2.0 OR LGPL-2.1-or-later)
 license-files:  LICENSE.APACHE-2.0,
                 LICENSE.LGPL-2.1

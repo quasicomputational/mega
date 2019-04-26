@@ -1,16 +1,17 @@
 cabal-version: 2.2
 
--- This file has been generated from package.yaml by hpack version 0.31.0.
+-- This file has been generated from package.yaml by hpack version 0.31.2.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 98d097cb9981a3882a9140560bb8e2d34ccae8d7313aa29c1b406265e2fe9ef1
+-- hash: b3bdf5a25bb3d4498a12fdf9e80aa140ee79c0896342042badd9d5bf91c33c41
 
 name:           q4c12-meta
 version:        0
 homepage:       https://github.com/quasicomputational/mega/tree/master/packages/meta
 bug-reports:    https://github.com/quasicomputational/mega/issues
 author:         quasicomputational <quasicomputational@gmail.com>
+maintainer:     quasicomputational <quasicomputational@gmail.com>
 license:        (Apache-2.0 OR LGPL-2.1-or-later)
 license-files:  LICENSE.APACHE-2.0,
                 LICENSE.LGPL-2.1
