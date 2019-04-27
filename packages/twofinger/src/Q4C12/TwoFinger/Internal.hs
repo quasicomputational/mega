@@ -33,7 +33,6 @@ import Data.Functor.Classes
 import Data.Functor.Plus (Plus (zero))
 import Data.List (foldl')
 import Data.List.NonEmpty (NonEmpty ((:|)))
-import Data.Semigroup (Semigroup ((<>)))
 import Data.Semigroup.Bifoldable (Bifoldable1 (bifoldMap1))
 import Data.Semigroup.Bitraversable
   (Bitraversable1 (bitraverse1), bifoldMap1Default)

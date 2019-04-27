@@ -8,7 +8,6 @@ module Main
 import Control.Lens (Lens', makePrisms)
 import Control.Lens.Properties (isLens)
 import Control.Monad (join)
-import Data.Semigroup ((<>))
 import Test.Tasty (TestTree, testGroup, defaultMain)
 --Note: only import the specifically tasty-related things from tasty-quickcheck, because of https://github.com/feuerbach/tasty/issues/208
 import Test.Tasty.QuickCheck (testProperty)
