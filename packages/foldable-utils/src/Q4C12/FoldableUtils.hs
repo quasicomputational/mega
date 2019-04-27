@@ -13,7 +13,7 @@ module Q4C12.FoldableUtils
 import Data.Bifunctor (first)
 import Data.Bifoldable (Bifoldable (bifoldMap))
 import Data.Functor.Reverse (Reverse (Reverse))
-import Data.Semigroup (Semigroup ((<>)), Dual (Dual), getDual, Endo (Endo), appEndo, Option (Option))
+import Data.Semigroup (Dual (Dual), getDual, Endo (Endo), appEndo, Option (Option))
 
 -- $setup
 -- >>> import Data.Char (toUpper)
