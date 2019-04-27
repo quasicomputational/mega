@@ -46,7 +46,7 @@ import Distribution.PackageDescription.Parsec
 import Distribution.PackageDescription.PrettyPrint
   ( writeGenericPackageDescription
   )
-import Distribution.Parsec.Common
+import Distribution.Parsec
   ( showPError
   )
 import Distribution.Simple.Utils
@@ -84,6 +84,7 @@ import Distribution.Types.VersionRange
   ( orLaterVersion
   , withinRange
   )
+import qualified Distribution.Verbosity as Verbosity
 import Distribution.Version
   ( Version
   , mkVersion
@@ -554,7 +555,7 @@ main = do
   packageDirectories <- List.sort . fmap ("packages" </>) <$> listDirectory "packages"
   packageData <- for packageDirectories $ \ dir -> do
     config <- parsePackageConfig ( dir </> "config.xml" )
-    packageDescFile <- tryFindPackageDesc dir
+    packageDescFile <- tryFindPackageDesc Verbosity.normal dir
     gpd <- do
       input <- BS.readFile packageDescFile
       let
@@ -607,9 +608,9 @@ traverseWithKey_ f = void . Map.traverseWithKey f
 
 extraConstraints :: [ PF.Constraint ]
 extraConstraints =
-  -- Needs to be included because it's a boot library, though it's not depended on by GHC so we have freedom to reinstall.
-  [ PF.constraintVersion "Cabal" PF.qualifiedAll $
-      orLaterVersion ( mkVersion [ 2, 2, 0, 1 ] )
+  -- Though it's a boot library, it's not depended on by GHC so we have freedom to reinstall. We need 3.0 because the API changed and we moved to the new one - however, some of the setup-only dependencies are lagging.
+  [ PF.constraintVersion "Cabal" PF.unqualifiedOnly $
+      orLaterVersion ( mkVersion [ 3, 0, 0, 0 ] )
   ]
 
 runRefreeze :: [(Package, PackageConfig)] -> IO ()
@@ -730,7 +731,7 @@ defrostTarball commit envs src dst =
   withSystemTempDirectory "defrost" $ \ tmpDir -> do
     Proc.callProcess "tar"
       [ "--extract", "--file", src, "--strip-components", "1", "--directory", tmpDir ]
-    cabalFile <- tryFindPackageDesc tmpDir
+    cabalFile <- tryFindPackageDesc Verbosity.normal tmpDir
     input <- BS.readFile cabalFile
     let
       inputParseRes = parseGenericPackageDescription input
