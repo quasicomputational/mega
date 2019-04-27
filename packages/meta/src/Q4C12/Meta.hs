@@ -30,6 +30,9 @@ import qualified Data.Text.IO as STIO
 import qualified Data.Text.Lazy as LT
 import qualified Data.Text.Lazy.Builder as LTB
 import qualified Data.Text.Lazy.IO as LTIO
+import Distribution.Simple.Utils
+  ( tryFindPackageDesc
+  )
 import Distribution.Types.VersionRange
   ( orLaterVersion
   )
@@ -374,21 +377,7 @@ main = do
   packageDirectories <- List.sort . fmap ("packages" </>) <$> listDirectory "packages"
   packageData <- for packageDirectories $ \ dir -> do
     config <- parsePackageConfig ( dir </> "config.xml" )
-    name <- do
-      files <- listDirectory dir
-      let
-        candidates = mapMaybe ( stripExtension "cabal" ) files
-      case candidates of
-        [] -> do
-          LTIO.putStrLn $
-            "No .cabal file found in " <> LT.pack dir <> "."
-          exitFailure
-        [ name ] ->
-          pure $ ST.pack name
-        _ -> do
-          LTIO.putStrLn $
-            "Multiple .cabal files found in " <> LT.pack dir <> "."
-          exitFailure
+    name <- ST.pack . takeBaseName <$> tryFindPackageDesc dir
     pure ( Package dir name, config )
   OA.execParser ( OA.info commandParser mempty ) >>= \case
     GenTravis -> runGenTravis packageData

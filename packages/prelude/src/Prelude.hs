@@ -123,7 +123,7 @@ import Control.DeepSeq as Export
 -- filepath imports for re-export
 --TODO: consider dropping the String-based ones?
 import System.FilePath.Posix as Export
-  (addExtension, dropExtension, hasExtension, stripExtension, (</>))
+  (addExtension, dropExtension, hasExtension, stripExtension, takeBaseName, (</>))
 
 -- transformers imports for re-export
 import Control.Monad.Trans.Accum as Export

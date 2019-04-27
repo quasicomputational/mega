@@ -52,6 +52,9 @@ import Distribution.PackageDescription.PrettyPrint
 import Distribution.Parsec.Common
   ( showPError
   )
+import Distribution.Simple.Utils
+  ( tryFindPackageDesc
+  )
 import Distribution.System
   ( Arch
   , OS
@@ -472,21 +475,7 @@ defrostTarball versionPolicy extra envs src dst =
   withSystemTempDirectory "defrost" $ \ tmpDir -> do
     Proc.callProcess "tar"
       [ "--extract", "--file", src, "--strip-components", "1", "--directory", tmpDir ]
-    cabalFile <- do
-      files <- listDirectory tmpDir
-      let
-        candidates = List.filter ( isExtensionOf "cabal" ) files
-      case candidates of
-        [ name ] ->
-          pure $ tmpDir </> name
-        [] -> do
-          STIO.putStrLn $
-            "No .cabal file found in " <> ST.pack tmpDir <> "."
-          exitFailure
-        _ -> do
-          STIO.putStrLn $
-            "Multiple .cabal files found in " <> ST.pack tmpDir <> "."
-          exitFailure
+    cabalFile <- tryFindPackageDesc tmpDir
     input <- BS.readFile cabalFile
     let
       inputParseRes = parseGenericPackageDescription input
