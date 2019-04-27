@@ -1,4 +1,4 @@
-resolver: nightly-2018-11-12
+resolver: nightly-2019-04-26
 packages:
   - location: ./packages/xml-core
   - location: ./packages/xml-desc
