@@ -5,10 +5,8 @@ module Prelude
   , LText, SText, TBuilder
   , LByteString, SByteString, BSBuilder
   , hush
-  , (<&>)
   , FilePathComponent
   , validationToExcept, exceptToValidation, failure
-  , isExtensionOf
   )
   where
 
@@ -54,7 +52,7 @@ import Data.Foldable as Export
 import Data.Function as Export
   (($), const, flip, (&), fix)
 import Data.Functor as Export
-  (Functor (fmap), (<$>), (<$))
+  (Functor (fmap), (<$>), (<$), (<&>))
 import Data.Functor.Compose as Export
   (Compose (Compose), getCompose)
 import Data.Functor.Const as Export
@@ -123,7 +121,7 @@ import Control.DeepSeq as Export
 -- filepath imports for re-export
 --TODO: consider dropping the String-based ones?
 import System.FilePath.Posix as Export
-  (addExtension, dropExtension, hasExtension, stripExtension, takeBaseName, (</>))
+  (addExtension, dropExtension, hasExtension, isExtensionOf, stripExtension, takeBaseName, (</>))
 
 -- transformers imports for re-export
 import Control.Monad.Trans.Accum as Export
@@ -241,11 +239,6 @@ mtimesSafe = mtimesDefault . (fromIntegral :: Natural -> Integer)
 hush :: Either e a -> Maybe a
 hush = either (const Nothing) Just
 
---TODO: this is in base in 8.4, so remove this defn then.
-(<&>) :: (Functor f) => f a -> (a -> b) -> f b
-(<&>) = flip fmap
-infixl 1 <&>
-
 type FilePathComponent = String
 
 validationToExcept :: (Applicative f) => Validation e a -> ExceptT e f a
@@ -256,7 +249,3 @@ exceptToValidation = eitherToValidation . runExcept
 
 failure :: e -> Validation e a
 failure = eitherToValidation . Left
-
--- TODO: this was added with 8.4's filepath, so rm and re-export once it's in the window
-isExtensionOf :: String -> FilePath -> Bool
-isExtensionOf ext = isJust . stripExtension ext

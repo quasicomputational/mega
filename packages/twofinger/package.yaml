@@ -72,8 +72,6 @@ tests:
         ghc-options:
           #TODO: this is needed because cabal-doctest generates a module that triggers this warning. Sigh. Should file a bug about that...
           - "-Wno-missing-import-lists"
-      - condition: impl(ghc >= 8.4)
-        ghc-options:
           #TODO: file a but about this, too
           - "-Wno-missing-export-lists"
     dependencies:
