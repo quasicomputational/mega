@@ -492,16 +492,16 @@ defrostTarball versionPolicy extra envs src dst =
     withFile dst WriteMode $ \ dstHnd -> do
       -- TODO: this borks if there's a cabal.project in the sdist. What we should be doing is creating our own cabal.project and pointing to that with --project-file.
       let
-        args = ( Proc.proc "cabal" [ "new-sdist", "-o", "-" ] )
+        args = ( Proc.proc "cabal" [ "v2-sdist", "-o", "-" ] )
           { Proc.std_out = Proc.UseHandle dstHnd
           , Proc.cwd = Just tmpDir
           }
-      (_, _, _, procHnd) <- Proc.createProcess_ "cabal new-sdist" args
+      (_, _, _, procHnd) <- Proc.createProcess_ "cabal v2-sdist" args
       res <- Proc.waitForProcess procHnd
       case res of
         ExitSuccess ->
           pure ()
         ExitFailure code -> do
           STIO.putStrLn $
-            "new-sdist failed with exit code" <> ST.pack (show code) <> "."
+            "v2-sdist failed with exit code" <> ST.pack (show code) <> "."
           exitFailure
