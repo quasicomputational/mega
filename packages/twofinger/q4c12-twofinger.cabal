@@ -4,7 +4,7 @@ cabal-version: 2.2
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 08a15251990081577b9b15c09d897104ebeee0778b6089b8173ac8d9e76add5c
+-- hash: ea6d8c46791a738a697f486e64ba0963994a16da8189ba0fdaa773f9b27f468b
 
 name:           q4c12-twofinger
 version:        0.2.0.1
@@ -65,9 +65,7 @@ test-suite doctests
     , lens
     , q4c12-twofinger
   if true
-    ghc-options: -Wno-missing-import-lists
-  if impl(ghc >= 8.4)
-    ghc-options: -Wno-missing-export-lists
+    ghc-options: -Wno-missing-import-lists -Wno-missing-export-lists
   default-language: Haskell2010
 
 test-suite properties

@@ -4,7 +4,7 @@ cabal-version: 2.2
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: e7941c33fc144619455d884e3fc31099dda9ff212c7e98e92be82d163e10fa9e
+-- hash: 4a4ae422ed5bac88244890f0e7747fc061c2b858aaa31174d03f99ad0bd4fa1c
 
 name:           q4c12-foldable-utils
 version:        0
@@ -51,7 +51,5 @@ test-suite doctests
     , doctest
     , q4c12-foldable-utils
   if true
-    ghc-options: -Wno-missing-import-lists
-  if impl(ghc >= 8.4)
-    ghc-options: -Wno-missing-export-lists
+    ghc-options: -Wno-missing-import-lists -Wno-missing-export-lists
   default-language: Haskell2010
