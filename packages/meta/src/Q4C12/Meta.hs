@@ -1,7 +1,7 @@
 -- #######################################################################
 -- ############################## ATTENTION ##############################
 -- #######################################################################
--- If you are editing this file, make sure to run 'cabal new-run meta gen-travis' afterwards.
+-- If you are editing this file, make sure to run 'cabal v2-run meta gen-travis' afterwards.
 -- #######################################################################
 -- ############################## ATTENTION ##############################
 -- #######################################################################
@@ -125,7 +125,7 @@ travisConfiguration buildMap = Aeson.pairs $ fold
   -- travis emails are really annoying
   , Aeson.pair "notifications" $ Aeson.pairs $
       Aeson.pair "email" $ Aeson.bool False
-  -- cache new-build's package stores
+  -- cache v2-build's package stores
   , Aeson.pair "cache" $ Aeson.pairs $ fold
       [ Aeson.pair "directories" $ Aeson.list Aeson.text
         [ "$HOME/.cabal/store"
@@ -160,17 +160,17 @@ travisConfiguration buildMap = Aeson.pairs $ fold
         , Aeson.pair "before_install" $ Aeson.list Aeson.text
           [ "export PATH=/opt/ghc/bin:$PATH"
           ]
-        , Aeson.pair "install" $ Aeson.text "./travis/deps.cabal-new-build.sh"
+        , Aeson.pair "install" $ Aeson.text "./travis/deps.sh"
         , Aeson.pair "script" $ buildScript build
         ]
 
     buildScript build = Aeson.list Aeson.text $ fold
-      [ [ "./travis/build.cabal-new-build.sh" ]
+      [ [ "./travis/build.sh" ]
       , case buildRunMeta build of
           MetaNo ->
             []
           MetaYes ->
-            [ "./travis/meta.cabal-new-build.sh" ]
+            [ "./travis/meta.sh" ]
       ]
 
 generateProjectFiles :: Map SText Build -> IO ()
@@ -412,7 +412,7 @@ runCheckHash packageData = do
     expectedHash = generateHash packageData
   actualHash <- BS.readFile "travis/hash"
   unless ( expectedHash == actualHash ) $ do
-    STIO.putStrLn "./travis/hash and the computed hash do not match. Do 'cabal new-run meta gen-travis' and make sure all of the files it produces are committed."
+    STIO.putStrLn "./travis/hash and the computed hash do not match. Do 'cabal v2-run meta gen-travis' and make sure all of the files it produces are committed."
     exitFailure
 
 extraConstraints :: [ PF.Constraint ]
@@ -442,7 +442,7 @@ runRefreeze packageData = do
                         True
                 )
       -- Note: since we're limiting ourselves to non-prereleases, we know that they're not pulling in any extra repos
-      callProcess "cabal" [ "new-update" ]
+      callProcess "cabal" [ "v2-update" ]
       refreeze buildsWithFreezeFiles
 
 refreeze :: Map SText Build -> IO ()
@@ -455,7 +455,7 @@ refreeze builds = void $ flip Map.traverseWithKey builds $ \ buildName _build ->
     ( guard . isDoesNotExistError )
     ( removeFile ( addExtension projectFile "freeze" ) )
   callProcess "cabal"
-    [ "new-freeze" , "--project-file", projectFile ]
+    [ "v2-freeze" , "--project-file", projectFile ]
 
 runCheckStaleCabal :: [(Package, PackageConfig)] -> IO ()
 runCheckStaleCabal = traverse_ $ \ (package, _) -> do
