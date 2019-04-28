@@ -5,6 +5,7 @@ module Prelude
   , LText, SText, TBuilder
   , LByteString, SByteString, BSBuilder
   , hush
+  , hoistMaybe
   , FilePathComponent
   , validationToExcept, exceptToValidation, failure
   )
@@ -130,6 +131,8 @@ import Control.Monad.Trans.Except as Export
   (withExceptT, runExceptT, runExcept, except, Except, ExceptT (ExceptT), mapExceptT)
 import Control.Monad.Trans.Class as Export
   (lift)
+import Control.Monad.Trans.Maybe as Export
+  ( MaybeT, runMaybeT )
 import Control.Monad.Trans.State as Export
   (runStateT, execStateT, evalStateT, runState, StateT (StateT), State, state, evalState)
 import Data.Functor.Reverse as Export
@@ -236,8 +239,12 @@ type BSBuilder = BSB.Builder
 mtimesSafe :: (Monoid a) => Natural -> a -> a
 mtimesSafe = mtimesDefault . (fromIntegral :: Natural -> Integer)
 
+-- TODO: these are both from errors; maybe think about incurring a dep on that?
 hush :: Either e a -> Maybe a
 hush = either (const Nothing) Just
+
+hoistMaybe :: (Monad m) => Maybe a -> MaybeT m a
+hoistMaybe = maybe empty pure
 
 type FilePathComponent = String
 
