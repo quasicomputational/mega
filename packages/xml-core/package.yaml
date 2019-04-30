@@ -67,6 +67,9 @@ tests:
       tasty-golden:
       text:
       transformers:
+        mixin:
+          # Hide the leaky writer versions
+          - hiding (Control.Monad.Trans.RWS, Control.Monad.Trans.Writer)
 
 benchmarks:
   parse-xml:
