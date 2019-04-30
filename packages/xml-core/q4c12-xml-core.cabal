@@ -4,7 +4,7 @@ cabal-version: 2.2
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 85c6662aa5c2cd04c603dfe324560b14f8958b656912587c6adc017553deb171
+-- hash: 70f56d6f5e3d470530e6542aee7696beb63b0058d3425661d967ec2127ee7827
 
 name:           q4c12-xml-core
 version:        0
@@ -220,6 +220,8 @@ test-suite golden-tests
     , tasty-golden
     , text
     , transformers
+  mixins:
+      transformers hiding (Control.Monad.Trans.RWS, Control.Monad.Trans.Writer)
   default-language: Haskell2010
 
 benchmark parse-xml
