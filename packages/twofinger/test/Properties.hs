@@ -17,7 +17,7 @@ import qualified Test.QuickCheck as QC
 import Q4C12.TwoFinger.Internal (TwoFingerOddA (TwoFingerOddA), TwoFingerOddE (TwoFingerOddE), TwoFingerEvenA (TwoFingerEvenA), TwoFingerEvenE (EmptyEvenE, TwoFingerEvenE), halfsnocOddA, halfsnocOddE, halfunsnocOddA, halfconsEvenE, halfunconsOddA, halfconsOddE, halfsnocEvenA, appendOddEOddA, appendEvenEOddE, appendOddEEvenA, appendOddAOddE, appendEvenAOddA, appendOddAEvenE, halfunsnocEvenA, halfunsnocEvenE, halfsnocEvenE, halfunconsEvenA, halfunsnocOddE, halfunconsEvenE, halfconsOddA, halfunconsOddE, halfconsEvenA, firstOddA, lastOddA)
 
 newtype AnyOddA e a = AnyOddA { getAnyOddA :: TwoFingerOddA e a }
-  deriving (Show, Eq)
+  deriving stock (Show, Eq)
 
 instance Arbitrary2 AnyOddA where
   liftArbitrary2 e a = fmap AnyOddA $
@@ -36,7 +36,7 @@ instance (Arbitrary e, Arbitrary a) => Arbitrary (AnyOddA e a) where
   shrink = shrink2
 
 newtype AnyOddE e a = AnyOddE { _getAnyOddE :: TwoFingerOddE e a }
-  deriving (Show, Eq)
+  deriving stock (Show, Eq)
 
 instance Arbitrary2 AnyOddE where
   liftArbitrary2 e a = fmap AnyOddE $ TwoFingerOddE <$> e <*> liftArbitrary (liftArbitrary2 a e)
@@ -54,7 +54,7 @@ instance (Arbitrary e, Arbitrary a) => Arbitrary (AnyOddE e a) where
   shrink = shrink2
 
 newtype AnyEvenA e a = AnyEvenA { _getAnyEvenA :: TwoFingerEvenA e a }
-  deriving (Show, Eq)
+  deriving stock (Show, Eq)
 
 instance Arbitrary2 AnyEvenA where
   liftArbitrary2 e a = AnyEvenA . TwoFingerEvenA <$> liftArbitrary (liftArbitrary2 a e)
@@ -70,7 +70,7 @@ instance (Arbitrary e, Arbitrary a) => Arbitrary (AnyEvenA e a) where
   shrink = shrink2
 
 newtype AnyEvenE e a = AnyEvenE { _getAnyEvenE :: TwoFingerEvenE e a }
-  deriving (Show, Eq)
+  deriving stock (Show, Eq)
 
 instance Arbitrary2 AnyEvenE where
   liftArbitrary2 e a = AnyEvenE <$> QC.oneof

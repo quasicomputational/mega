@@ -16,7 +16,7 @@ data Position = Position
   { posLine :: Word64
   , posColumn :: Word64
   }
-  deriving (Show, Eq, Generic, Data)
+  deriving stock (Show, Eq, Generic, Data)
 
 instance NFData Position
 
@@ -31,7 +31,7 @@ data PositionRange = PositionRange
   { posRangeStart :: Position
   , posRangeEnd :: Position
   }
-  deriving (Show, Eq, Ord, Generic, Data)
+  deriving stock (Show, Eq, Ord, Generic, Data)
 
 instance NFData PositionRange
 

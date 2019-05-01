@@ -13,7 +13,7 @@ import Data.Map (Map)
 import qualified Data.Map as Map
 
 newtype MapPend k v = MapPend { getMapPend :: Map k v }
-  deriving (Functor, Foldable, Traversable)
+  deriving stock (Functor, Foldable, Traversable)
 
 instance (Semigroup v, Ord k) => Semigroup (MapPend k v) where
   MapPend a <> MapPend b = MapPend $ Map.unionWith (<>) a b

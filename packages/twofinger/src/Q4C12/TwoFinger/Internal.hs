@@ -93,7 +93,7 @@ bitraverseDefault f g =
 
 -- | Isomorphic to @a, (e, a)*@
 data TwoFingerOddA e a = TwoFingerOddA (Seq (a, e)) a
-  deriving (Generic, Data)
+  deriving stock (Generic, Data)
 
 instance Show2 TwoFingerOddA where
   liftShowsPrec2 f _ g _ d = go (d > 10)
@@ -180,7 +180,7 @@ instance Bitraversable1 TwoFingerOddA where
 
 -- | Isomorphic to @e, (a, e)*@
 data TwoFingerOddE e a = TwoFingerOddE e (Seq (a, e))
-  deriving (Generic, Data)
+  deriving stock (Generic, Data)
 
 instance Show2 TwoFingerOddE where
   liftShowsPrec2 f _ g _ d = go (d > 10)
@@ -242,7 +242,7 @@ instance (NFData e, NFData a) => NFData (TwoFingerOddE e a)
 data TwoFingerEvenE e a
   = EmptyEvenE
   | TwoFingerEvenE e (Seq (a, e)) a
-  deriving (Generic, Data)
+  deriving stock (Generic, Data)
 
 instance Show2 TwoFingerEvenE where
   liftShowsPrec2 f _ g _ d = go (d > 10)
@@ -302,7 +302,7 @@ instance Bitraversable TwoFingerEvenE where
 
 -- | Isomorphic to @(a, e)*@
 data TwoFingerEvenA e a = TwoFingerEvenA (Seq (a, e))
-  deriving (Generic, Data)
+  deriving stock (Generic, Data)
 
 instance Show2 TwoFingerEvenA where
   liftShowsPrec2 f _ g _ d = go (d > 10)
