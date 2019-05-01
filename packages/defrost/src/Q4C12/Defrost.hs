@@ -115,14 +115,14 @@ data SystemEnv = SystemEnv
   , _systemEnvCompilerFlavor :: CompilerFlavor
   , _systemEnvCompilerVersion :: Version
   }
-  deriving ( Eq, Generic, Ord )
+  deriving stock ( Eq, Generic, Ord )
 
 instance Aeson.FromJSON SystemEnv
 instance Aeson.ToJSON SystemEnv where
   toEncoding = Aeson.genericToEncoding Aeson.defaultOptions
 
 data Env = Env SystemEnv ( Seq Constraint )
-  deriving ( Generic )
+  deriving stock ( Generic )
 
 instance Aeson.FromJSON Env
 instance Aeson.ToJSON Env where
@@ -173,7 +173,7 @@ showDefrostingError = \case
     "Loose bounds in the freeze file: " <> ST.pack ( unPackageName pn ) <> "\n"
 
 data QualificationType = Build | Setup
-  deriving (Eq, Ord)
+  deriving stock ( Eq, Ord )
 
 class DependencyWithQualification a where
   traverseDependencies

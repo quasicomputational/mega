@@ -33,7 +33,7 @@ import Q4C12.TwoFinger (singletonOddA, unitOddA, consOddA)
 import Safe (toEnumMay)
 
 data QName = QName !(Maybe SText) !SText
-  deriving (Show, Eq, Ord, Generic, Data)
+  deriving stock (Show, Eq, Ord, Generic, Data)
 
 instance NFData QName
 
@@ -69,13 +69,13 @@ isXMLSpace '\r' = True
 isXMLSpace _ = False
 
 newtype Comment pos = Comment { getComment :: Seq (pos, LText) }
-  deriving (Show, Generic, Data)
+  deriving stock (Show, Generic, Data)
 
 instance (NFData pos) => NFData (Comment pos)
 
 -- Comments (of type cmt) and text.
 newtype Content cmt pos = Content { getContent :: TwoFingerOddA cmt (Seq (pos, LText)) }
-  deriving (Show, Generic, Data)
+  deriving stock (Show, Generic, Data)
 
 instance (NFData cmt, NFData pos) => NFData (Content cmt pos)
 
@@ -112,7 +112,7 @@ contentComment :: cmt -> Content cmt pos
 contentComment = Content . unitOddA
 
 newtype Markup cmt pos = Markup { getMarkup :: TwoFingerOddA (Element cmt pos) (Content cmt pos)  }
-  deriving (Show, Generic, Data)
+  deriving stock (Show, Generic, Data)
 
 instance (NFData cmt, NFData pos) => NFData (Markup cmt pos)
 
@@ -143,7 +143,7 @@ data Element cmt pos = Element
   , _ebody :: Markup cmt pos
   , elementPosition :: pos
   }
-  deriving (Show, Functor, Generic, Data)
+  deriving stock (Show, Functor, Generic, Data)
 
 instance Bifunctor Element where
   bimap f g (Element name attrs body pos) =
@@ -269,7 +269,7 @@ renderAttrText = tell . LTB.fromText . ST.replace "\n" "&#xA;" . ST.replace "\r"
 
 --(prefix, local); this is used before we have mapped prefices to namespaces.
 data RawQName = RawQName (Maybe SText) SText
-  deriving (Eq, Ord, Show, Generic)
+  deriving stock (Eq, Ord, Show, Generic)
 
 instance NFData RawQName
 
@@ -299,7 +299,7 @@ data XMLError
   | NonNFDName PositionRange
   | XMLStrayGT Position
   | ResolveError (NonEmpty ResolveError)
-  deriving (Show, Generic, Eq, Ord)
+  deriving stock (Show, Generic, Eq, Ord)
 
 instance NFData XMLError
 
@@ -310,13 +310,13 @@ data ResolveError
   | DuplicateNamespacePrefixDecls SText PositionRange (NonEmpty PositionRange)
   | DuplicateDefaultNamespaceDecls PositionRange (NonEmpty PositionRange)
   | NonNFDNamespace PositionRange
-  deriving (Show, Generic, Eq, Ord)
+  deriving stock (Show, Generic, Eq, Ord)
 
 instance NFData ResolveError
 
 data XMLWarning
   = AttributeNormalisation Position
-  deriving (Show, Generic, Eq, Ord)
+  deriving stock (Show, Generic, Eq, Ord)
 
 instance NFData XMLWarning
 
@@ -551,7 +551,7 @@ data Parsed = Parsed
   , _rootElement :: Element (Comment PositionRange) PositionRange
   , _postRootComments :: Seq (Comment PositionRange)
   }
-  deriving (Show)
+  deriving stock (Show)
 
 preRootComments :: Lens' Parsed (Seq (Comment PositionRange))
 preRootComments k p =

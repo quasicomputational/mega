@@ -65,7 +65,7 @@ data GHCVersion
   | GHC8_6
   | GHC8_8
   | GHCHEAD
-  deriving ( Eq, Ord )
+  deriving stock ( Eq, Ord )
 
 -- This is the version that the package name is built from, hence lowercase 'head'.
 ghcVersion :: GHCVersion -> SText

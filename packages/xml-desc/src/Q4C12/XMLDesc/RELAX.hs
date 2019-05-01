@@ -41,24 +41,24 @@ data RulePF
   | RPFSome RulePF
   | RPFEvenUp RuleCF RuleE
   | RPFAttr QName RuleDT
-  deriving (Show)
+  deriving stock (Show)
 
 data RuleTx = RTWhitespace | RTAny
-  deriving (Show)
+  deriving stock (Show)
 
 data RuleCF
   = RCFNonTerminal LText
   | RCFChoice (Seq RuleCF)
   | RCFFlow RulePF RuleCF
   | RCFText RuleTx
-  deriving (Show)
+  deriving stock (Show)
 
 data RuleE
   = REElemMixed QName RuleCF
   | REElemDT QName RuleDT
   | REChoice (Seq RuleE)
   | RENonTerminal LText
-  deriving (Show)
+  deriving stock (Show)
 
 data RuleDT
   = RDTDatatype LText LText
@@ -67,7 +67,7 @@ data RuleDT
   | RDTSequence (Seq RuleDT)
   | RDTMany RuleDT
   | RDTSome RuleDT
-  deriving (Show)
+  deriving stock (Show)
 
 --TODO: unify with SeenName.
 data Productions = Productions
@@ -88,7 +88,7 @@ data DefinitionNamespace
   = DfnNsP
   | DfnNsC
   | DfnNsE
-  deriving (Show, Eq, Ord)
+  deriving stock (Show, Eq, Ord)
 
 dfnName :: DefinitionNamespace -> LText -> LText
 dfnName DfnNsP = ("fp_" <>)
@@ -100,15 +100,15 @@ type SeenNames = Set (DefinitionNamespace, LText)
 instance Desc RELAX where
   data EvenFlow RELAX _ = GrPF
     { runGrPF :: AccumT SeenNames (Writer Productions) RulePF }
-    deriving (Functor)
+    deriving stock (Functor)
   data OddFlow RELAX _ = GrCF
     { runGrCF :: AccumT SeenNames (Writer Productions) RuleCF }
-    deriving (Functor)
+    deriving stock (Functor)
   data El RELAX _ = GrE
     { runGrE :: AccumT SeenNames (Writer Productions) RuleE }
-    deriving (Functor)
+    deriving stock (Functor)
   data DT RELAX _ = GrT { runGrT :: RuleDT }
-    deriving (Functor)
+    deriving stock (Functor)
   type Pos RELAX = ()
   type Cmt RELAX = ()
 

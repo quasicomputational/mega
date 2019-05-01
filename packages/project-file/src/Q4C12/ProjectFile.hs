@@ -90,7 +90,7 @@ data Config = Config
   { configConstraints :: Seq Constraint
   , configPackages :: Seq SText
   }
-  deriving ( Show )
+  deriving stock ( Show )
 
 emptyConfig :: Config
 emptyConfig = Config
@@ -107,7 +107,7 @@ packages f config =
   (\ ps -> config { configPackages = ps } ) <$> f ( configPackages config )
 
 data Constraint = Constraint PackageName Qualification PackageConstraint
-  deriving ( Eq, Generic, Ord, Show )
+  deriving stock ( Eq, Generic, Ord, Show )
 
 instance Aeson.FromJSON Constraint
 instance Aeson.ToJSON Constraint where
@@ -118,7 +118,7 @@ data Qualification
   | QualifiedAll
   | QualifiedSetupAll
   | QualifiedSetup PackageName
-  deriving ( Eq, Generic, Ord, Show )
+  deriving stock ( Eq, Generic, Ord, Show )
 
 instance Aeson.FromJSON Qualification
 instance Aeson.ToJSON Qualification where
@@ -139,7 +139,7 @@ qualifiedSetup = QualifiedSetup
 data LB
   = LBInclusive Version
   | LBExclusive Version
-  deriving ( Eq, Generic, Ord, Show )
+  deriving stock ( Eq, Generic, Ord, Show )
 
 instance Aeson.FromJSON LB
 instance Aeson.ToJSON LB where
@@ -149,14 +149,14 @@ data UB
   = UBOpen
   | UBInclusive Version
   | UBExclusive Version
-  deriving ( Eq, Generic, Ord, Show )
+  deriving stock ( Eq, Generic, Ord, Show )
 
 instance Aeson.FromJSON UB
 instance Aeson.ToJSON UB where
   toEncoding = Aeson.genericToEncoding Aeson.defaultOptions
 
 data Interval = Interval LB UB
-  deriving ( Eq, Generic, Ord, Show )
+  deriving stock ( Eq, Generic, Ord, Show )
 
 instance Aeson.FromJSON Interval
 instance Aeson.ToJSON Interval where
@@ -193,7 +193,7 @@ data PackageConstraint
   | PackageConstraintSource
   | PackageConstraintInstalled
   | PackageConstraintFlag Bool FlagName
-  deriving ( Eq, Generic, Ord, Show )
+  deriving stock ( Eq, Generic, Ord, Show )
 
 instance Aeson.FromJSON PackageConstraint
 instance Aeson.ToJSON PackageConstraint where

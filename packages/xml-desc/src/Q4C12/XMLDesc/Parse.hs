@@ -31,7 +31,7 @@ data Parse cmt pos
 
 --TODO: visibility into token lists? Also, child counting for that and PathStepE
 data PathStep = PathStepE QName | PathStepA QName
-  deriving (Show, Eq)
+  deriving stock (Show, Eq)
 
 runParseDTTotal :: DT (Parse cmt pos) a -> LText -> Either LText a
 runParseDTTotal dtp t = do
@@ -52,7 +52,7 @@ instance (Show cmt, Show pos) => Desc (Parse cmt pos) where
         -> Either ([PathStep], LText)
              (a, TwoFingerEvenA (Element cmt pos) (Content cmt pos), Map QName LText)
     }
-    deriving (Functor)
+    deriving stock (Functor)
   data OddFlow (Parse cmt pos) a = ParseCF
     { runParseCF
         :: TwoFingerOddA (Element cmt pos) (Content cmt pos)
@@ -60,15 +60,15 @@ instance (Show cmt, Show pos) => Desc (Parse cmt pos) where
         -> Either ([PathStep], LText)
              (a, TwoFingerEvenE (Element cmt pos) (Content cmt pos), Map QName LText)
     }
-    deriving (Functor)
+    deriving stock (Functor)
   data El (Parse cmt pos) a = ParseE
     { runParseE :: Element cmt pos -> Either ([PathStep], LText) a }
-    deriving (Functor)
+    deriving stock (Functor)
   data DT (Parse cmt pos) a = ParseDT
     { runParseDT :: Seq LText
                  -> Either LText (a, Seq LText)
     }
-    deriving (Functor)
+    deriving stock (Functor)
   type Pos (Parse cmt pos) = pos
   type Cmt (Parse cmt pos) = cmt
 
