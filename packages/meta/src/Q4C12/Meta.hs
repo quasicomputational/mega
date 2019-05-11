@@ -264,17 +264,20 @@ packageConfigSchema
 
 parsePackageConfig :: FilePath -> IO PackageConfig
 parsePackageConfig path = do
-  STIO.putStrLn $ "Parsing " <> ST.pack path
   (res, warns) <- parseXML' <$> STIO.readFile path
-  LTIO.putStr $ LTB.toLazyText $ displayWarnings warns
+  unless (null warns) $ do
+    STIO.hPutStrLn stderr $ "While parsing " <> ST.pack path
+    LTIO.hPutStr stderr $ LTB.toLazyText $ displayWarnings warns
   case res of
     Left err -> do
-      LTIO.putStrLn $ LTB.toLazyText $ displayError err
+      STIO.hPutStrLn stderr $ "While parsing " <> ST.pack path
+      LTIO.hPutStrLn stderr $ LTB.toLazyText $ displayError err
       exitFailure
     Right el ->
       case XMLDesc.Parse.parse packageConfigSchema el of
         Nothing -> do
-          STIO.putStrLn "Extraction failed."
+          STIO.hPutStrLn stderr $ "While parsing " <> ST.pack path
+          STIO.hPutStrLn stderr "Extraction failed."
           exitFailure
         Just packageConfig ->
           pure packageConfig
