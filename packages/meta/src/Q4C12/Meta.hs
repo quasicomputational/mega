@@ -15,6 +15,7 @@ module Q4C12.Meta
 import Control.Exception
   ( tryJust )
 import qualified Crypto.Hash.SHA256 as SHA256
+import qualified Data.Aeson as Aeson
 import qualified Data.Aeson.Encoding as Aeson.Encoding
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Lazy as LBS
@@ -30,25 +31,43 @@ import qualified Data.Text.IO as STIO
 import qualified Data.Text.Lazy as LT
 import qualified Data.Text.Lazy.Builder as LTB
 import qualified Data.Text.Lazy.IO as LTIO
+import qualified Distribution.Compiler as Compiler
 import Distribution.Simple.Utils
   ( tryFindPackageDesc
   )
+import qualified Distribution.System
 import Distribution.Types.VersionRange
   ( orLaterVersion
   )
 import Distribution.Version
-  ( mkVersion
+  ( Version
+  , mkVersion
   )
 import GHC.Real (fromIntegral)
 import qualified Hpack
 import qualified Options.Applicative as OA
+import qualified Q4C12.Defrost as Defrost
 import qualified Q4C12.MapPend as MapPend
 import qualified Q4C12.ProjectFile as PF
 import Q4C12.XML ( parseXML', displayWarnings, displayError, uname )
+import Q4C12.XMLDesc
+  ( Desc
+  , El
+  , EvenFlow
+  , consolidate
+  , elementMixed
+  , flowWSEDropComments
+  , flowEvenPreWSDropComments
+  , oddTxNoPos
+  , rcons
+  , rfmap
+  , rmany
+  , rnil
+  )
 import qualified Q4C12.XMLDesc.Parse as XMLDesc.Parse
-import Q4C12.XMLDesc ( Desc, El, EvenFlow, consolidate, elementMixed, rfmap, rmany, rcons, rnil, flowWSEDropComments, flowEvenPreWSDropComments, oddTxNoPos )
 import System.Process
-  ( callProcess )
+  ( callProcess
+  )
 
 -- TODO: wouldn't it be cool to integrate this with SUPPORT.markdown, and have a machine-checked policy for older GHC compatibility?
 
@@ -56,6 +75,8 @@ import System.Process
 
 data Regularity
   = Regular
+    { _regularGHCVersion :: Version
+    }
   | PreRelease
     { _preReleaseCabal :: SText
     }
@@ -68,17 +89,22 @@ data GHCVersion
   deriving stock ( Eq, Ord )
 
 -- This is the version that the package name is built from, hence lowercase 'head'.
-ghcVersion :: GHCVersion -> SText
-ghcVersion = \case
+ghcAptVersion :: GHCVersion -> SText
+ghcAptVersion = \case
   GHC8_4 -> "8.4.4"
   GHC8_6 -> "8.6.5"
   GHC8_8 -> "8.8.1"
   GHCHEAD -> "head"
 
+ghcCompilerVersion :: GHCVersion -> Maybe Version
+ghcCompilerVersion ghc = case (ghcRegularity ghc) of
+  Regular ver -> Just ver
+  PreRelease{} -> Nothing
+
 ghcRegularity :: GHCVersion -> Regularity
 ghcRegularity = \case
-  GHC8_4 -> Regular
-  GHC8_6 -> Regular
+  GHC8_4 -> Regular (mkVersion [8, 4])
+  GHC8_6 -> Regular (mkVersion [8, 6])
   GHC8_8 -> PreRelease "3.0"
   GHCHEAD -> PreRelease "head"
 
@@ -185,9 +211,9 @@ generateProjectFiles = traverseWithKey_ $ \ buildName build -> do
       ]
     , flip fmap ( buildPackages build ) $ \ package ->
         "  " <> LT.pack ( packageDirectory package )
-    , [ "with-compiler: ghc-" <> LT.fromStrict ( ghcVersion ( buildGHCVersion build ) )
+    , [ "with-compiler: ghc-" <> LT.fromStrict ( ghcAptVersion ( buildGHCVersion build ) )
       -- Needed or else Cabal's autodetection of the ghc-pkg command goes wrong. See haskell/cabal#5792.
-      , "with-hc-pkg: ghc-pkg-" <> LT.fromStrict ( ghcVersion ( buildGHCVersion build ) )
+      , "with-hc-pkg: ghc-pkg-" <> LT.fromStrict ( ghcAptVersion ( buildGHCVersion build ) )
       , "optimization: False"
       , "benchmarks: true"
       , "tests: true"
@@ -361,6 +387,11 @@ data Command
   | CheckHash
   | Refreeze
   | CheckStaleCabal
+  | TestedWith TestedWithOptions
+
+data TestedWithOptions = TestedWithOptions
+  { _testedWithPackage :: SText
+  }
 
 commandParser :: OA.Parser Command
 commandParser = OA.hsubparser $ fold
@@ -372,7 +403,14 @@ commandParser = OA.hsubparser $ fold
       OA.info ( pure Refreeze ) ( OA.progDesc "Regenerate the freeze files." )
   , OA.command "check-stale-cabal" $
       OA.info ( pure CheckStaleCabal ) ( OA.progDesc "Make sure none of the .cabal files are stale." )
+  , OA.command "tested-with" $
+      OA.info ( TestedWith <$> testedWithParser ) ( OA.progDesc "Extract the tested-with dependencies for a package from the freeze files." )
   ]
+
+testedWithParser :: OA.Parser TestedWithOptions
+testedWithParser = pure TestedWithOptions
+  <*> OA.strOption
+        ( OA.long "package" )
 
 main :: IO ()
 main = do
@@ -387,6 +425,7 @@ main = do
     CheckHash -> runCheckHash packageData
     Refreeze -> runRefreeze packageData
     CheckStaleCabal -> runCheckStaleCabal packageData
+    TestedWith opts -> runTestedWith opts
 
 runGenTravis :: [(Package, PackageConfig)] -> IO ()
 runGenTravis packageData = do
@@ -474,3 +513,37 @@ runCheckStaleCabal = traverse_ $ \ (package, _) -> do
       _ -> do
         LTIO.putStrLn $ LT.pack packageYaml <> " has been modified but the corresponding .cabal files has not been regenerated and checked in."
         exitFailure
+
+-- Note: obviously it's not ideal to break compatibility with the tested-with file's format, but it's not the end of the world if we do. The worst effects are that any releases in progress will have to be scrubbed (unlikely), and that we'll be unable to make revisions for releases before the break - but the fix for that is easy: just cut a new release. As said, that's not ideal, but it's not the end of the world. What we really want is for parsing old versions to fail reliably if there has been an irreconcilable break, rather than silently producing corrupt data (which rules out most binary formats).
+
+-- You might also be wondering whether we could avoid storing the full constraints and instead just have a single version per dependency - but we don't know the relevant versions to use for defrosting a custom-setup until we know the name of the package we're defrosting. This isn't overcomable (since we do obviously know it here), but it complicates defrost's API.
+
+runTestedWith :: TestedWithOptions -> IO ()
+runTestedWith (TestedWithOptions pkg) = do
+  let
+    packageDir = "packages" </> ST.unpack pkg
+
+  -- for each build it appears in, grab that freeze file
+  packageConfig <- parsePackageConfig ( packageDir </> "config.xml" )
+  envs <- flip Map.traverseMaybeWithKey configs $ \ buildName (BuildConfig ghc opt _ _) -> runMaybeT $ do
+    ghcVer <- hoistMaybe $ ghcCompilerVersion ghc
+    guard $ case opt of
+      OptIn -> Set.member buildName (packageConfigIncluded packageConfig)
+      OptOut -> not $ Set.member buildName (packageConfigExcluded packageConfig)
+    lift $ do
+      parseRes <- PF.parse <$> STIO.readFile ( addExtension ( "cabal" </> ST.unpack buildName ) "project.freeze" )
+      case parseRes of
+        Left err -> do
+          STIO.putStrLn $ PF.renderError err
+          exitFailure
+        Right projectConfig ->
+          -- TODO: principled OS, arch, flags
+          pure $ Defrost.env
+            Distribution.System.Linux
+            Distribution.System.X86_64
+            mempty
+            Compiler.GHC
+            ghcVer
+            ( view PF.constraints projectConfig )
+
+  LBS.putStr $ Aeson.encode $ toList envs

@@ -30,6 +30,7 @@ library:
     hpack:
     optparse-applicative:
     process:
+    q4c12-defrost:
     q4c12-mappend:
     q4c12-prelude:
     q4c12-project-file:
