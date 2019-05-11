@@ -44,7 +44,6 @@ import Distribution.Version
   , mkVersion
   )
 import GHC.Real (fromIntegral)
-import qualified Hpack
 import qualified Options.Applicative as OA
 import qualified Q4C12.Defrost as Defrost
 import qualified Q4C12.MapPend as MapPend
@@ -386,7 +385,6 @@ data Command
   = GenTravis
   | CheckHash
   | Refreeze
-  | CheckStaleCabal
   | TestedWith TestedWithOptions
 
 data TestedWithOptions = TestedWithOptions
@@ -401,8 +399,6 @@ commandParser = OA.hsubparser $ fold
       OA.info ( pure CheckHash ) ( OA.progDesc "Check that gen-travis has been run recently." )
   , OA.command "refreeze" $
       OA.info ( pure Refreeze ) ( OA.progDesc "Regenerate the freeze files." )
-  , OA.command "check-stale-cabal" $
-      OA.info ( pure CheckStaleCabal ) ( OA.progDesc "Make sure none of the .cabal files are stale." )
   , OA.command "tested-with" $
       OA.info ( TestedWith <$> testedWithParser ) ( OA.progDesc "Extract the tested-with dependencies for a package from the freeze files." )
   ]
@@ -424,7 +420,6 @@ main = do
     GenTravis -> runGenTravis packageData
     CheckHash -> runCheckHash packageData
     Refreeze -> runRefreeze packageData
-    CheckStaleCabal -> runCheckStaleCabal packageData
     TestedWith opts -> runTestedWith opts
 
 runGenTravis :: [(Package, PackageConfig)] -> IO ()
@@ -498,21 +493,6 @@ refreeze builds = void $ flip Map.traverseWithKey builds $ \ buildName _build ->
     ( removeFile ( addExtension projectFile "freeze" ) )
   callProcess "cabal"
     [ "v2-freeze" , "--project-file", projectFile ]
-
-runCheckStaleCabal :: [(Package, PackageConfig)] -> IO ()
-runCheckStaleCabal = traverse_ $ \ (package, _) -> do
-  let
-    packageYaml = packageDirectory package </> "package.yaml"
-    options = Hpack.setTarget packageYaml Hpack.defaultOptions
-  packageYamlExists <- doesFileExist packageYaml
-  when packageYamlExists $ do
-    res <- Hpack.hpackResult options
-    case Hpack.resultStatus res of
-      Hpack.OutputUnchanged ->
-        pure ()
-      _ -> do
-        LTIO.putStrLn $ LT.pack packageYaml <> " has been modified but the corresponding .cabal files has not been regenerated and checked in."
-        exitFailure
 
 -- Note: obviously it's not ideal to break compatibility with the tested-with file's format, but it's not the end of the world if we do. The worst effects are that any releases in progress will have to be scrubbed (unlikely), and that we'll be unable to make revisions for releases before the break - but the fix for that is easy: just cut a new release. As said, that's not ideal, but it's not the end of the world. What we really want is for parsing old versions to fail reliably if there has been an irreconcilable break, rather than silently producing corrupt data (which rules out most binary formats).
 
