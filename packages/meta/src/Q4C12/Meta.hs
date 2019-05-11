@@ -15,7 +15,7 @@ module Q4C12.Meta
 import Control.Exception
   ( tryJust )
 import qualified Crypto.Hash.SHA256 as SHA256
-import qualified Data.Aeson.Encoding as Aeson
+import qualified Data.Aeson.Encoding as Aeson.Encoding
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Lazy as LBS
 import Data.ByteString.Builder ( hPutBuilder )
@@ -107,64 +107,64 @@ env buildName = fold
 buildAllowFailures :: SText -> Build -> [Aeson.Encoding]
 buildAllowFailures buildName build = do
   guard $ case ghcRegularity ( buildGHCVersion build ) of
-    Regular -> False
-    PreRelease _ -> True
-  pure $ Aeson.pairs $
-    Aeson.pair "env" $ Aeson.text $ env buildName
+    Regular{} -> False
+    PreRelease{} -> True
+  pure $ Aeson.Encoding.pairs $
+    Aeson.Encoding.pair "env" $ Aeson.Encoding.text $ env buildName
 
-travisConfiguration :: [(SText, Build)] -> Aeson.Encoding
-travisConfiguration buildMap = Aeson.pairs $ fold
-  [ Aeson.pair "sudo" $ Aeson.bool False
-  , Aeson.pair "language" $ Aeson.text "generic"
+travisConfiguration :: [(SText, Build)] -> Aeson.Encoding.Encoding
+travisConfiguration buildMap = Aeson.Encoding.pairs $ fold
+  [ Aeson.Encoding.pair "sudo" $ Aeson.Encoding.bool False
+  , Aeson.Encoding.pair "language" $ Aeson.Encoding.text "generic"
   -- bors-ng configuration
-  , Aeson.pair "branches" $ Aeson.pairs $
-      Aeson.pair "only" $ Aeson.list Aeson.text
+  , Aeson.Encoding.pair "branches" $ Aeson.Encoding.pairs $
+      Aeson.Encoding.pair "only" $ Aeson.Encoding.list Aeson.Encoding.text
       [ "staging"
       , "trying"
       ]
   -- travis emails are really annoying
-  , Aeson.pair "notifications" $ Aeson.pairs $
-      Aeson.pair "email" $ Aeson.bool False
+  , Aeson.Encoding.pair "notifications" $ Aeson.Encoding.pairs $
+      Aeson.Encoding.pair "email" $ Aeson.Encoding.bool False
   -- cache v2-build's package stores
-  , Aeson.pair "cache" $ Aeson.pairs $ fold
-      [ Aeson.pair "directories" $ Aeson.list Aeson.text
+  , Aeson.Encoding.pair "cache" $ Aeson.Encoding.pairs $ fold
+      [ Aeson.Encoding.pair "directories" $ Aeson.Encoding.list Aeson.Encoding.text
         [ "$HOME/.cabal/store"
         , "$HOME/.cabal/bin"
         ]
       ]
-  , Aeson.pair "matrix" $ Aeson.pairs $ fold
-    [ Aeson.pair "fast_finish" $ Aeson.bool True
-    , Aeson.pair "allow_failures" $ Aeson.list id $
+  , Aeson.Encoding.pair "matrix" $ Aeson.Encoding.pairs $ fold
+    [ Aeson.Encoding.pair "fast_finish" $ Aeson.Encoding.bool True
+    , Aeson.Encoding.pair "allow_failures" $ Aeson.Encoding.list id $
       foldMap (uncurry buildAllowFailures) buildMap
     ]
-  , Aeson.pair "jobs" $ Aeson.pairs $ Aeson.pair "include" $ Aeson.list id buildJobs
+  , Aeson.Encoding.pair "jobs" $ Aeson.pairs $ Aeson.Encoding.pair "include" $ Aeson.Encoding.list id buildJobs
   ]
   where
 
-    aptPair :: GHCVersion -> Aeson.Series
+    aptPair :: GHCVersion -> Aeson.Encoding.Series
     aptPair ghc =
-      Aeson.pair "addons" $  Aeson.pairs $ Aeson.pair "apt" $ Aeson.pairs $ fold
-        [ Aeson.pair "sources" $ Aeson.list Aeson.text [ "hvr-ghc" ]
-        , Aeson.pair "packages" $ Aeson.list Aeson.text
-          [ "ghc-" <> ghcVersion ghc
+      Aeson.Encoding.pair "addons" $  Aeson.Encoding.pairs $ Aeson.Encoding.pair "apt" $ Aeson.Encoding.pairs $ fold
+        [ Aeson.Encoding.pair "sources" $ Aeson.Encoding.list Aeson.Encoding.text [ "hvr-ghc" ]
+        , Aeson.Encoding.pair "packages" $ Aeson.Encoding.list Aeson.Encoding.text
+          [ "ghc-" <> ghcAptVersion ghc
           , case ghcRegularity ghc of
-              Regular -> "cabal-install-2.4"
+              Regular{} -> "cabal-install-2.4"
               PreRelease ver -> "cabal-install-" <> ver
           ]
         ]
 
     buildJobs = flip fmap buildMap $ \ ( buildName, build ) ->
-      Aeson.pairs $ fold
-        [ Aeson.pair "env" $ Aeson.text $ env buildName
+      Aeson.Encoding.pairs $ fold
+        [ Aeson.Encoding.pair "env" $ Aeson.Encoding.text $ env buildName
         , aptPair $ buildGHCVersion build
-        , Aeson.pair "before_install" $ Aeson.list Aeson.text
+        , Aeson.Encoding.pair "before_install" $ Aeson.Encoding.list Aeson.Encoding.text
           [ "export PATH=/opt/ghc/bin:$PATH"
           ]
-        , Aeson.pair "install" $ Aeson.text "./travis/deps.sh"
-        , Aeson.pair "script" $ buildScript build
+        , Aeson.Encoding.pair "install" $ Aeson.Encoding.text "./travis/deps.sh"
+        , Aeson.Encoding.pair "script" $ buildScript build
         ]
 
-    buildScript build = Aeson.list Aeson.text $ fold
+    buildScript build = Aeson.Encoding.list Aeson.Encoding.text $ fold
       [ [ "./travis/build.sh" ]
       , case buildRunMeta build of
           MetaNo ->
@@ -193,7 +193,7 @@ generateProjectFiles = traverseWithKey_ $ \ buildName build -> do
       , "tests: true"
       ]
     , case ghcRegularity $ buildGHCVersion build of
-        PreRelease _ ->
+        PreRelease{} ->
           [ "repository head.hackage"
           , "  url: http://head.hackage.haskell.org/"
           , "  secure: True"
@@ -208,14 +208,14 @@ generateProjectFiles = traverseWithKey_ $ \ buildName build -> do
           , "keep-going: true"
           , ""
           ]
-        Regular -> []
+        Regular{} -> []
     , [ "constraints:" ]
     , flip fmap extraConstraints $ \ constraint ->
         LTB.toLazyText $ "  " <> PF.renderConstraint constraint
     , case buildWError build of
         WErrorNo -> []
         WErrorYes ->
-          -- This is a hack around https://github.com/haskell/cabal/issues/3883: we can't specify ghc-options for all local packages only, so instead specify ghc-options for each, individual local package.
+          -- This is a hack around https://github.com/haskell/cabal/issues/3883: we can't specify ghc-options for all local packages only, so instead specify ghc-options for each, individual local package. Once that feature's added, we can avoid the necessity of finding out the actual package's name.
           flip foldMap ( buildPackages build ) $ \ package ->
             [ "package " <> LT.fromStrict ( packageName package )
             , "  ghc-options: -Werror"
@@ -400,7 +400,7 @@ runGenTravis packageData = do
         hPutBuilder hnd "# ++++++++++++++++++++ WARNING ++++++++++++++++++++\n"
         hPutBuilder hnd "# This file is generated by 'meta gen-travis'. Don't hand-edit.\n"
         hPutBuilder hnd "# ++++++++++++++++++++ WARNING ++++++++++++++++++++\n"
-        hPutBuilder hnd $ Aeson.fromEncoding $ travisConfiguration sortedBuilds
+        hPutBuilder hnd $ Aeson.Encoding.fromEncoding $ travisConfiguration sortedBuilds
         STIO.putStrLn "Written .travis.yml."
       generateProjectFiles builds
       BS.writeFile "travis/hash" $ generateHash packageData
@@ -436,9 +436,9 @@ runRefreeze packageData = do
             & Map.filter
                 ( \ build ->
                     case ghcRegularity $ buildGHCVersion build of
-                      PreRelease _ ->
+                      PreRelease{} ->
                         False
-                      Regular ->
+                      Regular{} ->
                         True
                 )
       -- Note: since we're limiting ourselves to non-prereleases, we know that they're not pulling in any extra repos
