@@ -4,7 +4,7 @@ cabal-version: 2.2
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: e62f0283b986a235205c3b38e66b15abd69019770f38e05c24360088a060eea7
+-- hash: 8701794bd024d237053ffbf01c410088cb15d06bff4296ed135de8da7af8b224
 
 name:           q4c12-meta
 version:        0
@@ -38,6 +38,7 @@ library
     , hpack
     , optparse-applicative
     , process
+    , q4c12-defrost
     , q4c12-mappend
     , q4c12-prelude
     , q4c12-project-file
