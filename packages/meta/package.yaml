@@ -27,7 +27,6 @@ library:
     Cabal:
     containers:
     cryptohash-sha256:
-    hpack:
     optparse-applicative:
     process:
     q4c12-defrost:
