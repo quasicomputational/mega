@@ -386,9 +386,16 @@ data Command
   | CheckHash
   | Refreeze
   | TestedWith TestedWithOptions
+  | DefrostTarball DefrostTarballOptions
 
 data TestedWithOptions = TestedWithOptions
   { _testedWithPackage :: SText
+  }
+
+data DefrostTarballOptions = DefrostTarballOptions
+  { _defrostTarballInput :: FilePath
+  , _defrostTarballTestedWith :: FilePath
+  , _defrostTarballOutput :: FilePath
   }
 
 commandParser :: OA.Parser Command
@@ -401,12 +408,23 @@ commandParser = OA.hsubparser $ fold
       OA.info ( pure Refreeze ) ( OA.progDesc "Regenerate the freeze files." )
   , OA.command "tested-with" $
       OA.info ( TestedWith <$> testedWithParser ) ( OA.progDesc "Extract the tested-with dependencies for a package from the freeze files." )
+  , OA.command "defrost-tarball" $
+      OA.info ( DefrostTarball <$> defrostTarballParser ) ( OA.progDesc "Defrost the tarball." )
   ]
 
 testedWithParser :: OA.Parser TestedWithOptions
 testedWithParser = pure TestedWithOptions
   <*> OA.strOption
         ( OA.long "package" )
+
+defrostTarballParser :: OA.Parser DefrostTarballOptions
+defrostTarballParser = pure DefrostTarballOptions
+  <*> OA.strOption
+        ( OA.long "input" )
+  <*> OA.strOption
+        ( OA.long "tested-with" )
+  <*> OA.strOption
+        ( OA.long "output" )
 
 main :: IO ()
 main = do
@@ -421,6 +439,7 @@ main = do
     CheckHash -> runCheckHash packageData
     Refreeze -> runRefreeze packageData
     TestedWith opts -> runTestedWith opts
+    DefrostTarball opts -> runDefrostTarball opts
 
 runGenTravis :: [(Package, PackageConfig)] -> IO ()
 runGenTravis packageData = do
@@ -527,3 +546,17 @@ runTestedWith (TestedWithOptions pkg) = do
             ( view PF.constraints projectConfig )
 
   LBS.putStr $ Aeson.encode $ toList envs
+
+runDefrostTarball :: DefrostTarballOptions -> IO ()
+runDefrostTarball (DefrostTarballOptions input testedWithFile output) =
+  Aeson.eitherDecodeFileStrict testedWithFile >>= \case
+    Left err -> do
+      STIO.putStrLn $ ST.pack err
+      exitFailure
+    Right testedWith ->
+      Defrost.defrostTarball
+        mempty
+        extraConstraints
+        testedWith
+        input
+        output
