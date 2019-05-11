@@ -88,7 +88,7 @@ data WError = WErrorNo | WErrorYes
 
 data Package = Package
   { packageDirectory :: FilePath
-  , packageName :: ST.Text
+  , packageName :: SText
   }
 
 data Build = Build
