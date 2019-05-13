@@ -37,6 +37,9 @@ import Distribution.PackageDescription.Parsec
   ( parseGenericPackageDescription
   , runParseResult
   )
+import Distribution.PackageDescription.PrettyPrint
+  ( writeGenericPackageDescription
+  )
 import Distribution.Parsec.Common
   ( showPError
   )
@@ -44,10 +47,21 @@ import Distribution.Simple.Utils
   ( tryFindPackageDesc
   )
 import qualified Distribution.System
+import Distribution.Types.GenericPackageDescription
+  ( GenericPackageDescription
+  )
+import Distribution.Types.GenericPackageDescription.Lens
+  ( packageDescription
+  )
+import qualified Distribution.Types.PackageDescription as PD
 import Distribution.Types.PackageName
   ( PackageName
   , mkPackageName
   , unPackageName
+  )
+import Distribution.Types.SourceRepo
+  ( SourceRepo ( repoKind, repoTag )
+  , RepoKind ( RepoHead, RepoThis )
   )
 import Distribution.Types.VersionRange
   ( orLaterVersion
@@ -81,6 +95,7 @@ import qualified Q4C12.XMLDesc.Parse as XMLDesc.Parse
 import System.Process
   ( callProcess
   )
+import qualified System.Process as Proc
 
 -- TODO: wouldn't it be cool to integrate this with SUPPORT.markdown, and have a machine-checked policy for older GHC compatibility?
 
@@ -410,6 +425,7 @@ data TestedWithOptions = TestedWithOptions
 data DefrostTarballOptions = DefrostTarballOptions
   { _defrostTarballInput :: FilePath
   , _defrostTarballTestedWith :: FilePath
+  , _defrostTarballCommit :: SText
   , _defrostTarballOutput :: FilePath
   }
 
@@ -440,6 +456,8 @@ defrostTarballParser = pure DefrostTarballOptions
         ( OA.long "input" )
   <*> OA.strOption
         ( OA.long "tested-with" )
+  <*> OA.strOption
+        ( OA.long "commit" )
   <*> OA.strOption
         ( OA.long "output" )
 
@@ -567,16 +585,71 @@ runTestedWith (TestedWithOptions pkg) = do
   envs <- envsForPackageConfig packageConfig
   LBS.putStr $ Aeson.encode $ toList envs
 
+sourceRepos :: Lens' PD.PackageDescription [ SourceRepo ]
+sourceRepos f pd = f ( PD.sourceRepos pd ) <&> \ srs ->
+  pd { PD.sourceRepos = srs }
+
+addThisSourceRepo :: SText -> GenericPackageDescription -> GenericPackageDescription
+addThisSourceRepo commit = over ( packageDescription . sourceRepos ) $ \ orig ->
+  let
+    this = flip mapMaybe orig $ \ repo -> do
+      guard ( repoKind repo == RepoHead )
+      pure $ repo
+        { repoKind = RepoThis
+        , repoTag = Just $ ST.unpack commit
+        }
+  in
+    orig <> this
+
+defrostTarball
+  :: SText
+  -> [ Defrost.Env ]
+  -> FilePath
+  -> FilePath
+  -> IO ()
+defrostTarball commit envs src dst =
+  withSystemTempDirectory "defrost" $ \ tmpDir -> do
+    Proc.callProcess "tar"
+      [ "--extract", "--file", src, "--strip-components", "1", "--directory", tmpDir ]
+    cabalFile <- tryFindPackageDesc tmpDir
+    input <- BS.readFile cabalFile
+    let
+      inputParseRes = parseGenericPackageDescription input
+    case runParseResult inputParseRes of
+      (_warns, Left (_versionMay, errs)) ->
+        fail $ foldMap (showPError cabalFile) errs
+      (_warns, Right inputGpd) ->
+        case Defrost.defrost mempty extraConstraints envs inputGpd of
+          Left err -> do
+            STIO.putStrLn err
+            exitFailure
+          Right outputGpd ->
+            writeGenericPackageDescription cabalFile $ addThisSourceRepo commit outputGpd
+    withFile dst WriteMode $ \ dstHnd -> do
+      let
+        args = ( Proc.proc "cabal" [ "v2-sdist", "-o", "-" ] )
+          { Proc.std_out = Proc.UseHandle dstHnd
+          , Proc.cwd = Just tmpDir
+          }
+      (_, _, _, procHnd) <- Proc.createProcess_ "cabal v2-sdist" args
+      res <- Proc.waitForProcess procHnd
+      case res of
+        ExitSuccess ->
+          pure ()
+        ExitFailure code -> do
+          STIO.putStrLn $
+            "v2-sdist failed with exit code" <> ST.pack (show code) <> "."
+          exitFailure
+
 runDefrostTarball :: DefrostTarballOptions -> IO ()
-runDefrostTarball (DefrostTarballOptions input testedWithFile output) =
+runDefrostTarball (DefrostTarballOptions input testedWithFile commit output) =
   Aeson.eitherDecodeFileStrict testedWithFile >>= \case
     Left err -> do
       STIO.putStrLn $ ST.pack err
       exitFailure
     Right testedWith ->
-      Defrost.defrostTarball
-        mempty
-        extraConstraints
+      defrostTarball
+        commit
         testedWith
         input
         output

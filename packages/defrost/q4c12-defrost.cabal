@@ -4,7 +4,7 @@ cabal-version: 2.2
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 2b9ba427d73669d1e7a6c4c05809e990c9c26c612aea57b3541154d04ea2f8d9
+-- hash: efcc5a18f4b9bcaa5b42efc0cb2fee16bc9ddd7dfe648a12d41c3ddfc1e53b1c
 
 name:           q4c12-defrost
 version:        0
@@ -34,11 +34,9 @@ library
       Cabal
     , aeson
     , base
-    , bytestring
     , containers
     , dlist-nonempty
     , lens
-    , process
     , q4c12-aeson-cabal
     , q4c12-prelude
     , q4c12-project-file

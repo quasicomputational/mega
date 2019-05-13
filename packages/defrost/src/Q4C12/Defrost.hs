@@ -5,7 +5,6 @@ module Q4C12.Defrost
   , addConstraints
   , Env
   , defrost
-  , defrostTarball
   , VersionPolicy
   , pvpPolicy, pvpLooseImportsPolicy
   , semverPolicy, semverLooseImportsPolicy
@@ -18,14 +17,12 @@ import Control.Lens
   , _2
   )
 import qualified Data.Aeson as Aeson
-import qualified Data.ByteString as BS
 import qualified Data.DList.NonEmpty as NEDL
 import qualified Data.List as List
 import qualified Data.Map as Map
 import qualified Data.Map.Merge.Lazy as Merge
 import qualified Data.Set as Set
 import qualified Data.Text as ST
-import qualified Data.Text.IO as STIO
 import Distribution.Compiler
   ( CompilerFlavor
   )
@@ -42,19 +39,6 @@ import Distribution.PackageDescription
   , SetupBuildInfo
   , TestSuite
   , lookupFlagAssignment
-  )
-import Distribution.PackageDescription.Parsec
-  ( parseGenericPackageDescription
-  , runParseResult
-  )
-import Distribution.PackageDescription.PrettyPrint
-  ( writeGenericPackageDescription
-  )
-import Distribution.Parsec.Common
-  ( showPError
-  )
-import Distribution.Simple.Utils
-  ( tryFindPackageDesc
   )
 import Distribution.System
   ( Arch
@@ -107,7 +91,6 @@ import Q4C12.ProjectFile
   , constraintPackageName
   , constraintToVersionRange
   )
-import qualified System.Process as Proc
 
 data SystemEnv = SystemEnv
   { _systemEnvOS :: OS
@@ -468,45 +451,3 @@ defrost versionPolicy extra envs gpd = do
       ( gatherFreezes pn versionPolicy envs )
   --TODO: should be sorting the errors, for test stability
   bimap ( foldMap showDefrostingError ) fixGPDConstraints $ validationToEither $ applyConstraints combinedConstraints gpd
-
-defrostTarball
-  :: Map PackageName VersionPolicy
-  -> [ Constraint ]
-  -> [ Env ]
-  -> FilePath
-  -> FilePath
-  -> IO ()
-defrostTarball versionPolicy extra envs src dst =
-  withSystemTempDirectory "defrost" $ \ tmpDir -> do
-    Proc.callProcess "tar"
-      [ "--extract", "--file", src, "--strip-components", "1", "--directory", tmpDir ]
-    cabalFile <- tryFindPackageDesc tmpDir
-    input <- BS.readFile cabalFile
-    let
-      inputParseRes = parseGenericPackageDescription input
-    case runParseResult inputParseRes of
-      (_warns, Left (_versionMay, errs)) ->
-        fail $ foldMap (showPError cabalFile) errs
-      (_warns, Right inputGpd) ->
-        case defrost versionPolicy extra envs inputGpd of
-          Left err -> do
-            STIO.putStrLn err
-            exitFailure
-          Right outputGpd ->
-            writeGenericPackageDescription cabalFile outputGpd
-    withFile dst WriteMode $ \ dstHnd -> do
-      -- TODO: this borks if there's a cabal.project in the sdist. What we should be doing is creating our own cabal.project and pointing to that with --project-file.
-      let
-        args = ( Proc.proc "cabal" [ "v2-sdist", "-o", "-" ] )
-          { Proc.std_out = Proc.UseHandle dstHnd
-          , Proc.cwd = Just tmpDir
-          }
-      (_, _, _, procHnd) <- Proc.createProcess_ "cabal v2-sdist" args
-      res <- Proc.waitForProcess procHnd
-      case res of
-        ExitSuccess ->
-          pure ()
-        ExitFailure code -> do
-          STIO.putStrLn $
-            "v2-sdist failed with exit code" <> ST.pack (show code) <> "."
-          exitFailure

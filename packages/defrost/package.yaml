@@ -24,12 +24,10 @@ library:
     base:
       mixin:
         - hiding (Prelude)
-    bytestring:
     Cabal:
     containers:
     dlist-nonempty:
     lens:
-    process:
     q4c12-aeson-cabal:
     q4c12-prelude:
     q4c12-project-file:
