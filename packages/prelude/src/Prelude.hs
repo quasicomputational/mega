@@ -174,7 +174,7 @@ import Data.DList.NonEmpty as Export
 
 -- directory imports for re-export
 import System.Directory as Export
-  (createDirectoryIfMissing, doesFileExist, listDirectory, removeDirectoryRecursive, removeFile, withCurrentDirectory)
+  (createDirectoryIfMissing, doesFileExist, listDirectory, removeDirectoryRecursive, removeFile, withCurrentDirectory, getCurrentDirectory)
 
 -- lens imports for re-export
 import Control.Lens as Export
