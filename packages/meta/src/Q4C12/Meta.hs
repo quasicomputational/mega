@@ -24,6 +24,7 @@ import qualified Data.ByteString.Builder as BSB
 import qualified Data.List as List
 import qualified Data.Map as Map
 import Data.Map.Merge.Lazy ( dropMissing, mergeA, traverseMissing, zipWithMatched )
+import qualified Data.Sequence as Seq
 import qualified Data.Set as Set
 import qualified Data.Text as ST
 import qualified Data.Text.Encoding as STEnc
@@ -32,16 +33,29 @@ import qualified Data.Text.Lazy as LT
 import qualified Data.Text.Lazy.Builder as LTB
 import qualified Data.Text.Lazy.IO as LTIO
 import qualified Distribution.Compiler as Compiler
+import Distribution.PackageDescription.Parsec
+  ( parseGenericPackageDescription
+  , runParseResult
+  )
+import Distribution.Parsec.Common
+  ( showPError
+  )
 import Distribution.Simple.Utils
   ( tryFindPackageDesc
   )
 import qualified Distribution.System
+import Distribution.Types.PackageName
+  ( PackageName
+  , mkPackageName
+  , unPackageName
+  )
 import Distribution.Types.VersionRange
   ( orLaterVersion
   )
 import Distribution.Version
   ( Version
   , mkVersion
+  , thisVersion
   )
 import GHC.Real (fromIntegral)
 import qualified Options.Applicative as OA
@@ -113,7 +127,7 @@ data WError = WErrorNo | WErrorYes
 
 data Package = Package
   { packageDirectory :: FilePath
-  , packageName :: SText
+  , packageName :: PackageName
   }
 
 data Build = Build
@@ -240,9 +254,9 @@ generateProjectFiles = traverseWithKey_ $ \ buildName build -> do
     , case buildWError build of
         WErrorNo -> []
         WErrorYes ->
-          -- This is a hack around https://github.com/haskell/cabal/issues/3883: we can't specify ghc-options for all local packages only, so instead specify ghc-options for each, individual local package. Once that feature's added, we can avoid the necessity of finding out the actual package's name.
+          -- This is a hack around https://github.com/haskell/cabal/issues/3883: we can't specify ghc-options for all local packages only, so instead specify ghc-options for each, individual local package.
           flip foldMap ( buildPackages build ) $ \ package ->
-            [ "package " <> LT.fromStrict ( packageName package )
+            [ "package " <> LT.pack ( unPackageName ( packageName package ) )
             , "  ghc-options: -Werror"
             ]
     ]
@@ -367,7 +381,7 @@ generateHash = SHA256.hash . LBS.toStrict . BSB.toLazyByteString . foldMap (uncu
     serialise ( Package path name ) ( PackageConfig incl excl ) = fold
       [ BSB.stringUtf8 path
       , BSB.word8 0
-      , STEnc.encodeUtf8Builder name
+      , STEnc.encodeUtf8Builder $ ST.pack $ unPackageName name
       , BSB.word8 0
       , BSB.word64BE $ setLength incl
       , flip foldMap incl $ \ buildName -> fold
@@ -387,6 +401,7 @@ data Command
   | Refreeze
   | TestedWith TestedWithOptions
   | DefrostTarball DefrostTarballOptions
+  | CheckDefrost
 
 data TestedWithOptions = TestedWithOptions
   { _testedWithPackage :: SText
@@ -410,6 +425,8 @@ commandParser = OA.hsubparser $ fold
       OA.info ( TestedWith <$> testedWithParser ) ( OA.progDesc "Extract the tested-with dependencies for a package from the freeze files." )
   , OA.command "defrost-tarball" $
       OA.info ( DefrostTarball <$> defrostTarballParser ) ( OA.progDesc "Defrost the tarball." )
+  , OA.command "check-defrost" $
+      OA.info ( pure CheckDefrost ) ( OA.progDesc "Check that the freeze files cover all the dependencies needed to defrost all packages." )
   ]
 
 testedWithParser :: OA.Parser TestedWithOptions
@@ -432,7 +449,7 @@ main = do
   packageDirectories <- List.sort . fmap ("packages" </>) <$> listDirectory "packages"
   packageData <- for packageDirectories $ \ dir -> do
     config <- parsePackageConfig ( dir </> "config.xml" )
-    name <- ST.pack . takeBaseName <$> tryFindPackageDesc dir
+    name <- mkPackageName . takeBaseName <$> tryFindPackageDesc dir
     pure ( Package dir name, config )
   OA.execParser ( OA.info commandParser mempty ) >>= \case
     GenTravis -> runGenTravis packageData
@@ -440,6 +457,7 @@ main = do
     Refreeze -> runRefreeze packageData
     TestedWith opts -> runTestedWith opts
     DefrostTarball opts -> runDefrostTarball opts
+    CheckDefrost -> runCheckDefrost packageData
 
 runGenTravis :: [(Package, PackageConfig)] -> IO ()
 runGenTravis packageData = do
@@ -517,14 +535,9 @@ refreeze builds = void $ flip Map.traverseWithKey builds $ \ buildName _build ->
 
 -- You might also be wondering whether we could avoid storing the full constraints and instead just have a single version per dependency - but we don't know the relevant versions to use for defrosting a custom-setup until we know the name of the package we're defrosting. This isn't overcomable (since we do obviously know it here), but it complicates defrost's API.
 
-runTestedWith :: TestedWithOptions -> IO ()
-runTestedWith (TestedWithOptions pkg) = do
-  let
-    packageDir = "packages" </> ST.unpack pkg
-
-  -- for each build it appears in, grab that freeze file
-  packageConfig <- parsePackageConfig ( packageDir </> "config.xml" )
-  envs <- flip Map.traverseMaybeWithKey configs $ \ buildName (BuildConfig ghc opt _ _) -> runMaybeT $ do
+envsForPackageConfig :: PackageConfig -> IO [ Defrost.Env ]
+envsForPackageConfig packageConfig =
+  fmap toList $ flip Map.traverseMaybeWithKey configs $ \ buildName (BuildConfig ghc opt _ _) -> runMaybeT $ do
     ghcVer <- hoistMaybe $ ghcCompilerVersion ghc
     guard $ case opt of
       OptIn -> Set.member buildName (packageConfigIncluded packageConfig)
@@ -545,6 +558,13 @@ runTestedWith (TestedWithOptions pkg) = do
             ghcVer
             ( view PF.constraints projectConfig )
 
+runTestedWith :: TestedWithOptions -> IO ()
+runTestedWith (TestedWithOptions pkg) = do
+  let
+    packageDir = "packages" </> ST.unpack pkg
+
+  packageConfig <- parsePackageConfig ( packageDir </> "config.xml" )
+  envs <- envsForPackageConfig packageConfig
   LBS.putStr $ Aeson.encode $ toList envs
 
 runDefrostTarball :: DefrostTarballOptions -> IO ()
@@ -560,3 +580,26 @@ runDefrostTarball (DefrostTarballOptions input testedWithFile output) =
         testedWith
         input
         output
+
+-- TODO: collect unfrozen dependencies & dedupe
+runCheckDefrost :: [(Package, PackageConfig)] -> IO ()
+runCheckDefrost packageData = do
+  -- Slightly hackish - give all local packages an arbitrary version, just so that defrost doesn't think they're version-less.
+  let
+    localConstraints = Seq.fromList $ packageData <&> \ ( package, _ ) ->
+      PF.constraintVersion ( packageName package ) PF.qualifiedAll ( thisVersion ( mkVersion [0] ) )
+  for_ packageData $ \ ( package, packageConfig ) -> do
+    envs <- envsForPackageConfig packageConfig
+    let
+      cabalFile = addExtension ( packageDirectory package </> unPackageName ( packageName package ) ) "cabal"
+      envs' = Defrost.addConstraints localConstraints <$> envs
+    runParseResult . parseGenericPackageDescription <$> BS.readFile cabalFile >>= \case
+      (_warns, Left (_versionMay, errs)) ->
+        fail $ foldMap (showPError cabalFile) errs
+      (_warns, Right gpd) ->
+        case Defrost.defrost mempty mempty envs' gpd of
+          Left err -> do
+            STIO.putStrLn err
+            exitFailure
+          Right _ ->
+            pure ()

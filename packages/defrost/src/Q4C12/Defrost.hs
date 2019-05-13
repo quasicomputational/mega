@@ -2,6 +2,7 @@
 
 module Q4C12.Defrost
   ( env
+  , addConstraints
   , Env
   , defrost
   , defrostTarball
@@ -131,6 +132,10 @@ instance Aeson.ToJSON Env where
 env :: OS -> Arch -> FlagAssignment -> CompilerFlavor -> Version -> Seq Constraint -> Env
 env os arch flags compiler compilerVersion =
   Env ( SystemEnv os arch flags compiler compilerVersion )
+
+addConstraints :: Seq Constraint -> Env -> Env
+addConstraints constraints ( Env system constraints' ) =
+  Env system ( constraints <> constraints' )
 
 -- Strictly speaking, we don't need to canonicalise. However, for output nicety (and test output stability), we do.
 canonicalVersionRange :: VersionRange -> VersionRange
