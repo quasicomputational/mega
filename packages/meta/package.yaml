@@ -26,7 +26,6 @@ library:
     bytestring:
     Cabal:
     containers:
-    cryptohash-sha256:
     optparse-applicative:
     process:
     q4c12-defrost:
