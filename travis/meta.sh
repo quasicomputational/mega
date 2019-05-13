@@ -4,6 +4,8 @@ set -euxo pipefail
 
 cabal v2-run --project-file=cabal/"$PROJECT".project meta -- check-hash
 
+cabal v2-run --project-file=cabal/"$PROJECT".project meta -- check-defrost
+
 mkdir -p "$HOME"/.local/bin
 
 HPACKVER=0.31.2
