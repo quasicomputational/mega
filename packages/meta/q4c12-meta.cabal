@@ -4,7 +4,7 @@ cabal-version: 2.2
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 1f72b1ca96b14a3d009acb32dfbea8e1ecf4fb9ac307518b9943bc1fca91f232
+-- hash: 60877b25a874443073831e33f19f910d30e8bed20c85fa3c8f2b552634a1f868
 
 name:           q4c12-meta
 version:        0
@@ -34,7 +34,6 @@ library
     , base
     , bytestring
     , containers
-    , cryptohash-sha256
     , optparse-applicative
     , process
     , q4c12-defrost
