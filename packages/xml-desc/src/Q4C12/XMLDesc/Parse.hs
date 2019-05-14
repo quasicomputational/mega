@@ -37,7 +37,7 @@ runParseDTTotal :: DT (Parse cmt pos) a -> LText -> Either LText a
 runParseDTTotal dtp t = do
   --TODO: check that this is tokenising correctly, particularly wrt Unicode's many and varied space characters
   (a, leftover) <- runParseDT dtp (Seq.fromList $ LT.words t)
-  unless (Seq.null leftover) $ Left "unconsumed tokens"
+  unless (null leftover) $ Left "unconsumed tokens"
   pure a
 
 --TODO: better errors, also line/column information.
@@ -122,7 +122,7 @@ instance (Show cmt, Show pos) => Desc (Parse cmt pos) where
         (a, rest, attrs') <- runParseCF fp body $ foldMap snd . snd <$> attrs
         unless (null rest) $
           Left ([], LT.pack $ "elementE mixed: unconsumed contents: " <> show rest)
-        unless (Map.null attrs') $
+        unless (null attrs') $
           Left ([], LT.pack $ "elementT mixed: unconsumed attrs: " <> show attrs')
         pure $ HProdCons pos a
 

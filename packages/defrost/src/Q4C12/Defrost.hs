@@ -293,7 +293,7 @@ applyConstraints frozen gpd =
         & Map.lookup ( pn, qual )
         & fold
         & Map.filterWithKey ( \ systemEnv _ -> matchesCondition systemEnv cond )
-    if Map.null relevant
+    if null relevant
       then if isInternal pn
         then pure dep
         else failure $ NEDL.singleton $ UnfrozenDependency qual pn
