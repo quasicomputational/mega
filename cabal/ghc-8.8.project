@@ -32,8 +32,6 @@ allow-newer: *
 
 keep-going: true
 
-constraints:
-  any.Cabal >= 2.2.0.1
 package q4c12-aeson-cabal
   ghc-options: -Werror
 package q4c12-defrost
