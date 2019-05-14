@@ -32,5 +32,3 @@ allow-newer: *
 
 keep-going: true
 
-constraints:
-  any.Cabal >= 2.2.0.1

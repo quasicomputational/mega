@@ -7,8 +7,6 @@ cabal v2-run --project-file=cabal/"$PROJECT".project meta -- gen-travis
 
 test -z "$(git status --porcelain)"
 
-cabal v2-run --project-file=cabal/"$PROJECT".project meta -- check-defrost
-
 mkdir -p "$HOME"/.local/bin
 
 HPACKVER=0.31.2

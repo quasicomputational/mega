@@ -15,5 +15,3 @@ with-hc-pkg: ghc-pkg-8.4.4
 optimization: False
 benchmarks: true
 tests: true
-constraints:
-  any.Cabal >= 2.2.0.1
