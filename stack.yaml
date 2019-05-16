@@ -3,7 +3,6 @@ packages:
   - location: ./packages/xml-core
   - location: ./packages/xml-desc
   - location: ./packages/xhtml2html
-  - location: ./packages/mappend
   - location: ./packages/twofinger
   - location: ./packages/prelude
   - location: ./packages/romnum

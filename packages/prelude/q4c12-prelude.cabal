@@ -4,7 +4,7 @@ cabal-version: 2.2
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 58bc77e03632597ab88e2eb2f799e36b16d31681d891195805dcc1c507428739
+-- hash: 7fc4a9c86afd70284c49544d25b646e504364a983ae71b7a5d8e1870fdfeb092
 
 name:           q4c12-prelude
 version:        0
@@ -43,6 +43,7 @@ library
     , filepath
     , invariant
     , lens
+    , monoidal-containers
     , profunctors
     , q4c12-foldable-utils
     , q4c12-hlist

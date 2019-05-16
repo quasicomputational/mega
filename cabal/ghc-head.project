@@ -4,7 +4,6 @@ packages:
   packages/defrost
   packages/foldable-utils
   packages/hlist
-  packages/mappend
   packages/meta
   packages/position
   packages/prelude

@@ -34,7 +34,6 @@ library:
     dlist:
     dlist-nonempty:
     q4c12-twofinger:
-    q4c12-mappend:
     q4c12-position:
     q4c12-prelude:
     q4c12-xml-core:

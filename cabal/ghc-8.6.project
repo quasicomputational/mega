@@ -4,7 +4,6 @@ packages:
   packages/defrost
   packages/foldable-utils
   packages/hlist
-  packages/mappend
   packages/meta
   packages/position
   packages/prelude
@@ -26,8 +25,6 @@ package q4c12-defrost
 package q4c12-foldable-utils
   ghc-options: -Werror
 package q4c12-hlist
-  ghc-options: -Werror
-package q4c12-mappend
   ghc-options: -Werror
 package q4c12-meta
   ghc-options: -Werror
