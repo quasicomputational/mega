@@ -80,7 +80,12 @@ import Distribution.Version
   , version0
   , versionNumbers
   )
-import Q4C12.AesonCabal ()
+import Q4C12.AsParsedText
+  ( AsParsedText
+    ( AsParsedText
+    , fromAsParsedText
+    )
+  )
 import qualified Text.Megaparsec as MP
 import qualified Text.Megaparsec.Char as MPC
 import qualified Text.Megaparsec.Char.Lexer as Lexer
@@ -106,7 +111,10 @@ packages :: Lens' Config (Seq SText)
 packages f config =
   (\ ps -> config { configPackages = ps } ) <$> f ( configPackages config )
 
-data Constraint = Constraint PackageName Qualification PackageConstraint
+data Constraint = Constraint
+  ( AsParsedText PackageName )
+  Qualification
+  PackageConstraint
   deriving stock ( Eq, Generic, Ord, Show )
 
 instance Aeson.FromJSON Constraint
@@ -117,7 +125,7 @@ data Qualification
   = UnqualifiedOnly
   | QualifiedAll
   | QualifiedSetupAll
-  | QualifiedSetup PackageName
+  | QualifiedSetup ( AsParsedText PackageName )
   deriving stock ( Eq, Generic, Ord, Show )
 
 instance Aeson.FromJSON Qualification
@@ -134,11 +142,11 @@ qualifiedSetupAll :: Qualification
 qualifiedSetupAll = QualifiedSetupAll
 
 qualifiedSetup :: PackageName -> Qualification
-qualifiedSetup = QualifiedSetup
+qualifiedSetup = QualifiedSetup . AsParsedText
 
 data LB
-  = LBInclusive Version
-  | LBExclusive Version
+  = LBInclusive ( AsParsedText Version )
+  | LBExclusive ( AsParsedText Version )
   deriving stock ( Eq, Generic, Ord, Show )
 
 instance Aeson.FromJSON LB
@@ -147,8 +155,8 @@ instance Aeson.ToJSON LB where
 
 data UB
   = UBOpen
-  | UBInclusive Version
-  | UBExclusive Version
+  | UBInclusive ( AsParsedText Version )
+  | UBExclusive ( AsParsedText Version )
   deriving stock ( Eq, Generic, Ord, Show )
 
 instance Aeson.FromJSON UB
@@ -168,23 +176,23 @@ fromInterval :: Interval -> VersionInterval
 fromInterval (Interval lb ub) = (lb', ub')
   where
     lb' = case lb of
-      LBInclusive v -> LowerBound v InclusiveBound
-      LBExclusive v -> LowerBound v ExclusiveBound
+      LBInclusive (AsParsedText v) -> LowerBound v InclusiveBound
+      LBExclusive (AsParsedText v) -> LowerBound v ExclusiveBound
     ub' = case ub of
       UBOpen -> NoUpperBound
-      UBInclusive v -> UpperBound v InclusiveBound
-      UBExclusive v -> UpperBound v ExclusiveBound
+      UBInclusive (AsParsedText v) -> UpperBound v InclusiveBound
+      UBExclusive (AsParsedText v) -> UpperBound v ExclusiveBound
 
 toInterval :: VersionInterval -> Interval
 toInterval (lb, ub) = Interval lb' ub'
   where
     lb' = case lb of
-      LowerBound v InclusiveBound -> LBInclusive v
-      LowerBound v ExclusiveBound -> LBExclusive v
+      LowerBound v InclusiveBound -> LBInclusive (AsParsedText v)
+      LowerBound v ExclusiveBound -> LBExclusive (AsParsedText v)
     ub' = case ub of
       NoUpperBound -> UBOpen
-      UpperBound v InclusiveBound -> UBInclusive v
-      UpperBound v ExclusiveBound -> UBExclusive v
+      UpperBound v InclusiveBound -> UBInclusive (AsParsedText v)
+      UpperBound v ExclusiveBound -> UBExclusive (AsParsedText v)
 
 data PackageConstraint
   = PackageConstraintVersion [Interval]
@@ -192,7 +200,7 @@ data PackageConstraint
   | PackageConstraintBench
   | PackageConstraintSource
   | PackageConstraintInstalled
-  | PackageConstraintFlag Bool FlagName
+  | PackageConstraintFlag Bool (AsParsedText FlagName)
   deriving stock ( Eq, Generic, Ord, Show )
 
 instance Aeson.FromJSON PackageConstraint
@@ -205,7 +213,7 @@ constraintVersion
   -> VersionRange
   -> Constraint
 constraintVersion pn qual
-  = Constraint pn qual
+  = Constraint ( AsParsedText pn ) qual
   . PackageConstraintVersion
   . fmap toInterval
   . asVersionIntervals
@@ -214,25 +222,25 @@ constraintTest
   :: PackageName
   -> Qualification
   -> Constraint
-constraintTest pn qual = Constraint pn qual PackageConstraintTest
+constraintTest pn qual = Constraint ( AsParsedText pn ) qual PackageConstraintTest
 
 constraintBench
   :: PackageName
   -> Qualification
   -> Constraint
-constraintBench pn qual = Constraint pn qual PackageConstraintBench
+constraintBench pn qual = Constraint ( AsParsedText pn ) qual PackageConstraintBench
 
 constraintSource
   :: PackageName
   -> Qualification
   -> Constraint
-constraintSource pn qual = Constraint pn qual PackageConstraintSource
+constraintSource pn qual = Constraint ( AsParsedText pn ) qual PackageConstraintSource
 
 constraintInstalled
   :: PackageName
   -> Qualification
   -> Constraint
-constraintInstalled pn qual = Constraint pn qual PackageConstraintInstalled
+constraintInstalled pn qual = Constraint ( AsParsedText pn ) qual PackageConstraintInstalled
 
 constraintFlag
   :: PackageName
@@ -241,7 +249,7 @@ constraintFlag
   -> FlagName
   -> Constraint
 constraintFlag pn qual enabled flag =
-  Constraint pn qual ( PackageConstraintFlag enabled flag )
+  Constraint ( AsParsedText pn ) qual ( PackageConstraintFlag enabled ( AsParsedText flag ) )
 
 constraintToVersionRange
   :: Constraint
@@ -253,7 +261,7 @@ constraintToVersionRange ( Constraint _ _ inner ) = case inner of
     anyVersion
 
 constraintPackageName :: Constraint -> PackageName
-constraintPackageName ( Constraint pn _ _ ) = pn
+constraintPackageName ( Constraint pn _ _ ) = fromAsParsedText pn
 
 constraintAppliesToUnqualified :: Constraint -> Bool
 constraintAppliesToUnqualified (Constraint _ qual _) = case qual of
@@ -267,7 +275,7 @@ constraintAppliesToSetup pkg (Constraint _ qual _) = case qual of
   UnqualifiedOnly -> False
   QualifiedAll -> True
   QualifiedSetupAll -> True
-  QualifiedSetup pkg' -> pkg == pkg'
+  QualifiedSetup pkg' -> AsParsedText pkg == pkg'
 
 data ParseError
   = ParseError SText
@@ -337,24 +345,24 @@ pQualPkg = anyQual <|> anySetup <|> MP.try specificSetup <|> unqual
     unqual :: (Ord e) => MP.Parsec e SText (PackageConstraint -> Constraint)
     unqual = do
       pkg <- pPackageName
-      pure $ Constraint pkg UnqualifiedOnly
+      pure $ Constraint (AsParsedText pkg) UnqualifiedOnly
 
     anyQual :: (Ord e) => MP.Parsec e SText (PackageConstraint -> Constraint)
     anyQual = do
       pkg <- MPC.string "any." *> pPackageName
-      pure $ Constraint pkg QualifiedAll
+      pure $ Constraint (AsParsedText pkg) QualifiedAll
 
     anySetup :: (Ord e) => MP.Parsec e SText (PackageConstraint -> Constraint)
     anySetup = do
       pkg <- MPC.string "setup." *> pPackageName
-      pure $ Constraint pkg QualifiedSetupAll
+      pure $ Constraint (AsParsedText pkg) QualifiedSetupAll
 
     specificSetup :: (Ord e) => MP.Parsec e SText (PackageConstraint -> Constraint)
     specificSetup = do
       setupPkg <- pPackageName
       void $ MPC.string ":setup."
       pkg <- pPackageName
-      pure $ Constraint pkg (QualifiedSetup setupPkg)
+      pure $ Constraint (AsParsedText pkg) (QualifiedSetup $ AsParsedText setupPkg)
 
 --TODO: this is looser than the spec, which is defined at <https://cabal.readthedocs.io/en/latest/developing-packages.html#pkg-field-name>
 pPackageName :: (Ord e) => MP.Parsec e SText PackageName
@@ -463,7 +471,7 @@ pFlagConstraints = many $ do
   nameRest <- MP.takeWhileP Nothing $
     \ c -> isAlphaNum c || c == '_' || c == '-'
   space
-  pure $ PackageConstraintFlag setting (mkFlagName $ nameFirst : ST.unpack nameRest)
+  pure $ PackageConstraintFlag setting (AsParsedText $ mkFlagName $ nameFirst : ST.unpack nameRest)
 
 pBenchConstraint :: (Ord e) => MP.Parsec e SText PackageConstraint
 pBenchConstraint = do
@@ -506,10 +514,10 @@ renderConstraint ( Constraint pkg qual constr ) = fold
       QualifiedAll -> "any."
       QualifiedSetupAll -> "setup."
       QualifiedSetup pkg' -> fold
-        [ LTB.fromString $ unPackageName pkg'
+        [ LTB.fromString $ unPackageName $ fromAsParsedText pkg'
         , ":setup."
         ]
-  , LTB.fromString $ unPackageName pkg
+  , LTB.fromString $ unPackageName $ fromAsParsedText pkg
   , " "
   , case constr of
       PackageConstraintVersion intervals -> case intervals of
@@ -523,11 +531,11 @@ renderConstraint ( Constraint pkg qual constr ) = fold
       PackageConstraintSource -> "source"
       PackageConstraintFlag True flag -> fold
         [ "+"
-        , LTB.fromString $ unFlagName flag
+        , LTB.fromString $ unFlagName $ fromAsParsedText flag
         ]
       PackageConstraintFlag False flag -> fold
         [ "-"
-        , LTB.fromString $ unFlagName flag
+        , LTB.fromString $ unFlagName $ fromAsParsedText flag
         ]
   ]
 
