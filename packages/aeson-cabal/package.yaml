@@ -15,6 +15,7 @@ library:
     - src
   exposed-modules:
     - Q4C12.AesonCabal
+    - Q4C12.AsParsedText
   other-modules: []
   dependencies:
     aeson:
