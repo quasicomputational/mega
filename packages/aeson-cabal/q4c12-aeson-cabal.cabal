@@ -4,7 +4,7 @@ cabal-version: 2.2
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 7ae903e03c2ea8a56f09ecb8adf28a93a8ce19f7ce6a96d0c7dfbc1c87548bf7
+-- hash: b89bfe7b5b8441ba2ea8b789a29ee989150e2f015eda04c9dc05ee1efb0b8e94
 
 name:           q4c12-aeson-cabal
 version:        0
@@ -24,6 +24,7 @@ source-repository head
 library
   exposed-modules:
       Q4C12.AesonCabal
+      Q4C12.AsParsedText
   hs-source-dirs:
       src
   default-extensions: BinaryLiterals DataKinds DeriveDataTypeable DeriveGeneric DeriveLift DeriveTraversable DerivingStrategies EmptyCase EmptyDataDecls EmptyDataDeriving HexFloatLiterals LambdaCase KindSignatures MonoLocalBinds NegativeLiterals NumDecimals OverloadedStrings PatternGuards PostfixOperators StandaloneDeriving TypeOperators ViewPatterns
