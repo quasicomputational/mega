@@ -180,6 +180,11 @@ import System.Directory as Export
 import Control.Lens as Export
   (Lens', set, over, view, (<>~), Iso, Iso', AnIso, AnIso', from, iso, withIso, Prism, Prism', APrism, APrism', preview, matching, review, withPrism, foldMapOf, anyOf)
 
+-- monoidal-containers imports for re-export
+import Data.Map.Monoidal as Export
+  ( MonoidalMap ( MonoidalMap, getMonoidalMap )
+  )
+
 -- invariant imports for re-export
 import Data.Functor.Invariant as Export
   ( Invariant (invmap), invmapFunctor, invmapContravariant

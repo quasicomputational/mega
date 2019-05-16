@@ -21,6 +21,7 @@ import qualified Data.ByteString.Lazy as LBS
 import qualified Data.ByteString.Builder as BSB
 import qualified Data.List as List
 import qualified Data.Map as Map
+import qualified Data.Map.Monoidal as MonoidalMap
 import Data.Map.Merge.Lazy ( dropMissing, mergeA, traverseMissing, zipWithMatched )
 import qualified Data.Set as Set
 import qualified Data.Text as ST
@@ -69,7 +70,6 @@ import Distribution.Version
   )
 import qualified Options.Applicative as OA
 import qualified Q4C12.Defrost as Defrost
-import qualified Q4C12.MapPend as MapPend
 import qualified Q4C12.ProjectFile as PF
 import Q4C12.XML ( parseXML', displayWarnings, displayError, uname )
 import Q4C12.XMLDesc
@@ -346,12 +346,12 @@ constructBuilds
   -> Either SText ( Map SText Build )
 constructBuilds packageData = do
   let
-    allMentionedConfigs = MapPend.getMapPend $
+    allMentionedConfigs = getMonoidalMap $
       flip foldMap packageData $ \ ( package, packageConfig ) -> fold
         [ flip foldMap ( packageConfigIncluded packageConfig ) $ \ config ->
-            MapPend.singleton config $ Set.singleton $ packageDirectory package
+            MonoidalMap.singleton config $ Set.singleton $ packageDirectory package
         , flip foldMap ( packageConfigExcluded packageConfig ) $ \ config ->
-            MapPend.singleton config $ Set.singleton $ packageDirectory package
+            MonoidalMap.singleton config $ Set.singleton $ packageDirectory package
         ]
   --TODO: ask for a mergeA_?
   void $ mergeA

@@ -19,6 +19,7 @@ import Control.Monad.Trans.Writer.CPS (tell)
 import qualified Data.DList as DList
 import qualified Data.DList.NonEmpty as NEDList
 import qualified Data.Map as Map
+import qualified Data.Map.Monoidal as MonoidalMap
 import qualified Data.Sequence as Seq
 import Data.String (IsString (fromString))
 import qualified Data.Text as ST
@@ -26,8 +27,6 @@ import Data.Text.ICU.Normalize (isNormalized, NormalizationMode (NFD))
 import qualified Data.Text.Lazy as LT
 import qualified Data.Text.Lazy.Builder as LTB
 import qualified Data.Text.Lazy.Builder.Int as LTBI
-import Q4C12.MapPend (MapPend, getMapPend)
-import qualified Q4C12.MapPend as MapPend
 import Q4C12.Position (Position, startPosition, PositionRange (PositionRange), updatePosition, position, positionRange)
 import Q4C12.TwoFinger (singletonOddA, unitOddA, consOddA)
 import Safe (toEnumMay)
@@ -458,7 +457,7 @@ resolveMarkup defaultNamespace namespaces (UMarkup tree) =
 
 data ClassifiedAttrs = ClassifiedAttrs
   { _classifiedDefaultNamespaces :: DList (PositionRange, SText)
-  , _classifiedBoundNamespaces :: MapPend SText (NonEmptyDList (PositionRange, SText))
+  , _classifiedBoundNamespaces :: MonoidalMap SText (NonEmptyDList (PositionRange, SText))
   , _classifiedAttrs :: DList (PositionRange, RawQName, Seq (PositionRange, LText))
   }
 
@@ -482,7 +481,7 @@ classifyNamespaceBinding
   -> SText
   -> ClassifiedAttrs
 classifyNamespaceBinding local pos ns =
-  ClassifiedAttrs mempty (MapPend.singleton local $ NEDList.singleton (pos, ns)) mempty
+  ClassifiedAttrs mempty (MonoidalMap.singleton local $ NEDList.singleton (pos, ns)) mempty
 
 classifyAttr
   :: PositionRange
@@ -519,7 +518,7 @@ resolveElement defaultNamespace namespaces (UElement rawName rawAttrs rawBody po
     (r0, _) : [] -> failure $ NEDList.singleton $ NonNFDNamespace r0
     (r0, _) : (r1, _) : rest -> failure $ NEDList.singleton $ DuplicateDefaultNamespaceDecls r0 (r1 :| fmap fst (toList rest))
   namespaceBindings <- validationToExcept $
-    flip Map.traverseWithKey (getMapPend collatedNamespaceBindings) $ \pref binds ->
+    flip Map.traverseWithKey (getMonoidalMap collatedNamespaceBindings) $ \pref binds ->
       case toNonEmpty binds of
         (_, ns) :| [] | isNormalized NFD ns -> pure ns
         (r, _) :| [] -> failure $ NEDList.singleton $ NonNFDNamespace r
@@ -531,13 +530,13 @@ resolveElement defaultNamespace namespaces (UElement rawName rawAttrs rawBody po
     RawQName (Just pref) local -> case Map.lookup pref namespaces' of
       Nothing -> failure $ NEDList.singleton $ UnboundNamespace pos pref
       Just ns -> pure $ QName (Just ns) local
-  attrSets <- validationToExcept $ fmap getMapPend $
+  attrSets <- validationToExcept $ fmap getMonoidalMap $
     flip foldMapM otherAttrs $ \(r, RawQName mpref local, value) ->
       case mpref of
-        Nothing -> pure $ MapPend.singleton (QName Nothing local) $ pure (r, value)
+        Nothing -> pure $ MonoidalMap.singleton (QName Nothing local) $ pure (r, value)
         Just pref -> case Map.lookup pref namespaces' of
           Nothing -> failure $ NEDList.singleton $ UnboundNamespace r pref
-          Just ns -> pure $ MapPend.singleton (QName (Just ns) local) $ pure (r, value)
+          Just ns -> pure $ MonoidalMap.singleton (QName (Just ns) local) $ pure (r, value)
   attrs <- validationToExcept $ for attrSets $ \case
     (r, value) :| [] -> pure (r, value)
     (r0, _) :| ((r1, _) : rest) -> failure $ NEDList.singleton $ DuplicateAttrs r0 (r1 :| fmap fst rest)

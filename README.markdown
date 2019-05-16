@@ -7,8 +7,6 @@ Data structures & related utilities
 
 * [q4c12-hlist](packages/hlist) has heterogeneous lists and sums.
 
-* [q4c12-mappend](packages/mappend) is `Data.Map`, but with the alternative append-ish `Monoid` instance. (Hence the name: map-pend.)
-
 * [q4c12-position](packages/position) is a type to represent points or contiguous ranges in text.
 
 * [q4c12-twofinger](packages/twofinger) is an efficient alternating sequence type.

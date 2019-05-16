@@ -35,6 +35,7 @@ library:
     filepath:
     invariant:
     lens:
+    monoidal-containers:
     profunctors:
     q4c12-foldable-utils:
     q4c12-hlist:

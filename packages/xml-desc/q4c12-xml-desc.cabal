@@ -4,7 +4,7 @@ cabal-version: 2.2
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 0fde9f2b55e69fe58d0c2ffe997374935410b12c81bfd75923a8787726828867
+-- hash: 48399846e6ee6287f440d468cf63b19eb795bc9ac85dd9eda09c43aa678f0c15
 
 name:           q4c12-xml-desc
 version:        0
@@ -41,7 +41,6 @@ library
     , containers
     , dlist
     , dlist-nonempty
-    , q4c12-mappend
     , q4c12-position
     , q4c12-prelude
     , q4c12-twofinger
