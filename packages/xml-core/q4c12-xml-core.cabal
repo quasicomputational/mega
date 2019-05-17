@@ -4,7 +4,7 @@ cabal-version: 2.2
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 538086681467f53286edfd23eca2ef3ca1ef4d5a2a617d50ca5be801e1a1cb90
+-- hash: b28af74e06642a468f94ce5e102e13d9742c1ae66d206a7f98787607f7db7151
 
 name:           q4c12-xml-core
 version:        0
@@ -22,6 +22,7 @@ extra-source-files:
     test/golden/comments/multi-everywhere.in
     test/golden/comments/nl.in
     test/golden/comments/no-comments.in
+    test/golden/comments/nonascii.in
     test/golden/parse-render/attribute-normalisation-eol.in
     test/golden/parse-render/attribute-normalisation.in
     test/golden/parse-render/attribute-quote-styles.in
@@ -37,6 +38,10 @@ extra-source-files:
     test/golden/parse-render/namespace-default-rebind.in
     test/golden/parse-render/namespace-default-unbind.in
     test/golden/parse-render/namespace-prefix-rebind.in
+    test/golden/parse-render/nonascii-attribute-value.in
+    test/golden/parse-render/nonascii-comment.in
+    test/golden/parse-render/nonascii-literal.in
+    test/golden/parse-render/nonascii-reference.in
     test/golden/parse-render/predefined.in
     test/golden/parse-render/random-spaces.in
     test/golden/parse-render/trailing-comment.in
@@ -46,6 +51,7 @@ extra-source-files:
     test/golden/comments/multi-everywhere.out
     test/golden/comments/nl.out
     test/golden/comments/no-comments.out
+    test/golden/comments/nonascii.out
     test/golden/parse-render/attribute-normalisation-eol.out
     test/golden/parse-render/attribute-normalisation.out
     test/golden/parse-render/attribute-quote-styles.out
@@ -88,6 +94,10 @@ extra-source-files:
     test/golden/parse-render/namespace-prefix-rebind.out
     test/golden/parse-render/non-nfd-name.out
     test/golden/parse-render/non-nfd-namespace.out
+    test/golden/parse-render/nonascii-attribute-value.out
+    test/golden/parse-render/nonascii-comment.out
+    test/golden/parse-render/nonascii-literal.out
+    test/golden/parse-render/nonascii-reference.out
     test/golden/parse-render/nothing.out
     test/golden/parse-render/predefined.out
     test/golden/parse-render/random-spaces.out
@@ -122,6 +132,10 @@ extra-source-files:
     test/golden/parse-render/namespace-default-rebind.errout
     test/golden/parse-render/namespace-default-unbind.errout
     test/golden/parse-render/namespace-prefix-rebind.errout
+    test/golden/parse-render/nonascii-attribute-value.errout
+    test/golden/parse-render/nonascii-comment.errout
+    test/golden/parse-render/nonascii-literal.errout
+    test/golden/parse-render/nonascii-reference.errout
     test/golden/parse-render/predefined.errout
     test/golden/parse-render/random-spaces.errout
     test/golden/parse-render/trailing-comment.errout
