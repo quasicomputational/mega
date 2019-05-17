@@ -95,6 +95,9 @@ import Data.Word as Export
 --TODO: is there really no other place but GHC.* to get these from? Should probably file an upstream bug...
 import GHC.Base as Export
   (($!))
+import GHC.Enum as Export
+  ( fromEnum
+  )
 import GHC.Err as Export
   (error)
 import GHC.Generics as Export

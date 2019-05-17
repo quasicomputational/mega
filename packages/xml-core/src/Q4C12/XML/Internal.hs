@@ -261,10 +261,31 @@ renderComment (Comment parts) = do
   tell "-->"
 
 renderBodyText :: LText -> Writer TBuilder ()
-renderBodyText = tell . LTB.fromText . ST.replace "\r" "&#xD;" . ST.replace "<" "&lt;" . ST.replace ">" "&gt;" . ST.replace "&" "&amp;" . LT.toStrict
+renderBodyText = tell . foldMap replace . LT.unpack
+  where
+    replace = \case
+      '\r' -> "&#xD;"
+      '<' -> "&lt;"
+      '>' -> "&gt;"
+      '&' -> "&amp;"
+      c -> if isAscii c
+        then LTB.singleton c
+        else "&#x" <> LTBI.hexadecimal (fromEnum c) <> ";"
 
 renderAttrText :: LText -> Writer TBuilder ()
-renderAttrText = tell . LTB.fromText . ST.replace "\n" "&#xA;" . ST.replace "\r" "&#xD;" . ST.replace "\t" "&#x9;" . ST.replace "\"" "&quot;" . ST.replace "<" "&lt;" . ST.replace ">" "&gt;" . ST.replace "&" "&amp;" . LT.toStrict
+renderAttrText = tell . foldMap replace . LT.unpack
+  where
+    replace = \case
+      '\n' -> "&#xA;"
+      '\r' -> "&#xD;"
+      '\t' -> "&#x9;"
+      '"' -> "&quot;"
+      '<' -> "&lt;"
+      '>' -> "&gt;"
+      '&' -> "&amp;"
+      c -> if isAscii c
+        then LTB.singleton c
+        else "&#x" <> LTBI.hexadecimal (fromEnum c) <> ";"
 
 --(prefix, local); this is used before we have mapped prefices to namespaces.
 data RawQName = RawQName (Maybe SText) SText
@@ -315,6 +336,7 @@ instance NFData ResolveError
 
 data XMLWarning
   = AttributeNormalisation Position
+  | NonASCIILiteral PositionRange
   deriving stock (Show, Generic, Eq, Ord)
 
 instance NFData XMLWarning
@@ -381,6 +403,8 @@ displayWarnings = foldMap (\warn -> displayWarning warn <> "\n")
 displayWarning :: XMLWarning -> TBuilder
 displayWarning (AttributeNormalisation pos) = fold
   [ "Warning: Performing attribute normalisation at ", position pos, "." ]
+displayWarning (NonASCIILiteral pos) = fold
+  [ "Warning: Non-ASCII literal characters at ", positionRange pos, "." ]
 
 data UElement = UElement
   RawQName
@@ -744,6 +768,9 @@ xmlSeenLT startPos = chooseFrom (SeenLTElement <$> goElement)
             _ -> True
           (candidates, input') = ST.span normalChar input
           endPos = updatePosition chunkStartPos candidates
+      -- TODO: consider warning on non-ASCII comments - there's no
+      -- standard escaping mechanism for comments, but it's not
+      -- machine-readable so it may not matter.
       put (input', endPos)
       when (ST.null input') $
         lift $ throwE $ XMLUnexpectedEoF "end of comment"
@@ -835,6 +862,7 @@ xmlSeenLT startPos = chooseFrom (SeenLTElement <$> goElement)
             _ -> True
           (candidates, input') = ST.span normalChar input
           endPos = updatePosition chunkStartPos candidates
+      warnNonASCII candidates chunkStartPos
       put (input', endPos)
       when (ST.null input') $
         lift $ throwE $ XMLUnexpectedEoF "attribute value."
@@ -886,6 +914,7 @@ xmlFlowToLTSlash = do
             _ -> True
           (candidates, input') = ST.span normalChar input
           endPos = updatePosition startPos candidates
+      warnNonASCII candidates startPos
       put (input', endPos)
       case ST.span isXMLChar candidates of
         (valid, rest) -> unless (ST.null rest) $
@@ -986,6 +1015,18 @@ charsUntil needle = do
       lift $ throwE $ XMLNonChar $ updatePosition pos success
   put (input', updatePosition pos $ cs <> needle)
   pure cs
+
+warnNonASCII :: SText -> Position -> Parser ()
+warnNonASCII ( ST.span isAscii -> ( ascii, rest ) ) ( flip updatePosition ascii -> pos ) =
+  if ST.null rest
+  then pure ()
+  else case ST.break isAscii rest of
+    (nonASCII, rest') -> do
+      let
+        pos' = updatePosition pos nonASCII
+      lift $ lift $ tell $ DList.singleton $
+       NonASCIILiteral $ PositionRange pos pos'
+      warnNonASCII rest' pos'
 
 isXMLChar :: Char -> Bool
 isXMLChar c = any (\(lb, ub) -> lb <= c && c <= ub) ranges

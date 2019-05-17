@@ -19,7 +19,13 @@ Namespace prefixes are thrown away in parsing and are not retained in the intern
 
 Entity references, attribute names, element names and namespaces must be in NFD.
 
-End-of-line normalisation is performed. Attribute value normalisation is also performed, but discouraged. Rendering uses the Unix convention of LF for line-ends. For round-tripping purposes, CR is always rendered as a character reference, and tab and LF are additionally rendered as character references in attribute values.
+Non-ASCII literals cause warnings. Use a character reference instead.
+
+Attribute whitespace normalisation causes a warning. (End-of-line normalisation outside attributes is performed *without* a warning.)
+
+Rendering uses the Unix convention of LF for line-ends.
+
+For round-tripping purposes, CR is always rendered as a character reference, and tab and LF are additionally rendered as character references in attribute values; non-ASCII characters are always rendered as hexadecimal character references.
 
 `>` is forbidden from appearing as a literal; it must appear as a reference. This is because of the silly `]]>` special-case.
 
@@ -30,7 +36,7 @@ Most of what's left out can be dealt with by a syntactic transformation of the i
 
 * Proper DTD support beyond the restricted entity reference support.
 
-* Mixed normalised and un-normalised entity references, element names, attribute names or namespaces, or mixed normalisation forms.
+* Mixed normalised and un-normalised entity references, element names, attribute names or namespaces, or mixed normalisation forms, or non-NFD attributes, element names or namespaces.
 
 * Dependency upon namespace prefixes (e.g., CURIEs, RDFa 1.0).
 
