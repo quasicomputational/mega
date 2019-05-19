@@ -2,6 +2,7 @@
 packages:
   packages/aeson-cabal
   packages/defrost
+  packages/dhondt
   packages/foldable-utils
   packages/hlist
   packages/meta

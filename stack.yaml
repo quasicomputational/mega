@@ -13,3 +13,4 @@ packages:
   - location: ./packages/project-file
   - location: ./packages/defrost
   - location: ./packages/aeson-cabal
+  - location: ./packages/dhondt

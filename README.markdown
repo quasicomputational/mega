@@ -32,6 +32,8 @@ XML
 Miscellanea
 ===========
 
+* [q4c12-dhondt](packages/dhondt) is a simulation of a d'Hondt proportional representation election.
+
 * [q4c12-meta](packages/meta) is local housekeeping. It generates the `.travis.yml` script for CI and the various GHC-version-specific `.project` files under `cabal/`, as well as tending to the freeze files. It's working well for me so far, so maybe I should try to turn it into a generally useful thing.
 
 * [q4c12-prelude](packages/prelude) is that hippest thing, an alternative `Prelude`. Its module is actually called `Prelude`; use it with `base-noprelude`, or with `mixins: base hiding (Prelude)` alongside `build-depends: base`.

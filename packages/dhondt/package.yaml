@@ -1,0 +1,34 @@
+spec-version: "0.31"
+name: q4c12-dhondt
+version: "0"
+homepage: https://github.com/quasicomputational/mega/tree/master/packages/meta
+github: quasicomputational/mega
+author: quasicomputational <quasicomputational@gmail.com>
+license: Apache-2.0 OR LGPL-2.1-or-later
+license-file:
+  - LICENSE.APACHE-2.0
+  - LICENSE.LGPL-2.1
+defaults:
+  local: ../../hpack-defaults.yaml
+
+library:
+  source-dirs:
+    - src
+  exposed-modules:
+    - Q4C12.DHondt
+  # Suppress Paths_*
+  other-modules: []
+  dependencies:
+    base:
+      mixin:
+        - hiding (Prelude)
+    containers:
+    pqueue:
+    q4c12-prelude:
+    streaming:
+    text:
+    transformers:
+      mixin:
+        # Hide the leaky writer versions
+        - hiding (Control.Monad.Trans.RWS, Control.Monad.Trans.Writer)
+    writer-cps-transformers:

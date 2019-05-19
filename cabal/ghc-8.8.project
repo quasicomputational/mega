@@ -2,6 +2,7 @@
 packages:
   packages/aeson-cabal
   packages/defrost
+  packages/dhondt
   packages/foldable-utils
   packages/hlist
   packages/meta
@@ -34,6 +35,8 @@ keep-going: true
 package q4c12-aeson-cabal
   ghc-options: -Werror
 package q4c12-defrost
+  ghc-options: -Werror
+package q4c12-dhondt
   ghc-options: -Werror
 package q4c12-foldable-utils
   ghc-options: -Werror

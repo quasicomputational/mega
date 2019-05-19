@@ -12,3 +12,4 @@ packages:
   ./packages/project-file
   ./packages/defrost
   ./packages/aeson-cabal
+  ./packages/dhondt
