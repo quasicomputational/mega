@@ -1,0 +1,43 @@
+cabal-version: 2.2
+
+-- This file has been generated from package.yaml by hpack version 0.31.2.
+--
+-- see: https://github.com/sol/hpack
+--
+-- hash: 55c4a1689bad73e8c1b97658ab5e84ee26c1dbeb0cb43050b4e6f373db367bf2
+
+name:           q4c12-dhondt
+version:        0
+homepage:       https://github.com/quasicomputational/mega/tree/master/packages/meta
+bug-reports:    https://github.com/quasicomputational/mega/issues
+author:         quasicomputational <quasicomputational@gmail.com>
+maintainer:     quasicomputational <quasicomputational@gmail.com>
+license:        (Apache-2.0 OR LGPL-2.1-or-later)
+license-files:  LICENSE.APACHE-2.0,
+                LICENSE.LGPL-2.1
+build-type:     Simple
+
+source-repository head
+  type: git
+  location: https://github.com/quasicomputational/mega
+
+library
+  exposed-modules:
+      Q4C12.DHondt
+  hs-source-dirs:
+      src
+  default-extensions: BinaryLiterals DataKinds DeriveDataTypeable DeriveGeneric DeriveLift DeriveTraversable DerivingStrategies EmptyCase EmptyDataDecls EmptyDataDeriving HexFloatLiterals LambdaCase KindSignatures MonoLocalBinds NegativeLiterals NumDecimals OverloadedStrings PatternGuards PostfixOperators StandaloneDeriving TypeOperators ViewPatterns
+  ghc-options: -Weverything -Wno-implicit-prelude -Wno-unsafe -Wno-safe -Wno-missed-specialisations -Wno-all-missed-specialisations -Wno-missing-exported-signatures
+  build-depends:
+      base
+    , containers
+    , pqueue
+    , q4c12-prelude
+    , streaming
+    , text
+    , transformers
+    , writer-cps-transformers
+  mixins:
+      base hiding (Prelude)
+    , transformers hiding (Control.Monad.Trans.RWS, Control.Monad.Trans.Writer)
+  default-language: Haskell2010

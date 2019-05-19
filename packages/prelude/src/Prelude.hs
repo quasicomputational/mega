@@ -13,7 +13,7 @@ module Prelude
 
 -- base imports for re-export
 import Control.Applicative as Export
-  (Applicative, pure, (<*>), (*>), (<*), liftA2, many, empty, (<|>))
+  (Applicative, Alternative, pure, (<*>), (*>), (<*), liftA2, many, empty, (<|>))
 import Control.Category as Export
   (Category (id, (.)), (>>>))
 import Control.Exception as Export
@@ -68,7 +68,7 @@ import Data.Int as Export
 import Data.Kind as Export
   (Type)
 import Data.List as Export
-  (iterate)
+  (iterate, unfoldr)
 import Data.List.NonEmpty as Export
   (NonEmpty ((:|)), unzip)
 import Data.Maybe as Export
@@ -76,14 +76,14 @@ import Data.Maybe as Export
 import Data.Monoid as Export
   (Monoid (mempty), Endo (Endo), appEndo, Dual (Dual), getDual)
 import Data.Ord as Export
-  (Ord, (>=), (<=), (>), (<), min, max, Ordering (LT, EQ, GT))
+  (Ord, (>=), (<=), (>), (<), min, max, Ordering (LT, EQ, GT), Down (Down))
 --TODO: get rid of Option once Maybe's Monoid instance changes
 import Data.Semigroup as Export
   ( Semigroup ((<>)), All (All), getAll, Any (Any), getAny, Option (Option), option
   , First (First), getFirst, Last (Last), getLast
   )
 import Data.Traversable as Export
-  (Traversable, traverse, for, sequence, foldMapDefault, fmapDefault)
+  (Traversable, traverse, for, sequenceA, foldMapDefault, fmapDefault)
 import Data.Type.Equality as Export
   ((:~:) (Refl))
 import Data.Tuple as Export
@@ -100,12 +100,14 @@ import GHC.Enum as Export
   )
 import GHC.Err as Export
   (error)
+import GHC.Float as Export
+  (Double)
 import GHC.Generics as Export
   (Generic)
 import GHC.Num as Export
   ((*), (+), (-), Integer, negate, subtract)
 import GHC.Real as Export
-  (Integral, quot)
+  (Integral, (/), quot)
 import Numeric.Natural as Export
   (Natural)
 import System.Exit as Export
@@ -137,7 +139,7 @@ import Control.Monad.Trans.Class as Export
 import Control.Monad.Trans.Maybe as Export
   ( MaybeT, runMaybeT )
 import Control.Monad.Trans.State as Export
-  (runStateT, execStateT, evalStateT, runState, StateT (StateT), State, state, evalState)
+  (runStateT, execStateT, evalStateT, runState, StateT (StateT), State, state, evalState, mapStateT)
 import Data.Functor.Reverse as Export
   (Reverse (Reverse), getReverse)
 
@@ -158,6 +160,10 @@ import Data.Sequence as Export
 -- semigroupoids imports for re-export
 import Data.Functor.Apply as Export
   (Apply ((<.>)), MaybeApply (MaybeApply), runMaybeApply, WrappedApplicative (WrapApplicative), unwrapApplicative)
+import Data.Functor.Plus as Export
+  ( Plus
+  , zero
+  )
 import Data.Semigroup.Bifoldable as Export
   (Bifoldable1 (bifoldMap1))
 import Data.Semigroup.Bitraversable as Export
@@ -181,7 +187,7 @@ import System.Directory as Export
 
 -- lens imports for re-export
 import Control.Lens as Export
-  (Lens', set, over, view, (<>~), Iso, Iso', AnIso, AnIso', from, iso, withIso, Prism, Prism', APrism, APrism', preview, matching, review, withPrism, foldMapOf, anyOf)
+  (Lens', set, over, view, views, (<>~), Iso, Iso', AnIso, AnIso', from, iso, withIso, Prism, Prism', APrism, APrism', preview, matching, review, withPrism, foldMapOf, anyOf, (<+=), (<+~))
 
 -- monoidal-containers imports for re-export
 import Data.Map.Monoidal as Export
