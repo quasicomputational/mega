@@ -59,7 +59,7 @@ votesToWeighted :: Votes -> Weighted Party
 votesToWeighted vs = Weighted 1 ( getVotes vs )
 
 newtype Party = Party { getParty :: SText }
-  deriving ( Eq, Ord, Show )
+  deriving stock ( Eq, Ord, Show )
 
 instance IsString Party where
   fromString = Party . fromString
@@ -72,7 +72,7 @@ data Seat = Seat
   , seatQuotient :: Double
   , seatCount :: Natural
   }
-  deriving ( Show )
+  deriving stock ( Show )
 
 newtype Votes = Votes { getVotes :: Map Party Double }
 
