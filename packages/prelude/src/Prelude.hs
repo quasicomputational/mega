@@ -222,6 +222,45 @@ import System.IO.Temp as Export
   ( withSystemTempDirectory
   )
 
+-- time imports for re-export
+import Data.Time.Calendar as Export
+  ( Day ( ModifiedJulianDay )
+  , addDays
+  , toGregorian
+  )
+import Data.Time.Clock as Export
+  ( DiffTime
+  , UTCTime
+  , addUTCTime
+  , diffTimeToPicoseconds
+  , getCurrentTime
+  , picosecondsToDiffTime
+  )
+import Data.Time.Clock.TAI as Export
+  ( AbsoluteTime
+  , diffAbsoluteTime
+  , taiEpoch
+  , taiNominalDayStart
+  , utcToTAITime
+  )
+import Data.Time.LocalTime as Export
+  ( LocalTime ( LocalTime )
+  , ZonedTime ( ZonedTime )
+  , getZonedTime
+  , localDay
+  , localTimeOfDay
+  , localTimeToUTC
+  , midnight
+  , timeOfDayToTime
+  , timeZoneOffsetString
+  , todHour
+  , todMin
+  , todSec
+  , zonedTimeToLocalTime
+  , zonedTimeToUTC
+  , zonedTimeZone
+  )
+
 -- Q4C12 packages for re-export
 import Q4C12.FoldableUtils as Export
   ( intercalate0, intercalateMap0, biintercalateMap0
