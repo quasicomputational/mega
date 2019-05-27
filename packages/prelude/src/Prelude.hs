@@ -8,6 +8,8 @@ module Prelude
   , hoistMaybe
   , FilePathComponent
   , validationToExcept, exceptToValidation, failure
+  , truncateInteger
+  , divModInteger
   )
   where
 
@@ -19,7 +21,7 @@ import Control.Category as Export
 import Control.Exception as Export
   (Exception)
 import Control.Monad as Export
-  (Monad, (=<<), (>>=), when, unless, ap, (<=<), void, guard)
+  (Monad, (=<<), (>>=), when, unless, ap, (<=<), void, guard, forever)
 import Control.Monad.Fail as Export
   (fail)
 import Control.Monad.IO.Class as Export
@@ -44,6 +46,9 @@ import Data.Either as Export
   (Either (Left, Right), either, partitionEithers)
 import Data.Eq as Export
   (Eq, (==), (/=))
+import Data.Fixed as Export
+  ( mod'
+  )
 --TODO: do we actually get anything out of Foldable if we use foldr/foldl'? That is, we might as well go through toList for those, right?
 --Note: elem is a potential performance landmine: if a container places more restrictions on its elements and can use those for retrieval, the (Eq a) constraint forces it to go linear. (e.g., Data.Set.member is O(log n).) Hence, we don't want to export it generally.
 import Data.Foldable as Export
@@ -51,7 +56,7 @@ import Data.Foldable as Export
   , for_, any, all, null, find, length
   )
 import Data.Function as Export
-  (($), const, flip, (&), fix)
+  (($), const, flip, (&), fix, on)
 import Data.Functor as Export
   (Functor (fmap), (<$>), (<$), (<&>))
 import Data.Functor.Compose as Export
@@ -113,7 +118,7 @@ import Numeric.Natural as Export
 import System.Exit as Export
   (exitFailure, ExitCode (ExitFailure, ExitSuccess))
 import System.IO as Export
-  (IO, FilePath, stdin, stdout, stderr, withFile, IOMode (ReadMode, WriteMode, AppendMode, ReadWriteMode))
+  (IO, FilePath, stdin, stdout, stderr, withFile, IOMode (ReadMode, WriteMode, AppendMode, ReadWriteMode), hSetBuffering, BufferMode (LineBuffering, NoBuffering, BlockBuffering))
 import System.IO.Error as Export
   ( isDoesNotExistError
   )
@@ -233,12 +238,15 @@ import Q4C12.TwoFinger as Export
 import qualified Data.ByteString as SBS
 import qualified Data.ByteString.Builder as BSB
 import qualified Data.ByteString.Lazy as LBS
+import Data.Fixed
+  ( divMod'
+  )
 import Data.Semigroup (mtimesDefault)
 import Data.String (String)
 import qualified Data.Text as ST
 import qualified Data.Text.Lazy as LT
 import qualified Data.Text.Lazy.Builder as LTB
-import GHC.Real (fromIntegral)
+import GHC.Real (fromIntegral, RealFrac, truncate)
 
 type SText = ST.Text
 type LText = LT.Text
@@ -270,3 +278,9 @@ exceptToValidation = eitherToValidation . runExcept
 
 failure :: e -> Validation e a
 failure = eitherToValidation . Left
+
+truncateInteger :: ( RealFrac a ) => a -> Integer
+truncateInteger = truncate
+
+divModInteger :: ( RealFrac a ) => a -> a -> ( Integer, a )
+divModInteger = divMod'
