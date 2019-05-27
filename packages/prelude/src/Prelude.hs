@@ -112,7 +112,7 @@ import GHC.Generics as Export
 import GHC.Num as Export
   ((*), (+), (-), Integer, negate, subtract)
 import GHC.Real as Export
-  (Integral, (/), quot)
+  (Integral, (/), quot, div, rem, mod, quotRem, divMod, toInteger)
 import Numeric.Natural as Export
   (Natural)
 import System.Exit as Export
