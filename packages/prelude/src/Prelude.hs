@@ -10,6 +10,7 @@ module Prelude
   , validationToExcept, exceptToValidation, failure
   , truncateInteger
   , divModInteger
+  , fromIntegerClip
   )
   where
 
@@ -82,6 +83,10 @@ import Data.Monoid as Export
   (Monoid (mempty), Endo (Endo), appEndo, Dual (Dual), getDual)
 import Data.Ord as Export
   (Ord, (>=), (<=), (>), (<), min, max, Ordering (LT, EQ, GT), Down (Down))
+import Data.Proxy as Export
+  ( Proxy ( Proxy )
+  , asProxyTypeOf
+  )
 --TODO: get rid of Option once Maybe's Monoid instance changes
 import Data.Semigroup as Export
   ( Semigroup ((<>)), All (All), getAll, Any (Any), getAny, Option (Option), option
@@ -101,7 +106,10 @@ import Data.Word as Export
 import GHC.Base as Export
   (($!))
 import GHC.Enum as Export
-  ( fromEnum
+  ( Bounded
+  , maxBound
+  , minBound
+  , fromEnum
   )
 import GHC.Err as Export
   (error)
@@ -323,3 +331,19 @@ truncateInteger = truncate
 
 divModInteger :: ( RealFrac a ) => a -> a -> ( Integer, a )
 divModInteger = divMod'
+
+fromIntegerClip :: ( Bounded a, Integral a ) => Integer -> a
+fromIntegerClip = f Proxy
+  where
+  f :: ( Bounded a, Integral a ) => proxy a -> Integer -> a
+  f proxy input =
+    if inUpper && inLower
+    then fromIntegral input
+    else if inUpper
+    then lo
+    else hi
+    where
+    hi = maxBound `asProxyTypeOf` proxy
+    lo = minBound `asProxyTypeOf` proxy
+    inUpper = fromIntegral hi >= input
+    inLower = fromIntegral lo <= input
