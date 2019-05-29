@@ -236,6 +236,9 @@ import Data.Time.Calendar as Export
   , addDays
   , toGregorian
   )
+import Data.Time.Calendar.OrdinalDate as Export
+  ( toOrdinalDate
+  )
 import Data.Time.Clock as Export
   ( DiffTime
   , UTCTime
