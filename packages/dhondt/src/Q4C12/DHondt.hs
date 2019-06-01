@@ -91,10 +91,10 @@ pqf f = PQ.maxView
     >>> fmap ( \ ( a, q ) -> f a <&> \ k' -> PQ.insert k' a q )
 
 partyStream
-  :: ( Monad f, Ord k )
-  => ( a -> f ( Of r k ) )
+  :: ( Monad f, Functor g, Ord k )
+  => ( a -> f ( g k ) )
   -> MaxPQueue k a
-  -> Stream ( Of r ) f ()
+  -> Stream g f ()
 partyStream rekey =
   Streaming.unfold
       $ pqf ( Compose . rekey )
