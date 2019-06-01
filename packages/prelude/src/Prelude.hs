@@ -126,7 +126,7 @@ import Numeric.Natural as Export
 import System.Exit as Export
   (exitFailure, ExitCode (ExitFailure, ExitSuccess))
 import System.IO as Export
-  (IO, FilePath, stdin, stdout, stderr, withFile, IOMode (ReadMode, WriteMode, AppendMode, ReadWriteMode), hSetBuffering, BufferMode (LineBuffering, NoBuffering, BlockBuffering))
+  (IO, FilePath, stdin, stdout, stderr, withFile, IOMode (ReadMode, WriteMode, AppendMode, ReadWriteMode), hSetBuffering, BufferMode (LineBuffering, NoBuffering, BlockBuffering), hFlush)
 import System.IO.Error as Export
   ( isDoesNotExistError
   )
