@@ -241,14 +241,17 @@ import Data.Time.Calendar.OrdinalDate as Export
   )
 import Data.Time.Clock as Export
   ( DiffTime
+  , NominalDiffTime
   , UTCTime
   , addUTCTime
   , diffTimeToPicoseconds
+  , diffUTCTime
   , getCurrentTime
   , picosecondsToDiffTime
   )
 import Data.Time.Clock.TAI as Export
   ( AbsoluteTime
+  , LeapSecondMap
   , diffAbsoluteTime
   , taiEpoch
   , taiNominalDayStart
@@ -279,7 +282,8 @@ import Data.Time.Calendar.Compat as Export
   , dayOfWeek
   )
 import Data.Time.Clock.Compat as Export
-  ( secondsToNominalDiffTime
+  ( nominalDiffTimeToSeconds
+  , secondsToNominalDiffTime
   )
 
 -- Q4C12 packages for re-export
