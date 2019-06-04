@@ -87,9 +87,8 @@ import Data.Proxy as Export
   ( Proxy ( Proxy )
   , asProxyTypeOf
   )
---TODO: get rid of Option once Maybe's Monoid instance changes
 import Data.Semigroup as Export
-  ( Semigroup ((<>)), All (All), getAll, Any (Any), getAny, Option (Option), option
+  ( Semigroup ((<>)), All (All), getAll, Any (Any), getAny
   , First (First), getFirst, Last (Last), getLast
   )
 import Data.Traversable as Export

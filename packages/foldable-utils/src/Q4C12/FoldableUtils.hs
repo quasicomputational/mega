@@ -13,7 +13,7 @@ module Q4C12.FoldableUtils
 import Data.Bifunctor (first)
 import Data.Bifoldable (Bifoldable (bifoldMap))
 import Data.Functor.Reverse (Reverse (Reverse))
-import Data.Semigroup (Dual (Dual), getDual, Endo (Endo), appEndo, Option (Option))
+import Data.Semigroup (Dual (Dual), getDual, Endo (Endo), appEndo)
 
 -- $setup
 -- >>> import Data.Char (toUpper)
@@ -51,7 +51,7 @@ intercalateMap0
   -> m
 intercalateMap0 a f
   = foldMap (flip runJoined a)
-  . foldMap (Option . Just . Joined . const . f)
+  . foldMap (Just . Joined . const . f)
 
 -- | 'intercalateMap0', extended to 'Bifoldable'.
 --
@@ -66,7 +66,7 @@ biintercalateMap0
   -> m
 biintercalateMap0 a f g
   = foldMap (flip runJoined a)
-  . bifoldMap (Option . Just . Joined . const . f) (Option . Just . Joined . const . g)
+  . bifoldMap (Just . Joined . const . f) (Just . Joined . const . g)
 
 --TODO: this could be a more general utility...
 newtype MonoidA f m = MonoidA { getMonoidA :: f m }
