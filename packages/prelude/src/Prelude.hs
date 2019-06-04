@@ -272,6 +272,16 @@ import Data.Time.LocalTime as Export
   , zonedTimeZone
   )
 
+-- time-compat imports for re-export
+-- TODO: import from time when we can, which is likely when GHC 8.6 support gets dropped
+import Data.Time.Calendar.Compat as Export
+  ( DayOfWeek ( Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday )
+  , dayOfWeek
+  )
+import Data.Time.Clock.Compat as Export
+  ( secondsToNominalDiffTime
+  )
+
 -- Q4C12 packages for re-export
 import Q4C12.FoldableUtils as Export
   ( intercalate0, intercalateMap0, biintercalateMap0

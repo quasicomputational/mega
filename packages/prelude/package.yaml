@@ -45,6 +45,7 @@ library:
     temporary:
     text:
     time:
+    time-compat:
     transformers:
       mixin:
         # Hide the leaky writer versions

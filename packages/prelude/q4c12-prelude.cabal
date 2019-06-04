@@ -4,7 +4,7 @@ cabal-version: 2.2
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: c5087075f4c85345498517f2172dee067b544567547c111c09cfc8130617b218
+-- hash: aefe1e410d467158c7f040edd540686fa884791b932ab4c78d6e28811dd3b56a
 
 name:           q4c12-prelude
 version:        0
@@ -53,6 +53,7 @@ library
     , temporary
     , text
     , time
+    , time-compat
     , transformers
     , transformers-compat
     , writer-cps-transformers
