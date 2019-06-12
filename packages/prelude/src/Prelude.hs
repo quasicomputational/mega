@@ -143,7 +143,7 @@ import System.FilePath.Posix as Export
 
 -- transformers imports for re-export
 import Control.Monad.Trans.Accum as Export
-  (runAccum, runAccumT, evalAccum, evalAccumT, AccumT, Accum)
+  (runAccum, runAccumT, evalAccum, evalAccumT, execAccum, execAccumT, AccumT, Accum)
 import Control.Monad.Trans.Except as Export
   (withExceptT, runExceptT, runExcept, except, Except, ExceptT (ExceptT), mapExceptT)
 import Control.Monad.Trans.Class as Export
