@@ -26,6 +26,7 @@ library:
     bytestring:
     Cabal:
     containers:
+    lens:
     monoidal-containers:
     optparse-applicative:
     process:
@@ -35,6 +36,7 @@ library:
     q4c12-xml-core:
     q4c12-xml-desc:
     text:
+    transformers:
 
 executables:
   meta:

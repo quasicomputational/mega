@@ -4,7 +4,7 @@ cabal-version: 2.2
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 36f0f2f06fcff9cb4a8b9587326c3696be29c77abdb64d7aaf20b87b2d388065
+-- hash: 0b782e79f1171c1923dc90b2b1b322027144d654e71659a5f9a57dfde6bed57e
 
 name:           q4c12-meta
 version:        0
@@ -34,6 +34,7 @@ library
     , base
     , bytestring
     , containers
+    , lens
     , monoidal-containers
     , optparse-applicative
     , process
@@ -43,6 +44,7 @@ library
     , q4c12-xml-core
     , q4c12-xml-desc
     , text
+    , transformers
   mixins:
       base hiding (Prelude)
   default-language: Haskell2010

@@ -201,7 +201,7 @@ import System.Directory as Export
 
 -- lens imports for re-export
 import Control.Lens as Export
-  (Lens, Lens', set, over, view, views, (<>~), Iso, Iso', AnIso, AnIso', from, iso, withIso, Prism, Prism', APrism, APrism', preview, matching, review, withPrism, foldMapOf, anyOf, (<+=), (<+~), Traversal, Traversal', Getting)
+  (Lens, Lens', set, over, view, views, (<>~), Iso, Iso', AnIso, AnIso', from, iso, withIso, Prism, Prism', APrism, APrism', preview, matching, review, withPrism, foldMapOf, anyOf, (<+=), (<+~), Traversal, Traversal', Getting, Getter)
 import Data.Set.Lens as Export
   ( setOf
   )
