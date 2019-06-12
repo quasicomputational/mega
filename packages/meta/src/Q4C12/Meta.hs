@@ -270,7 +270,6 @@ generateProjectFiles = Map.foldMapWithKey $ \ buildName build ->
 
 data PackageConfig = PackageConfig
   { packageConfigExcluded :: Set SText
-  , packageConfigIncluded :: Set SText
   }
 
 packageConfigSchema
@@ -281,20 +280,17 @@ packageConfigSchema
   $ rcons ( flowWSEDropComments $ elementMixed ( uname "exclude" )
           $ flowEvenPreWSDropComments versions
           )
-  $ rcons ( flowWSEDropComments $ elementMixed ( uname "include" )
-          $ flowEvenPreWSDropComments versions
-          )
   $ rnil
 
   where
 
-    f :: HProd '[ [SText], [SText] ] -> PackageConfig
-    f ( HProdCons excluded ( HProdCons included HProdNil ) ) =
-      PackageConfig ( Set.fromList excluded ) ( Set.fromList included )
+    f :: HProd '[ [SText] ] -> PackageConfig
+    f ( HProdCons excluded HProdNil ) =
+      PackageConfig ( Set.fromList excluded )
 
-    g :: PackageConfig -> HProd '[ [SText], [SText] ]
-    g ( PackageConfig excluded included ) =
-      HProdCons ( toList excluded ) $ HProdCons ( toList included ) $ HProdNil
+    g :: PackageConfig -> HProd '[ [SText] ]
+    g ( PackageConfig excluded ) =
+      HProdCons ( toList excluded ) HProdNil
 
     versions :: ( Desc tag ) => EvenFlow tag [SText]
     versions
@@ -324,21 +320,18 @@ parsePackageConfig path = do
         Just packageConfig ->
           pure packageConfig
 
-data Optability = OptIn | OptOut
-
 data BuildConfig = BuildConfig
   { _buildConfigGHCVersion :: GHCVersion
-  , _buildConfigOptability :: Optability
   , _buildConfigRunMetaChecks :: RunMetaChecks
   , _buildConfigWError :: WError
   }
 
 configs :: Map SText BuildConfig
 configs = Map.fromList
-  [ ( "ghc-8.4", BuildConfig GHC8_4 OptOut MetaNo WErrorNo )
-  , ( "ghc-8.6", BuildConfig GHC8_6 OptOut MetaYes WErrorYes )
-  , ( "ghc-8.8", BuildConfig GHC8_8 OptOut MetaNo WErrorYes )
-  , ( "ghc-head", BuildConfig GHCHEAD OptOut MetaNo WErrorNo )
+  [ ( "ghc-8.4", BuildConfig GHC8_4 MetaNo WErrorNo )
+  , ( "ghc-8.6", BuildConfig GHC8_6 MetaYes WErrorYes )
+  , ( "ghc-8.8", BuildConfig GHC8_8 MetaNo WErrorYes )
+  , ( "ghc-head", BuildConfig GHCHEAD MetaNo WErrorNo )
   ]
 
 constructBuilds
@@ -347,12 +340,9 @@ constructBuilds
 constructBuilds packageData = do
   let
     allMentionedConfigs = getMonoidalMap $
-      flip foldMap packageData $ \ ( package, packageConfig ) -> fold
-        [ flip foldMap ( packageConfigIncluded packageConfig ) $ \ config ->
-            MonoidalMap.singleton config $ Set.singleton $ packageDirectory package
-        , flip foldMap ( packageConfigExcluded packageConfig ) $ \ config ->
-            MonoidalMap.singleton config $ Set.singleton $ packageDirectory package
-        ]
+      flip foldMap packageData $ \ ( package, packageConfig ) ->
+        flip foldMap ( packageConfigExcluded packageConfig ) $ \ config ->
+          MonoidalMap.singleton config $ Set.singleton $ packageDirectory package
   --TODO: ask for a mergeA_?
   void $ mergeA
     dropMissing
@@ -362,15 +352,10 @@ constructBuilds packageData = do
     ( zipWithMatched $ \ _ _ _ -> () )
     configs
     allMentionedConfigs
-  pure $ flip Map.mapWithKey configs $ \ configName ( BuildConfig ghc opt runMeta werror ) ->
-    let packages = flip mapMaybe packageData $ \ ( package, packageConfig ) ->
-          if | not ( Set.member configName ( packageConfigIncluded packageConfig ) )
-             , OptIn <- opt
-             -> Nothing
-             | Set.member configName ( packageConfigExcluded packageConfig )
-             -> Nothing
-             | otherwise
-             -> Just package
+  pure $ flip Map.mapWithKey configs $ \ configName ( BuildConfig ghc runMeta werror ) ->
+    let packages = flip mapMaybe packageData $ \ ( package, packageConfig ) -> do
+          guard $ not $ Set.member configName ( packageConfigExcluded packageConfig )
+          pure package
     in Build ghc packages runMeta werror
 
 data Command
@@ -521,11 +506,9 @@ refreeze builds = flip traverseWithKey_ builds $ \ buildName _build -> do
 
 envsForPackageConfig :: PackageConfig -> IO [ Defrost.Env ]
 envsForPackageConfig packageConfig =
-  fmap toList $ flip Map.traverseMaybeWithKey configs $ \ buildName (BuildConfig ghc opt _ _) -> runMaybeT $ do
+  fmap toList $ flip Map.traverseMaybeWithKey configs $ \ buildName (BuildConfig ghc _ _) -> runMaybeT $ do
     ghcVer <- hoistMaybe $ ghcCompilerVersion ghc
-    guard $ case opt of
-      OptIn -> Set.member buildName (packageConfigIncluded packageConfig)
-      OptOut -> not $ Set.member buildName (packageConfigExcluded packageConfig)
+    guard $ not $ Set.member buildName (packageConfigExcluded packageConfig)
     lift $ do
       parseRes <- PF.parse <$> STIO.readFile ( addExtension ( "cabal" </> ST.unpack buildName ) "project.freeze" )
       case parseRes of
