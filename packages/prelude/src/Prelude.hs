@@ -12,6 +12,7 @@ module Prelude
   , divModInteger
   , fromIntegerClip
   , dlistOf
+  , lookupMonoidal
   )
   where
 
@@ -309,6 +310,7 @@ import qualified Data.DList as DList
 import Data.Fixed
   ( divMod'
   )
+import qualified Data.Map.Monoidal as MonoidalMap
 import Data.Semigroup (mtimesDefault)
 import Data.String (String)
 import qualified Data.Text as ST
@@ -371,3 +373,6 @@ fromIntegerClip = f Proxy
 
 dlistOf :: Getting ( DList a ) s a -> s -> DList a
 dlistOf l = views l DList.singleton
+
+lookupMonoidal :: ( Ord k, Monoid v ) => k -> MonoidalMap k v -> v
+lookupMonoidal k = fold . MonoidalMap.lookup k
