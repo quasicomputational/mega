@@ -11,6 +11,7 @@ module Prelude
   , truncateInteger
   , divModInteger
   , fromIntegerClip
+  , dlistOf
   )
   where
 
@@ -199,7 +200,7 @@ import System.Directory as Export
 
 -- lens imports for re-export
 import Control.Lens as Export
-  (Lens, Lens', set, over, view, views, (<>~), Iso, Iso', AnIso, AnIso', from, iso, withIso, Prism, Prism', APrism, APrism', preview, matching, review, withPrism, foldMapOf, anyOf, (<+=), (<+~), Traversal, Traversal')
+  (Lens, Lens', set, over, view, views, (<>~), Iso, Iso', AnIso, AnIso', from, iso, withIso, Prism, Prism', APrism, APrism', preview, matching, review, withPrism, foldMapOf, anyOf, (<+=), (<+~), Traversal, Traversal', Getting)
 import Data.Set.Lens as Export
   ( setOf
   )
@@ -304,6 +305,7 @@ import Q4C12.TwoFinger as Export
 import qualified Data.ByteString as SBS
 import qualified Data.ByteString.Builder as BSB
 import qualified Data.ByteString.Lazy as LBS
+import qualified Data.DList as DList
 import Data.Fixed
   ( divMod'
   )
@@ -366,3 +368,6 @@ fromIntegerClip = f Proxy
     lo = minBound `asProxyTypeOf` proxy
     inUpper = fromIntegral hi >= input
     inLower = fromIntegral lo <= input
+
+dlistOf :: Getting ( DList a ) s a -> s -> DList a
+dlistOf l = views l DList.singleton
