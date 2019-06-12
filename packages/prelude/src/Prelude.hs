@@ -11,6 +11,8 @@ module Prelude
   , truncateInteger
   , divModInteger
   , fromIntegerClip
+  , dlistOf
+  , lookupMonoidal
   )
   where
 
@@ -143,7 +145,7 @@ import System.FilePath.Posix as Export
 
 -- transformers imports for re-export
 import Control.Monad.Trans.Accum as Export
-  (runAccum, runAccumT, evalAccum, evalAccumT, AccumT, Accum)
+  (runAccum, runAccumT, evalAccum, evalAccumT, execAccum, execAccumT, AccumT, Accum)
 import Control.Monad.Trans.Except as Export
   (withExceptT, runExceptT, runExcept, except, Except, ExceptT (ExceptT), mapExceptT)
 import Control.Monad.Trans.Class as Export
@@ -199,7 +201,10 @@ import System.Directory as Export
 
 -- lens imports for re-export
 import Control.Lens as Export
-  (Lens', set, over, view, views, (<>~), Iso, Iso', AnIso, AnIso', from, iso, withIso, Prism, Prism', APrism, APrism', preview, matching, review, withPrism, foldMapOf, anyOf, (<+=), (<+~))
+  (Lens, Lens', set, over, view, views, (<>~), Iso, Iso', AnIso, AnIso', from, iso, withIso, Prism, Prism', APrism, APrism', preview, matching, review, withPrism, foldMapOf, anyOf, (<+=), (<+~), Traversal, Traversal', Getting)
+import Data.Set.Lens as Export
+  ( setOf
+  )
 
 -- monoidal-containers imports for re-export
 import Data.Map.Monoidal as Export
@@ -301,9 +306,11 @@ import Q4C12.TwoFinger as Export
 import qualified Data.ByteString as SBS
 import qualified Data.ByteString.Builder as BSB
 import qualified Data.ByteString.Lazy as LBS
+import qualified Data.DList as DList
 import Data.Fixed
   ( divMod'
   )
+import qualified Data.Map.Monoidal as MonoidalMap
 import Data.Semigroup (mtimesDefault)
 import Data.String (String)
 import qualified Data.Text as ST
@@ -363,3 +370,9 @@ fromIntegerClip = f Proxy
     lo = minBound `asProxyTypeOf` proxy
     inUpper = fromIntegral hi >= input
     inLower = fromIntegral lo <= input
+
+dlistOf :: Getting ( DList a ) s a -> s -> DList a
+dlistOf l = views l DList.singleton
+
+lookupMonoidal :: ( Ord k, Monoid v ) => k -> MonoidalMap k v -> v
+lookupMonoidal k = fold . MonoidalMap.lookup k
