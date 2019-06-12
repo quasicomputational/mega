@@ -199,7 +199,10 @@ import System.Directory as Export
 
 -- lens imports for re-export
 import Control.Lens as Export
-  (Lens', set, over, view, views, (<>~), Iso, Iso', AnIso, AnIso', from, iso, withIso, Prism, Prism', APrism, APrism', preview, matching, review, withPrism, foldMapOf, anyOf, (<+=), (<+~))
+  (Lens, Lens', set, over, view, views, (<>~), Iso, Iso', AnIso, AnIso', from, iso, withIso, Prism, Prism', APrism, APrism', preview, matching, review, withPrism, foldMapOf, anyOf, (<+=), (<+~), Traversal, Traversal')
+import Data.Set.Lens as Export
+  ( setOf
+  )
 
 -- monoidal-containers imports for re-export
 import Data.Map.Monoidal as Export
