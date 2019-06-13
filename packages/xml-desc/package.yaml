@@ -45,7 +45,6 @@ library:
       # Hide the leaky WriterT
       mixin:
         - hiding (Control.Monad.Trans.RWS, Control.Monad.Trans.Writer)
-    transformers-compat:
     writer-cps-transformers:
 
 #TODO: tests

@@ -4,7 +4,7 @@ cabal-version: 2.2
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: b28af74e06642a468f94ce5e102e13d9742c1ae66d206a7f98787607f7db7151
+-- hash: db515143d0a45bbf93a90eb72b49b0a9566ef91096ca3c99e850c1415d03b63a
 
 name:           q4c12-xml-core
 version:        0
@@ -212,7 +212,6 @@ library
     , text
     , text-icu
     , transformers
-    , transformers-compat
     , writer-cps-transformers
   mixins:
       base hiding (Prelude)
