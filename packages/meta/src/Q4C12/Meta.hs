@@ -14,6 +14,8 @@ module Q4C12.Meta
 
 import Control.Exception
   ( tryJust )
+import qualified Control.Lens as Lens
+import qualified Control.Monad.Trans.Accum as Accum
 import qualified Data.Aeson as Aeson
 import qualified Data.Aeson.Encoding as Aeson.Encoding
 import qualified Data.ByteString as BS
@@ -22,7 +24,7 @@ import qualified Data.ByteString.Builder as BSB
 import qualified Data.List as List
 import qualified Data.Map as Map
 import qualified Data.Map.Monoidal as MonoidalMap
-import Data.Map.Merge.Lazy ( dropMissing, mergeA, traverseMissing, zipWithMatched )
+import Data.Map.Merge.Lazy ( mapMissing, mergeA, traverseMissing, zipWithMatched )
 import qualified Data.Set as Set
 import qualified Data.Text as ST
 import qualified Data.Text.IO as STIO
@@ -31,6 +33,11 @@ import qualified Data.Text.Lazy.Builder as LTB
 import qualified Data.Text.Lazy.Encoding as LTEnc
 import qualified Data.Text.Lazy.IO as LTIO
 import qualified Distribution.Compiler as Compiler
+import Distribution.Package
+  ( Dependency
+  , depPkgName
+  , packageName
+  )
 import Distribution.PackageDescription.Parsec
   ( parseGenericPackageDescription
   , runParseResult
@@ -45,8 +52,17 @@ import Distribution.Simple.Utils
   ( tryFindPackageDesc
   )
 import qualified Distribution.System
+import Distribution.Types.BuildInfo.Lens
+  ( HasBuildInfo
+  , targetBuildDepends
+  )
+import Distribution.Types.CondTree
+  ( CondTree
+  , simplifyCondTree
+  )
 import Distribution.Types.GenericPackageDescription
-  ( GenericPackageDescription
+  ( ConfVar ( OS, Arch, Flag, Impl )
+  , GenericPackageDescription ( GenericPackageDescription )
   )
 import Distribution.Types.GenericPackageDescription.Lens
   ( packageDescription
@@ -54,8 +70,10 @@ import Distribution.Types.GenericPackageDescription.Lens
 import qualified Distribution.Types.PackageDescription as PD
 import Distribution.Types.PackageName
   ( PackageName
-  , mkPackageName
   , unPackageName
+  )
+import Distribution.Types.SetupBuildInfo
+  ( setupDepends
   )
 import Distribution.Types.SourceRepo
   ( SourceRepo ( repoKind, repoTag )
@@ -63,6 +81,7 @@ import Distribution.Types.SourceRepo
   )
 import Distribution.Types.VersionRange
   ( orLaterVersion
+  , withinRange
   )
 import Distribution.Version
   ( Version
@@ -102,6 +121,7 @@ data Regularity
     }
   | PreRelease
     { _preReleaseCabal :: SText
+    , _preReleaseGHCVersion :: Version
     }
 
 data GHCVersion
@@ -119,17 +139,68 @@ ghcAptVersion = \case
   GHC8_8 -> "8.8.1"
   GHCHEAD -> "head"
 
-ghcCompilerVersion :: GHCVersion -> Maybe Version
-ghcCompilerVersion ghc = case (ghcRegularity ghc) of
-  Regular ver -> Just ver
-  PreRelease{} -> Nothing
+ghcCompilerVersion :: GHCVersion -> Version
+ghcCompilerVersion ghc = case ghcRegularity ghc of
+  Regular ver -> ver
+  PreRelease _ ver -> ver
+
+allCondTreesDependencies
+  :: GenericPackageDescription
+  -> DList ( CondTree ConfVar [ Dependency ] ( DList Dependency ) )
+allCondTreesDependencies ( GenericPackageDescription _ _ mlib x1 x2 x3 x4 x5 ) = fold
+  [ dlistOf ( traverse . deps ) mlib
+  , dlistOf ( traverse . traverse . deps ) x1
+  , dlistOf ( traverse . traverse . deps ) x2
+  , dlistOf ( traverse . traverse . deps ) x3
+  , dlistOf ( traverse . traverse . deps ) x4
+  , dlistOf ( traverse . traverse . deps ) x5
+  ]
+  where
+  -- Note: this is something even weaker than a 'Getter', as it
+  -- doesn't need a 'Functor g' constraint. See
+  -- https://gitlab.haskell.org/ghc/ghc/issues/12142 for why it's been
+  -- expanded out.
+  deps
+    :: ( HasBuildInfo a, Functor f, Contravariant g )
+    => ( f ( DList Dependency ) -> g ( f ( DList Dependency ) ) )
+    -> f a
+    -> g ( f a )
+  deps = Lens.to $ fmap $ dlistOf ( targetBuildDepends . traverse )
+
+allDependencies :: GHCVersion -> GenericPackageDescription -> Set PackageName
+allDependencies ghcVer gpd = fold
+  [ setOf ( packageDescription . Lens.to PD.setupBuildInfo . traverse . Lens.to setupDepends . traverse . Lens.to depPkgName ) gpd
+  , setOf ( Lens.to allCondTreesDependencies . Lens.to ( fmap eval ) . Lens.to ( foldMap toList ) . traverse . Lens.to depPkgName ) gpd
+  ]
+  where
+  --TODO: hard-coded knowledge of the Travis environment
+  --TODO: punting on flags
+  eval :: ( Monoid a, Monoid ds ) => CondTree ConfVar ds a -> a
+  eval
+    = snd
+    . simplifyCondTree
+      ( \case
+          OS os ->
+            Right ( os == Distribution.System.Linux )
+          Arch arch ->
+            Right ( arch == Distribution.System.X86_64 )
+          Flag flag ->
+            Left ( Flag flag )
+          Impl compiler range ->
+            Right ( compiler == Compiler.GHC && withinRange ( ghcCompilerVersion ghcVer ) range )
+      )
 
 ghcRegularity :: GHCVersion -> Regularity
 ghcRegularity = \case
   GHC8_4 -> Regular (mkVersion [8, 4])
   GHC8_6 -> Regular (mkVersion [8, 6])
-  GHC8_8 -> PreRelease "3.0"
-  GHCHEAD -> PreRelease "head"
+  GHC8_8 -> PreRelease "3.0" (mkVersion [8, 8])
+  GHCHEAD -> PreRelease "head" (mkVersion [8, 10])
+
+isRegular :: GHCVersion -> Bool
+isRegular ghc = case ghcRegularity ghc of
+  Regular{} -> True
+  PreRelease{} -> False
 
 data RunMetaChecks = MetaNo | MetaYes
 
@@ -137,12 +208,14 @@ data WError = WErrorNo | WErrorYes
 
 data Package = Package
   { packageDirectory :: FilePath
-  , packageName :: PackageName
+  , packageGPD :: GenericPackageDescription
   }
 
 data Build = Build
   { buildGHCVersion :: GHCVersion
   , buildPackages :: [Package]
+  -- TODO: the values are really non-empty sets, but we can't really express that (yet).
+  , buildExcludedPackages :: MonoidalMap PackageName ( Set PackageName )
   , buildRunMeta :: RunMetaChecks
   , buildWError :: WError
   }
@@ -198,7 +271,7 @@ travisConfiguration buildMap = Aeson.Encoding.pairs $ fold
           [ "ghc-" <> ghcAptVersion ghc
           , case ghcRegularity ghc of
               Regular{} -> "cabal-install-2.4"
-              PreRelease ver -> "cabal-install-" <> ver
+              PreRelease ver _ -> "cabal-install-" <> ver
           ]
         ]
 
@@ -263,7 +336,7 @@ generateProjectFiles = Map.foldMapWithKey $ \ buildName build ->
           WErrorYes ->
             -- This is a hack around https://github.com/haskell/cabal/issues/3883: we can't specify ghc-options for all local packages only, so instead specify ghc-options for each, individual local package.
             flip foldMap ( buildPackages build ) $ \ package ->
-              [ "package " <> LT.pack ( unPackageName ( packageName package ) )
+              [ "package " <> LT.pack ( unPackageName ( packageName $ packageGPD package ) )
               , "  ghc-options: -Werror"
               ]
       ]
@@ -334,38 +407,76 @@ configs = Map.fromList
   , ( "ghc-head", BuildConfig GHCHEAD MetaNo WErrorNo )
   ]
 
+-- The values are the sources of the exclusion.
+computeTransitiveExclusions
+  :: ( Ord a )
+  => ( a -> Set a )
+  -> Set a
+  -> MonoidalMap a ( Set a )
+computeTransitiveExclusions adjacent input =
+  execAccum
+    ( go ( MonoidalMap.fromSet Set.singleton input ) )
+    mempty
+  where
+  go cur = do
+    new <- MonoidalMap.difference cur <$> Accum.look
+    Accum.add cur
+    if null new
+    then pure ()
+    else go $ flip MonoidalMap.foldMapWithKey new $ \ a deps ->
+      MonoidalMap.fromSet ( const deps ) ( adjacent a )
+
 constructBuilds
   :: [ (Package, PackageConfig) ]
   -> Either SText ( Map SText Build )
 constructBuilds packageData = do
   let
-    allMentionedConfigs = getMonoidalMap $
+    packagesByName :: Map PackageName GenericPackageDescription
+    packagesByName = Map.fromList $ packageData <&> \ ( Package _ gpd, _ ) -> ( packageName gpd, gpd )
+    localDependents :: MonoidalMap GHCVersion ( MonoidalMap PackageName ( Set PackageName ) )
+    localDependents = flip Map.foldMapWithKey packagesByName $ \ name gpd ->
+      flip foldMap configs $ \ ( BuildConfig ghcVer _ _ ) ->
+        MonoidalMap.singleton ghcVer $
+          flip foldMap ( allDependencies ghcVer gpd ) $ \ depName ->
+            if Set.member depName local
+            then MonoidalMap.singleton depName ( Set.singleton name )
+            else mempty
+    immediateExclusions :: Map SText ( NonEmpty Package )
+    immediateExclusions = getMonoidalMap $
       flip foldMap packageData $ \ ( package, packageConfig ) ->
         flip foldMap ( packageConfigExcluded packageConfig ) $ \ config ->
-          MonoidalMap.singleton config $ Set.singleton $ packageDirectory package
-  --TODO: ask for a mergeA_?
-  void $ mergeA
-    dropMissing
-    ( traverseMissing $ \ configName dirs ->
-        Left $ "Unknown config '" <> configName <> "' mentioned in config.xml in " <> intercalateMap0 ", " ST.pack dirs <> "."
+          MonoidalMap.singleton config $ pure package
+    local = Set.fromList $ packageName . packageGPD . fst <$> packageData
+    makeBuild ( BuildConfig ghc runMeta werror ) immediatelyExcludedPackages =
+      let
+        adjacent pkg = lookupMonoidal pkg $ lookupMonoidal ghc localDependents
+        transitivelyExcludedPackages :: MonoidalMap PackageName ( Set PackageName )
+        transitivelyExcludedPackages = computeTransitiveExclusions
+          adjacent
+          ( Set.fromList $ packageName . packageGPD <$> immediatelyExcludedPackages )
+        isExcluded :: Package -> Bool
+        isExcluded pkg = MonoidalMap.member ( packageName . packageGPD $ pkg ) transitivelyExcludedPackages
+      in
+        Build ghc ( List.filter ( not . isExcluded ) $ fst <$> packageData ) transitivelyExcludedPackages runMeta werror
+  mergeA
+    ( mapMissing $ \ _ config -> makeBuild config mempty )
+    ( traverseMissing $ \ configName pkgs ->
+        Left $ "Unknown config '" <> configName <> "' mentioned in config.xml in " <> intercalateMap0 ", " ( ST.pack . packageDirectory ) pkgs <> "."
     )
-    ( zipWithMatched $ \ _ _ _ -> () )
+    ( zipWithMatched $ \ _ config excl -> makeBuild config ( toList excl ) )
     configs
-    allMentionedConfigs
-  pure $ flip Map.mapWithKey configs $ \ configName ( BuildConfig ghc runMeta werror ) ->
-    let packages = flip mapMaybe packageData $ \ ( package, packageConfig ) -> do
-          guard $ not $ Set.member configName ( packageConfigExcluded packageConfig )
-          pure package
-    in Build ghc packages runMeta werror
+    immediateExclusions
 
 data Command
   = GenTravis
   | Refreeze
   | TestedWith TestedWithOptions
   | DefrostTarball DefrostTarballOptions
+  | ExplainExclusion ExplainExclusionOptions
 
+-- TODO: move this and ExplainExclusionOptions to take the path to the package directory, rather than the PackageName?
 data TestedWithOptions = TestedWithOptions
-  { _testedWithPackage :: SText
+  { _testedWithPackage :: PackageName
   }
 
 data DefrostTarballOptions = DefrostTarballOptions
@@ -373,6 +484,11 @@ data DefrostTarballOptions = DefrostTarballOptions
   , _defrostTarballTestedWith :: FilePath
   , _defrostTarballCommit :: SText
   , _defrostTarballOutput :: FilePath
+  }
+
+data ExplainExclusionOptions = ExplainExclusionOptions
+  { _explainExclusionPackageName :: PackageName
+  , _explainExclusionBuild :: SText
   }
 
 commandParser :: OA.Parser Command
@@ -385,6 +501,8 @@ commandParser = OA.hsubparser $ fold
       OA.info ( TestedWith <$> testedWithParser ) ( OA.progDesc "Extract the tested-with dependencies for a package from the freeze files." )
   , OA.command "defrost-tarball" $
       OA.info ( DefrostTarball <$> defrostTarballParser ) ( OA.progDesc "Defrost the tarball." )
+  , OA.command "explain-exclusion" $
+      OA.info ( ExplainExclusion <$> explainExclusionParser ) (OA.progDesc "Explain why a package isn't included in a build." )
   ]
 
 testedWithParser :: OA.Parser TestedWithOptions
@@ -403,19 +521,36 @@ defrostTarballParser = pure DefrostTarballOptions
   <*> OA.strOption
         ( OA.long "output" )
 
+explainExclusionParser :: OA.Parser ExplainExclusionOptions
+explainExclusionParser = pure ExplainExclusionOptions
+  <*> OA.strOption
+        ( OA.long "package" )
+  <*> OA.strOption
+        ( OA.long "build" )
+
 main :: IO ()
 main = do
   -- sort so that we get better diffability
   packageDirectories <- List.sort . fmap ("packages" </>) <$> listDirectory "packages"
   packageData <- for packageDirectories $ \ dir -> do
     config <- parsePackageConfig ( dir </> "config.xml" )
-    name <- mkPackageName . takeBaseName <$> tryFindPackageDesc dir
-    pure ( Package dir name, config )
+    packageDescFile <- tryFindPackageDesc dir
+    gpd <- do
+      input <- BS.readFile packageDescFile
+      let
+        inputParseRes = parseGenericPackageDescription input
+      case runParseResult inputParseRes of
+        (_warns, Left (_versionMay, errs)) ->
+          fail $ foldMap (showPError $ dir </> packageDescFile) errs
+        (_warns, Right gpd) ->
+          pure gpd
+    pure ( Package dir gpd, config )
   OA.execParser ( OA.info commandParser mempty ) >>= \case
     GenTravis -> runGenTravis packageData
     Refreeze -> runRefreeze packageData
-    TestedWith opts -> runTestedWith opts
+    TestedWith opts -> runTestedWith packageData opts
     DefrostTarball opts -> runDefrostTarball opts
+    ExplainExclusion opts -> runExplainExclusion packageData opts
 
 filesToWrite :: Map SText Build -> Map FilePath LByteString
 filesToWrite builds =
@@ -504,34 +639,37 @@ refreeze builds = flip traverseWithKey_ builds $ \ buildName _build -> do
 
 -- You might also be wondering whether we could avoid storing the full constraints and instead just have a single version per dependency - but we don't know the relevant versions to use for defrosting a custom-setup until we know the name of the package we're defrosting. This isn't overcomable (since we do obviously know it here), but it complicates defrost's API.
 
-envsForPackageConfig :: PackageConfig -> IO [ Defrost.Env ]
-envsForPackageConfig packageConfig =
-  fmap toList $ flip Map.traverseMaybeWithKey configs $ \ buildName (BuildConfig ghc _ _) -> runMaybeT $ do
-    ghcVer <- hoistMaybe $ ghcCompilerVersion ghc
-    guard $ not $ Set.member buildName (packageConfigExcluded packageConfig)
-    lift $ do
-      parseRes <- PF.parse <$> STIO.readFile ( addExtension ( "cabal" </> ST.unpack buildName ) "project.freeze" )
-      case parseRes of
-        Left err -> do
-          STIO.putStrLn $ PF.renderError err
-          exitFailure
-        Right projectConfig ->
-          -- TODO: principled OS, arch, flags
-          pure $ Defrost.env
-            Distribution.System.Linux
-            Distribution.System.X86_64
-            mempty
-            Compiler.GHC
-            ghcVer
-            ( view PF.constraints projectConfig )
+envsForPackage :: [ ( Package, PackageConfig ) ] -> PackageName -> IO [ Defrost.Env ]
+envsForPackage packageData pn =
+  case constructBuilds packageData of
+    Left err -> do
+      STIO.putStrLn err
+      exitFailure
+    Right builds ->
+      fmap toList $ flip Map.traverseMaybeWithKey builds $ \ buildName build -> runMaybeT $ do
+        let
+          ghc = buildGHCVersion build
+        guard $ isRegular ghc
+        guard $ not $ MonoidalMap.member pn ( buildExcludedPackages build )
+        lift $ do
+          parseRes <- PF.parse <$> STIO.readFile ( addExtension ( "cabal" </> ST.unpack buildName ) "project.freeze" )
+          case parseRes of
+            Left err -> do
+              STIO.putStrLn $ PF.renderError err
+              exitFailure
+            Right projectConfig ->
+              -- TODO: principled OS, arch, flags
+              pure $ Defrost.env
+                Distribution.System.Linux
+                Distribution.System.X86_64
+                mempty
+                Compiler.GHC
+                ( ghcCompilerVersion ghc )
+                ( view PF.constraints projectConfig )
 
-runTestedWith :: TestedWithOptions -> IO ()
-runTestedWith (TestedWithOptions pkg) = do
-  let
-    packageDir = "packages" </> ST.unpack pkg
-
-  packageConfig <- parsePackageConfig ( packageDir </> "config.xml" )
-  envs <- envsForPackageConfig packageConfig
+runTestedWith :: [ ( Package, PackageConfig ) ] -> TestedWithOptions -> IO ()
+runTestedWith packageData ( TestedWithOptions pn ) = do
+  envs <- envsForPackage packageData pn
   LBS.putStr $ Aeson.encode $ toList envs
 
 sourceRepos :: Lens' PD.PackageDescription [ SourceRepo ]
@@ -602,3 +740,30 @@ runDefrostTarball (DefrostTarballOptions input testedWithFile commit output) =
         testedWith
         input
         output
+
+runExplainExclusion
+  :: [ ( Package, PackageConfig ) ]
+  -> ExplainExclusionOptions
+  -> IO ()
+runExplainExclusion packageData ( ExplainExclusionOptions pkg buildName ) = do
+  case constructBuilds packageData of
+    Left err -> do
+      STIO.putStrLn err
+      exitFailure
+    Right builds -> do
+      case Map.lookup buildName builds of
+        Nothing -> do
+          STIO.putStrLn $ fold
+            [ "\"", buildName, "\" is not a known build." ]
+          exitFailure
+        Just build -> do
+          let
+            blockers = lookupMonoidal pkg ( buildExcludedPackages build )
+          if null blockers
+          then
+            STIO.putStrLn "Not excluded."
+          else do
+            STIO.putStrLn $ "Exclusion is cascading from:"
+            for_ blockers $ \ pkgName ->
+              STIO.putStrLn $ fold
+                [ "* ", ST.pack ( unPackageName pkgName ) ]
