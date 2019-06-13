@@ -3,7 +3,7 @@
 set -euxo pipefail
 
 # Regenerate .travis.yml and the project files, then check that none of them are different to what's in HEAD, and that there aren't any untracked files.
-cabal v2-run --project-file=cabal/"$PROJECT".project meta -- gen-travis
+cabal v2-run --project-file=cabal/"$PROJECT".project meta -- generate
 
 test -z "$(git status --porcelain)"
 
