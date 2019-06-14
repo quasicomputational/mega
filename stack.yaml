@@ -1,16 +1,16 @@
 resolver: nightly-2019-06-04
 packages:
-  - location: ./packages/xml-core
-  - location: ./packages/xml-desc
-  - location: ./packages/xhtml2html
-  - location: ./packages/twofinger
-  - location: ./packages/prelude
-  - location: ./packages/romnum
-  - location: ./packages/foldable-utils
-  - location: ./packages/hlist
-  - location: ./packages/position
-  - location: ./packages/meta
-  - location: ./packages/project-file
-  - location: ./packages/defrost
-  - location: ./packages/aeson-cabal
-  - location: ./packages/dhondt
+  - ./packages/xml-core
+  - ./packages/xml-desc
+  - ./packages/xhtml2html
+  - ./packages/twofinger
+  - ./packages/prelude
+  - ./packages/romnum
+  - ./packages/foldable-utils
+  - ./packages/hlist
+  - ./packages/position
+  - ./packages/meta
+  - ./packages/project-file
+  - ./packages/defrost
+  - ./packages/aeson-cabal
+  - ./packages/dhondt
