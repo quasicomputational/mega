@@ -21,6 +21,9 @@ import Control.Applicative as Export
   (Applicative, Alternative, pure, (<*>), (*>), (<*), liftA2, many, empty, (<|>))
 import Control.Category as Export
   (Category (id, (.)), (>>>))
+import Control.Concurrent as Export
+  ( threadWaitRead
+  )
 import Control.Exception as Export
   (Exception)
 import Control.Monad as Export
@@ -38,6 +41,9 @@ import Data.Bifunctor.Flip as Export
   (Flip (Flip), runFlip)
 import Data.Bitraversable as Export
   (Bitraversable (bitraverse), bimapDefault, bifoldMapDefault)
+import Data.Bits as Export
+  ( (.|.)
+  )
 import Data.Bool as Export
   (Bool (True, False), not, (||), (&&), otherwise)
 import Data.Char as Export
@@ -103,6 +109,11 @@ import Data.Void as Export
   (Void, absurd)
 import Data.Word as Export
   (Word, Word8, Word64)
+import Foreign.C as Export
+  ( CInt ( CInt )
+  , CLong ( CLong )
+  , CTime ( CTime )
+  )
 --TODO: is there really no other place but GHC.* to get these from? Should probably file an upstream bug...
 import GHC.Base as Export
   (($!))
@@ -130,6 +141,9 @@ import System.IO as Export
   (IO, FilePath, stdin, stdout, stderr, withFile, IOMode (ReadMode, WriteMode, AppendMode, ReadWriteMode), hSetBuffering, BufferMode (LineBuffering, NoBuffering, BlockBuffering), hFlush)
 import System.IO.Error as Export
   ( isDoesNotExistError
+  )
+import System.Posix.Types as Export
+  ( Fd ( Fd )
   )
 import Text.Show as Export
   (Show, show)
