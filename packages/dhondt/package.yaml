@@ -1,7 +1,7 @@
 spec-version: "0.31"
 name: q4c12-dhondt
 version: "0"
-homepage: https://github.com/quasicomputational/mega/tree/master/packages/meta
+homepage: https://github.com/quasicomputational/mega/tree/master/packages/dhondt
 github: quasicomputational/mega
 author: quasicomputational <quasicomputational@gmail.com>
 license: Apache-2.0 OR LGPL-2.1-or-later
