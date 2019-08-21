@@ -8,7 +8,7 @@ module Q4C12.AsParsedText
 
 import qualified Data.Aeson as Aeson
 import qualified Data.Text as ST
-import Distribution.Parsec.Class
+import Distribution.Parsec
   ( Parsec
   , eitherParsec
   )

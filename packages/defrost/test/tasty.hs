@@ -15,7 +15,7 @@ import Distribution.PackageDescription.Parsec
   ( parseGenericPackageDescription
   , runParseResult
   )
-import Distribution.Parsec.Common
+import Distribution.Parsec
   ( showPError
   )
 import qualified Distribution.System as System

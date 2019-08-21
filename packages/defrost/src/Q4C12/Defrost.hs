@@ -287,7 +287,7 @@ applyConstraints frozen gpd =
     -> Condition ConfVar
     -> Dependency
     -> Validation ( NonEmptyDList DefrostingError ) Dependency
-  addBounds qual cond dep@(Dependency pn range) = do
+  addBounds qual cond dep@(Dependency pn range libs) = do
     let
       relevant = frozen
         & Map.lookup ( pn, qual )
@@ -297,7 +297,10 @@ applyConstraints frozen gpd =
       then if isInternal pn
         then pure dep
         else failure $ NEDL.singleton $ UnfrozenDependency qual pn
-      else Dependency pn . canonicalVersionRange . intersectVersionRanges range . getUnionRanges <$> foldMapM ( fmap UnionRanges ) relevant
+      else let
+        changeDependency newRange = Dependency pn newRange libs
+      in
+        changeDependency . canonicalVersionRange . intersectVersionRanges range . getUnionRanges <$> foldMapM ( fmap UnionRanges ) relevant
 
 matchesCondition :: SystemEnv -> Condition ConfVar -> Bool
 matchesCondition ( SystemEnv os arch flags compiler compilerVersion ) =
