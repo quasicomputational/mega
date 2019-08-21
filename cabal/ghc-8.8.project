@@ -4,6 +4,7 @@ packages:
   packages/defrost
   packages/dhondt
   packages/foldable-utils
+  packages/freeze-plan
   packages/hlist
   packages/meta
   packages/position
@@ -39,6 +40,8 @@ package q4c12-defrost
 package q4c12-dhondt
   ghc-options: -Werror
 package q4c12-foldable-utils
+  ghc-options: -Werror
+package q4c12-freeze-plan
   ghc-options: -Werror
 package q4c12-hlist
   ghc-options: -Werror

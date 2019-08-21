@@ -27,7 +27,7 @@ import Control.Concurrent as Export
 import Control.Exception as Export
   (Exception)
 import Control.Monad as Export
-  (Monad, (=<<), (>>=), when, unless, ap, (<=<), void, guard, forever)
+  (Monad, (=<<), (>>=), when, unless, ap, (<=<), void, guard, forever, foldM)
 import Control.Monad.Fail as Export
   (fail)
 import Control.Monad.IO.Class as Export

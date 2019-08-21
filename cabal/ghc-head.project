@@ -4,6 +4,7 @@ packages:
   packages/defrost
   packages/dhondt
   packages/foldable-utils
+  packages/freeze-plan
   packages/hlist
   packages/meta
   packages/position

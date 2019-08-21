@@ -4,11 +4,11 @@ cabal-version: 2.2
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 401f02cc99cb3341c5c812ceac708158aa0d288cfeed640bf08a9a2e3e9913d5
+-- hash: 1e08cbc78d1a55a147a0b05db967df755bc1bcd528d86679bfef6c2b4cf9eafc
 
-name:           q4c12-meta
+name:           q4c12-freeze-plan
 version:        0
-homepage:       https://github.com/quasicomputational/mega/tree/master/packages/meta
+homepage:       https://github.com/quasicomputational/mega/tree/master/packages/freeze-plan
 bug-reports:    https://github.com/quasicomputational/mega/issues
 author:         quasicomputational <quasicomputational@gmail.com>
 maintainer:     quasicomputational <quasicomputational@gmail.com>
@@ -23,40 +23,23 @@ source-repository head
 
 library
   exposed-modules:
-      Q4C12.Meta
+      Q4C12.FreezePlan
   hs-source-dirs:
       src
   default-extensions: BinaryLiterals DataKinds DeriveDataTypeable DeriveGeneric DeriveLift DeriveTraversable DerivingStrategies EmptyCase EmptyDataDecls EmptyDataDeriving HexFloatLiterals LambdaCase KindSignatures MonoLocalBinds NegativeLiterals NumDecimals OverloadedStrings PatternGuards PostfixOperators StandaloneDeriving TypeOperators ViewPatterns
   ghc-options: -Weverything -Wno-implicit-prelude -Wno-unsafe -Wno-safe -Wno-missed-specialisations -Wno-all-missed-specialisations -Wno-missing-exported-signatures
   build-depends:
       Cabal
-    , aeson
     , base
-    , bytestring
     , cabal-plan
     , containers
-    , lens
     , monoidal-containers
-    , optparse-applicative
-    , process
-    , q4c12-defrost
-    , q4c12-freeze-plan
     , q4c12-prelude
     , q4c12-project-file
-    , q4c12-xml-core
-    , q4c12-xml-desc
     , text
     , transformers
     , writer-cps-transformers
   mixins:
       base hiding (Prelude)
     , transformers hiding (Control.Monad.Trans.RWS, Control.Monad.Trans.Writer)
-  default-language: Haskell2010
-
-executable meta
-  main-is: driver/meta.hs
-  default-extensions: BinaryLiterals DataKinds DeriveDataTypeable DeriveGeneric DeriveLift DeriveTraversable DerivingStrategies EmptyCase EmptyDataDecls EmptyDataDeriving HexFloatLiterals LambdaCase KindSignatures MonoLocalBinds NegativeLiterals NumDecimals OverloadedStrings PatternGuards PostfixOperators StandaloneDeriving TypeOperators ViewPatterns
-  ghc-options: -Weverything -Wno-implicit-prelude -Wno-unsafe -Wno-safe -Wno-missed-specialisations -Wno-all-missed-specialisations -Wno-missing-exported-signatures
-  build-depends:
-      q4c12-meta
   default-language: Haskell2010
