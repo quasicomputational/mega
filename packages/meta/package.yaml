@@ -37,6 +37,10 @@ library:
     q4c12-xml-desc:
     text:
     transformers:
+      mixin:
+        # Hide the leaky writer versions
+        - hiding (Control.Monad.Trans.RWS, Control.Monad.Trans.Writer)
+    writer-cps-transformers:
 
 executables:
   meta:
