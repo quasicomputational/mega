@@ -4,7 +4,7 @@ cabal-version: 2.2
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 0b782e79f1171c1923dc90b2b1b322027144d654e71659a5f9a57dfde6bed57e
+-- hash: 44259ec00b511bfb48a3d8956e8b3f3f2aec2ca1686711fd482fc05e3349584c
 
 name:           q4c12-meta
 version:        0
@@ -45,8 +45,10 @@ library
     , q4c12-xml-desc
     , text
     , transformers
+    , writer-cps-transformers
   mixins:
       base hiding (Prelude)
+    , transformers hiding (Control.Monad.Trans.RWS, Control.Monad.Trans.Writer)
   default-language: Haskell2010
 
 executable meta
