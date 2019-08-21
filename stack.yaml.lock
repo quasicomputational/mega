@@ -3,7 +3,14 @@
 # For more information, please see the documentation at:
 #   https://docs.haskellstack.org/en/stable/lock_files
 
-packages: []
+packages:
+- completed:
+    hackage: cabal-plan-0.5.0.0@sha256:7767dd53b7bd56298407b735439715c31a3b926521869df1e7ee32333036d05a,5485
+    pantry-tree:
+      size: 716
+      sha256: ce748d56dfa24d00d64cb46eb8f953102705f316989f3c680cb7bd5d5bc7a446
+  original:
+    hackage: cabal-plan-0.5.0.0@rev:1
 snapshots:
 - completed:
     size: 510801
