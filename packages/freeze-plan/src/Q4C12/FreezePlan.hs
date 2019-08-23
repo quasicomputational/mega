@@ -68,7 +68,7 @@ toGraph = foldr Graph.insert Graph.empty . fmap UnitNode . Plan.pjUnits
 data Qualified
   = QualifiedSetup Plan.PkgName
   | QualifiedExe Plan.PkgName
-  deriving ( Eq, Ord, Show )
+  deriving stock ( Eq, Ord, Show )
 
 qualifiedDepends :: Plan.Unit -> Set ( Qualified, Plan.UnitId )
 qualifiedDepends unit = mapOfSetsToSet $ Map.fromList
@@ -100,7 +100,7 @@ instance Monoid PlanConstraints where
 data FreezeConstraint
   = FreezeConstraintVersion Plan.Ver
   | FreezeConstraintFlag Plan.FlagName Bool
-  deriving ( Eq, Ord )
+  deriving stock ( Eq, Ord )
 
 isVersionConstraint :: FreezeConstraint -> Bool
 isVersionConstraint = \case
@@ -176,7 +176,7 @@ data FreezeConstraintsError
   = UnfreezableExeDependency Plan.PkgName
   | DanglingUnitId Plan.UnitId
   | PackageDependencyCycle
-  deriving ( Eq, Ord )
+  deriving stock ( Eq, Ord )
 
 formatError :: FreezeConstraintsError -> TBuilder
 formatError = \case
