@@ -1,4 +1,4 @@
-resolver: nightly-2019-06-04
+resolver: nightly-2019-08-23
 packages:
   - ./packages/xml-core
   - ./packages/xml-desc
@@ -16,4 +16,9 @@ packages:
   - ./packages/dhondt
   - ./packages/freeze-plan
 extra-deps:
+  - Cabal-3.0.0.0@rev:0
   - cabal-plan-0.5.0.0@rev:1
+  - git: https://github.com/phadej/cabal-doctest
+    commit: ded69a7eac4b3aa526ee913d090f6802fdf72211
+  - git: https://github.com/ekmett/lens
+    commit: 3a20847964967a64a11d01aa202ea177eb8c33fb
