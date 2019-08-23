@@ -5,15 +5,50 @@
 
 packages:
 - completed:
+    hackage: Cabal-3.0.0.0@sha256:1ba37b8d80e89213b17db7b8b9ea0108da55ca65f8c0cbb7433881a284c5cf67,26027
+    pantry-tree:
+      size: 71616
+      sha256: 4f16f0a65304ab22f01cb7f6d25db2f15a168f4cefacde7864cb1e02eb3ea867
+  original:
+    hackage: Cabal-3.0.0.0@rev:0
+- completed:
     hackage: cabal-plan-0.5.0.0@sha256:7767dd53b7bd56298407b735439715c31a3b926521869df1e7ee32333036d05a,5485
     pantry-tree:
       size: 716
       sha256: ce748d56dfa24d00d64cb46eb8f953102705f316989f3c680cb7bd5d5bc7a446
   original:
     hackage: cabal-plan-0.5.0.0@rev:1
+- completed:
+    cabal-file:
+      size: 1573
+      sha256: 2a9d524b9593fc5054c0bcfda9aeaffd4203f3663b77fab57db35ddd48ce6ad3
+    name: cabal-doctest
+    version: 1.0.7
+    git: https://github.com/phadej/cabal-doctest
+    pantry-tree:
+      size: 1586
+      sha256: 7dbada87cc98c5e04e464246cb290cdc04ac3eb81de59fc3d9430aab9dae2b7f
+    commit: ded69a7eac4b3aa526ee913d090f6802fdf72211
+  original:
+    git: https://github.com/phadej/cabal-doctest
+    commit: ded69a7eac4b3aa526ee913d090f6802fdf72211
+- completed:
+    cabal-file:
+      size: 15396
+      sha256: b0f6cc2e18536b682be6ec5590688bd54fb49f84ad6e3a6556f54649c7a328fc
+    name: lens
+    version: '4.18'
+    git: https://github.com/ekmett/lens
+    pantry-tree:
+      size: 9223
+      sha256: 375d9548744a0b77abaaa78ca1fa42c1793d22fea1a1b73c129a9a42a1d3be1f
+    commit: 3a20847964967a64a11d01aa202ea177eb8c33fb
+  original:
+    git: https://github.com/ekmett/lens
+    commit: 3a20847964967a64a11d01aa202ea177eb8c33fb
 snapshots:
 - completed:
-    size: 510801
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2019/6/4.yaml
-    sha256: 9d3c0fc1939c42ecafdff1aeab52d6e98816c82cfc211804b6ee2780ce7a374a
-  original: nightly-2019-06-04
+    size: 525797
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2019/8/23.yaml
+    sha256: 26d2a242af344d93d584c83ad59f72bede192baf84c668ba58b0070bbcbe3743
+  original: nightly-2019-08-23
