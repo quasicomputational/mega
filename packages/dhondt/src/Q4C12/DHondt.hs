@@ -129,7 +129,7 @@ seatStream votes =
   partyStream ( step votes ) initialQuotients
   where
   initialQuotients =
-    Map.foldMapWithKey ( flip PQ.singleton ) ( getVotes votes )
+    ifoldMap ( flip PQ.singleton ) ( getVotes votes )
 
 dHondt :: Natural -> Votes -> IO ()
 dHondt numSeats votes = do
