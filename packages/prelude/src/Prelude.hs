@@ -215,7 +215,7 @@ import System.Directory as Export
 
 -- lens imports for re-export
 import Control.Lens as Export
-  (Lens, Lens', set, over, view, views, (<>~), Iso, Iso', AnIso, AnIso', from, iso, withIso, Prism, Prism', APrism, APrism', preview, matching, review, withPrism, foldMapOf, anyOf, (<+=), (<+~), Traversal, Traversal', Getting, Getter, imap, ifoldMap, ifor_, itraverse, ifor)
+  (Lens, Lens', set, over, view, views, (<>~), Iso, Iso', AnIso, AnIso', from, iso, withIso, Prism, Prism', APrism, APrism', preview, matching, review, withPrism, foldMapOf, anyOf, (<+=), (<+~), Traversal, Traversal', Getting, Getter, imap, ifoldMap, itraverse_, ifor_, itraverse, ifor, filtered)
 import Data.Set.Lens as Export
   ( setOf
   )
@@ -228,6 +228,12 @@ import Data.Map.Monoidal as Export
 -- invariant imports for re-export
 import Data.Functor.Invariant as Export
   ( Invariant (invmap), invmapFunctor, invmapContravariant
+  )
+
+-- kan-extensions imports for re-export
+import Data.Functor.Coyoneda as Export
+  ( Coyoneda
+  , liftCoyoneda
   )
 
 -- profunctors imports for re-export

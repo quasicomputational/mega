@@ -21,7 +21,6 @@ import qualified Data.DList.NonEmpty as NEDL
 import qualified Data.List as List
 import qualified Data.Map as Map
 import qualified Data.Map.Merge.Lazy as Merge
-import qualified Data.Set as Set
 import qualified Data.Text as ST
 import Distribution.Compiler
   ( CompilerFlavor
@@ -387,11 +386,11 @@ fromConstraints
 fromConstraints pkgName
   = Map.unionsWith intersectVersionRanges
   . fmap constraintToQualifiedMap
-  . toList
+  . liftCoyoneda
 
   where
 
-  filterIrrelevant constr = List.filter $ \ (_, qual) -> case qual of
+  isRelevant constr = \ ( _, qual ) -> case qual of
     Build -> constraintAppliesToUnqualified constr
     Setup -> constraintAppliesToSetup pkgName constr
 
@@ -400,7 +399,7 @@ fromConstraints pkgName
     -> Map (PackageName, QualificationType) VersionRange
   constraintToQualifiedMap constr =
     Map.fromSet ( const $ constraintToVersionRange constr ) $
-      Set.fromList $ filterIrrelevant constr
+      setOf ( traverse . filtered ( isRelevant constr ) )
         [ ( constraintPackageName constr, Build )
         , ( constraintPackageName constr, Setup )
         ]
