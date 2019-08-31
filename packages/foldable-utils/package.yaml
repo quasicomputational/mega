@@ -45,6 +45,9 @@ tests:
           - "-Wno-missing-import-lists"
           #TODO: file a bug about this, too
           - "-Wno-missing-export-lists"
+      - condition: "impl(ghc >= 8.8)"
+        ghc-options:
+          - "-Wno-missing-deriving-strategies"
     dependencies:
       #https://github.com/phadej/cabal-doctest/issues/19
       q4c12-foldable-utils:
