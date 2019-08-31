@@ -213,7 +213,7 @@ renderElement (Element name attrs markup _) = flip evalStateT 1 $ do
   cur <- get
   lift $ renderQName cur name
   renderNamespaceFor name
-  for_ (Map.toAscList attrs) $ \(attrName, (_, chunks)) -> do
+  ifor_ attrs $ \attrName (_, chunks) -> do
     lift $ tell " "
     n <- get
     lift $ renderQName n attrName

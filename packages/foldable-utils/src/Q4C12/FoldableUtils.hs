@@ -2,7 +2,7 @@ module Q4C12.FoldableUtils
   ( -- * Intercalation
     intercalate0, intercalateMap0, biintercalateMap0,
     -- * Foldable applicatives
-    foldMapM, foldSequence, bifoldMapM,
+    foldMapM, ifoldMapM, foldSequence, bifoldMapM,
     -- * Semigroup actions
     prependsMap, prepends, appendsMap, appends,
     -- * Unfolding
@@ -10,6 +10,7 @@ module Q4C12.FoldableUtils
   )
   where
 
+import qualified Control.Lens as Lens
 import Data.Bifunctor (first)
 import Data.Bifoldable (Bifoldable (bifoldMap))
 import Data.Functor.Reverse (Reverse (Reverse))
@@ -90,6 +91,13 @@ foldMapM
   -> t a
   -> f m
 foldMapM f = getMonoidA . foldMap (MonoidA . f)
+
+ifoldMapM
+  :: ( Monoid m, Lens.FoldableWithIndex i t, Applicative f )
+  => ( i -> a -> f m )
+  -> t a
+  -> f m
+ifoldMapM f = getMonoidA . Lens.ifoldMap ( \ i -> MonoidA . f i )
 
 -- | Applicative 'Data.Foldable.fold'.
 --

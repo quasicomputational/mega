@@ -311,12 +311,13 @@ import Data.Witherable as Export
   , Filterable
   , mapMaybe
   , catMaybes
+  , filter
   )
 
 -- Q4C12 packages for re-export
 import Q4C12.FoldableUtils as Export
   ( intercalate0, intercalateMap0, biintercalateMap0
-  , foldMapM, foldSequence, bifoldMapM
+  , foldMapM, ifoldMapM, foldSequence, bifoldMapM
   , prependsMap, prepends, appendsMap, appends
   , unfoldr'
   )

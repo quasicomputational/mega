@@ -284,4 +284,4 @@ freezeConstraints plan
       ( Plan.pjUnits plan )
 
   localUnitIds :: Set Plan.UnitId
-  localUnitIds = Map.keysSet $ Map.filter isLocal ( Plan.pjUnits plan )
+  localUnitIds = Map.keysSet $ filter isLocal ( Plan.pjUnits plan )

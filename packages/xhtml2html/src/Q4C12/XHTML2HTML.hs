@@ -6,7 +6,6 @@ module Q4C12.XHTML2HTML
   )
   where
 
-import qualified Data.Map as Map
 import qualified Data.Set as Set
 import qualified Data.Text.Lazy as LT
 import qualified Data.Text.Lazy.Builder as LTB
@@ -71,7 +70,7 @@ htmlElement (Element qn attrs body pos) = foldSequence
         unless (Set.member ns blessedNamespaces) $
           Left $ UnknownNamespace pos ns
         pure $ LTB.fromText local
-  , flip foldMapM (Map.toList attrs) $ \(an, (attrPos, parts)) -> foldSequence $
+  , flip ifoldMapM attrs $ \an (attrPos, parts) -> foldSequence $
     let val = foldMap snd parts
     in [ pure " "
        , case an of
