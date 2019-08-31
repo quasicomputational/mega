@@ -27,6 +27,7 @@ library:
   other-modules: []
   dependencies:
     base:
+    lens:
     transformers:
       mixin:
         # Hide the leaky writer versions

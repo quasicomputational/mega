@@ -619,7 +619,7 @@ runRefreeze packageData = do
       let
         buildsWithFreezeFiles
             = builds
-            & Map.filter
+            & filter
                 ( \ build ->
                     case ghcRegularity $ buildGHCVersion build of
                       PreRelease{} ->
