@@ -50,6 +50,7 @@ library:
       mixin:
         # Hide the leaky writer versions
         - hiding (Control.Monad.Trans.RWS, Control.Monad.Trans.Writer)
+    witherable:
     writer-cps-transformers:
   when:
     condition: "!impl(ghc >= 8.6)"

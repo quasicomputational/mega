@@ -267,7 +267,7 @@ relaxProductions (Productions prodsP prodsC prodsE) =
     go qn =
       addUAttr "name" (uncurry dfnName qn) . rngelem "define" . markupElement
 
-splitMaybes :: [Maybe a] -> ([a], Bool)
+splitMaybes :: ( Filterable f, Foldable f ) => f ( Maybe a ) -> ( f a, Bool )
 splitMaybes as = (catMaybes as, any isNothing as)
 
 addRelaxNameAttrs :: QName -> Element cmt () -> Element cmt ()
@@ -280,7 +280,7 @@ addRelaxNameAttrs (QName (Just ns) local) =
 relaxRPF :: RulePF -> Maybe (Element cmt ())
 relaxRPF (RPFNonTerminal name) = Just $
   addUAttr "name" (dfnName DfnNsP name) $ rngelem "ref" mempty
-relaxRPF (RPFSequence rs) = case mapMaybe relaxRPF $ toList rs of
+relaxRPF (RPFSequence rs) = case toList $ relaxRPF <$?> rs of
   [] -> Nothing
   [a] -> Just a
   as -> Just $ rngelem "group" $ foldMap markupElement as
@@ -331,7 +331,7 @@ relaxRTx RTWhitespace = Nothing
 relaxRDT :: RuleDT -> Maybe (Element cmt ())
 relaxRDT (RDTDatatype lib name) = Just
   $ addUAttr "datatypeLibrary" lib $ addUAttr "type" name $ rngelem "data" mempty
-relaxRDT (RDTSequence ts) = case mapMaybe relaxRDT $ toList ts of
+relaxRDT (RDTSequence ts) = case toList $ relaxRDT <$?> ts of
   [] -> Nothing
   [a] -> Just a
   as -> Just $ rngelem "group" $ foldMap markupElement as

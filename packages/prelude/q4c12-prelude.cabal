@@ -4,7 +4,7 @@ cabal-version: 2.2
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 766a06901706f15d572443acf9fd59d9826d7c3099b0b694c772a7ac7e868f19
+-- hash: a026b36abae32cbfc48ccb97cd7a7695dfbea0dcda8c00e04d18abce888ec410
 
 name:           q4c12-prelude
 version:        0
@@ -55,6 +55,7 @@ library
     , time
     , time-compat
     , transformers
+    , witherable
     , writer-cps-transformers
   mixins:
       base hiding (Prelude)
