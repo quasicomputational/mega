@@ -86,7 +86,7 @@ import Data.List as Export
 import Data.List.NonEmpty as Export
   (NonEmpty ((:|)), unzip)
 import Data.Maybe as Export
-  (Maybe (Just, Nothing), maybe, fromMaybe, mapMaybe, catMaybes, isNothing, isJust)
+  (Maybe (Just, Nothing), maybe, fromMaybe, isNothing, isJust)
 import Data.Monoid as Export
   (Monoid (mempty), Endo (Endo), appEndo, Dual (Dual), getDual)
 import Data.Ord as Export
@@ -302,6 +302,15 @@ import Data.Time.Calendar.Compat as Export
 import Data.Time.Clock.Compat as Export
   ( nominalDiffTimeToSeconds
   , secondsToNominalDiffTime
+  )
+
+-- witherable imports for re-export
+import Data.Witherable as Export
+  ( (<&?>)
+  , (<$?>)
+  , Filterable
+  , mapMaybe
+  , catMaybes
   )
 
 -- Q4C12 packages for re-export
