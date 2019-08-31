@@ -273,7 +273,7 @@ travisConfiguration buildMap = Aeson.Encoding.pairs $ fold
         , Aeson.Encoding.pair "packages" $ Aeson.Encoding.list Aeson.Encoding.text
           [ "ghc-" <> ghcAptVersion ghc
           , case ghcRegularity ghc of
-              Regular{} -> "cabal-install-2.4"
+              Regular{} -> "cabal-install-3.0"
               PreRelease ver _ -> "cabal-install-" <> ver
           ]
         ]
