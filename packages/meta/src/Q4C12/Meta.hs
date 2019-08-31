@@ -478,7 +478,7 @@ constructBuilds packageData = do
         isExcluded :: Package -> Bool
         isExcluded pkg = MonoidalMap.member ( packageName . packageGPD $ pkg ) transitivelyExcludedPackages
       in
-        Build ghc ( List.filter ( not . isExcluded ) $ fst <$> packageData ) transitivelyExcludedPackages runMeta werror
+        Build ghc ( filter ( not . isExcluded ) $ fst <$> packageData ) transitivelyExcludedPackages runMeta werror
   mergeA
     ( mapMissing $ \ _ config -> makeBuild config mempty )
     ( traverseMissing $ \ configName pkgs ->

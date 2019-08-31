@@ -34,6 +34,7 @@ library:
     either:
     filepath:
     invariant:
+    kan-extensions:
     lens:
     monoidal-containers:
     profunctors:
