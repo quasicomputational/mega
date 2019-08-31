@@ -11,7 +11,6 @@ import qualified Control.Monad.Trans.Writer.CPS as Writer
 import qualified Data.Map as Map
 import qualified Data.Map.Internal as Map.Internal
 import qualified Data.Map.Merge.Lazy as Merge
-import qualified Data.Map.Monoidal as MonoidalMap
 import qualified Data.Sequence as Seq
 import qualified Data.Set as Set
 import qualified Data.Text as ST
@@ -134,7 +133,7 @@ toFreezeConstraints
        FreezeConstraintsError
        ( Set ( PF.Qualification, FreezeConstraint ) )
 toFreezeConstraints dep constrs =
-  case runWriter $ getCompose $ Map.traverseWithKey go constrs of
+  case runWriter $ getCompose $ itraverse go constrs of
     ( Nothing, Nothing ) -> Right mempty
     ( Nothing, Just Different ) -> Left $ UnfreezableExeDependency dep
     ( Nothing, Just ( Same ( v, fs ) ) ) -> Right $ constraints PF.qualifiedAll v fs
@@ -158,7 +157,7 @@ toFreezeConstraints dep constrs =
   constraints :: ( Ord q ) => q -> Plan.Ver -> Map Plan.FlagName Bool -> Set ( q, FreezeConstraint )
   constraints qual v fs = fold
     [ Set.singleton ( qual, FreezeConstraintVersion v )
-    , flip Map.foldMapWithKey fs $ \ flag enabled ->
+    , flip ifoldMap fs $ \ flag enabled ->
         Set.singleton ( qual, FreezeConstraintFlag flag enabled )
     ]
 
@@ -195,10 +194,10 @@ freezeConstraints
        ( Set FreezeConstraintsError )
        ( Seq PF.Constraint )
 freezeConstraints plan
-  = fmap ( MonoidalMap.foldMapWithKey toPFConstraints )
+  = fmap ( ifoldMap toPFConstraints )
   $ fmap deleteLocalPackagesVersionConstraints
   $ eitherToValidation
-  $ (=<<) ( validationToEither . MonoidalMap.traverseWithKey ( \ k -> first Set.singleton . eitherToValidation . toFreezeConstraints k ) )
+  $ (=<<) ( validationToEither . itraverse ( \ k -> first Set.singleton . eitherToValidation . toFreezeConstraints k ) )
   $ fmap fromPlanConstraints
   $ fmap fold
   $ fmap ( flip Map.restrictKeys localUnitIds )

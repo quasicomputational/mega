@@ -299,7 +299,7 @@ travisConfiguration buildMap = Aeson.Encoding.pairs $ fold
       ]
 
 generateProjectFiles :: Map SText Build -> Map FilePath LByteString
-generateProjectFiles = Map.foldMapWithKey $ \ buildName build ->
+generateProjectFiles = ifoldMap $ \ buildName build ->
   -- TODO: https://github.com/haskell/cabal/issues/1597
   let
     dest = addExtension ( "cabal" </> ST.unpack buildName ) "project"
@@ -444,7 +444,7 @@ computeTransitiveExclusions adjacent input =
     Accum.add cur
     if null new
     then pure ()
-    else go $ flip MonoidalMap.foldMapWithKey new $ \ a deps ->
+    else go $ flip ifoldMap new $ \ a deps ->
       MonoidalMap.fromSet ( const deps ) ( adjacent a )
 
 constructBuilds
@@ -455,7 +455,7 @@ constructBuilds packageData = do
     packagesByName :: Map PackageName GenericPackageDescription
     packagesByName = Map.fromList $ packageData <&> \ ( Package _ gpd, _ ) -> ( packageName gpd, gpd )
     localDependents :: MonoidalMap GHCVersion ( MonoidalMap PackageName ( Set PackageName ) )
-    localDependents = flip Map.foldMapWithKey packagesByName $ \ name gpd ->
+    localDependents = flip ifoldMap packagesByName $ \ name gpd ->
       flip foldMap configs $ \ ( BuildConfig ghcVer _ _ ) ->
         MonoidalMap.singleton ghcVer $
           flip foldMap ( allDependencies ghcVer gpd ) $ \ depName ->
@@ -598,13 +598,9 @@ runGenerate packageData = do
           , Map.singleton "cabal.project" topLevelProjectContents
           , Map.singleton ".travis.yml" $ BSB.toLazyByteString travisFileContents
           ]
-      flip traverseWithKey_ allFiles $ \ file contents -> do
+      ifor_ allFiles $ \ file contents -> do
         STIO.putStrLn $ "Writing " <> ST.pack file
         LBS.writeFile file contents
-
--- TODO: https://github.com/haskell/containers/issues/422
-traverseWithKey_ :: ( Applicative f ) => ( k -> a -> f b ) -> Map k a -> f ()
-traverseWithKey_ f = void . Map.traverseWithKey f
 
 extraConstraints :: [ PF.Constraint ]
 extraConstraints =
@@ -636,7 +632,7 @@ runRefreeze packageData = do
       refreeze buildsWithFreezeFiles
 
 refreeze :: Map SText Build -> IO ()
-refreeze builds = flip traverseWithKey_ builds $ \ buildName _build -> do
+refreeze builds = ifor_ builds $ \ buildName _build -> do
   STIO.putStrLn $ "Refreezing " <> buildName <> "."
   let
     projectFile = addExtension ( "cabal" </> ST.unpack buildName ) "project"

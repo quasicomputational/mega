@@ -542,7 +542,7 @@ resolveElement defaultNamespace namespaces (UElement rawName rawAttrs rawBody po
     (r0, _) : [] -> failure $ NEDList.singleton $ NonNFDNamespace r0
     (r0, _) : (r1, _) : rest -> failure $ NEDList.singleton $ DuplicateDefaultNamespaceDecls r0 (r1 :| fmap fst (toList rest))
   namespaceBindings <- validationToExcept $
-    flip Map.traverseWithKey (getMonoidalMap collatedNamespaceBindings) $ \pref binds ->
+    ifor (getMonoidalMap collatedNamespaceBindings) $ \pref binds ->
       case toNonEmpty binds of
         (_, ns) :| [] | isNormalized NFD ns -> pure ns
         (r, _) :| [] -> failure $ NEDList.singleton $ NonNFDNamespace r

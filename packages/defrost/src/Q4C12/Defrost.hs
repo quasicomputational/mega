@@ -329,7 +329,7 @@ checkFrozenDependencies
        ( Map SystemEnv VersionRange )
   -> FrozenDependencies
 checkFrozenDependencies policy =
-  Map.mapWithKey $ \ (pn, _) -> Map.mapWithKey $ \ systemEnv range ->
+  imap $ \ (pn, _) -> imap $ \ systemEnv range ->
     case asVersionIntervals range of
       [(LowerBound lb InclusiveBound, UpperBound ub InclusiveBound)]
         | lb == ub -> pure $ case fromMaybe pvpPolicy $ Map.lookup pn policy of

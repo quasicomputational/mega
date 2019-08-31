@@ -4,7 +4,7 @@ cabal-version: 2.2
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 1e08cbc78d1a55a147a0b05db967df755bc1bcd528d86679bfef6c2b4cf9eafc
+-- hash: 27bd95bdd6e33345e830272e51afb13a636614374c9b41e960e6df8a11c8e828
 
 name:           q4c12-freeze-plan
 version:        0
@@ -33,7 +33,6 @@ library
     , base
     , cabal-plan
     , containers
-    , monoidal-containers
     , q4c12-prelude
     , q4c12-project-file
     , text
