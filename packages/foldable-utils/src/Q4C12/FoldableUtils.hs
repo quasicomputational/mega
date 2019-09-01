@@ -1,3 +1,4 @@
+{-# LANGUAGE GADTs #-}
 module Q4C12.FoldableUtils
   ( -- * Intercalation
     intercalate0, intercalateMap0, biintercalateMap0,
@@ -7,13 +8,18 @@ module Q4C12.FoldableUtils
     prependsMap, prepends, appendsMap, appends,
     -- * Unfolding
     unfoldr',
+    -- * Coyoneda on bifunctors
+    Bicoyoneda ( Bicoyoneda ), liftBicoyoneda,
   )
   where
 
 import qualified Control.Lens as Lens
-import Data.Bifunctor (first)
+import Data.Bifunctor (Bifunctor (bimap), first)
 import Data.Bifoldable (Bifoldable (bifoldMap))
 import Data.Functor.Reverse (Reverse (Reverse))
+import Data.Kind
+  ( Type
+  )
 import Data.Semigroup (Dual (Dual), getDual, Endo (Endo), appEndo)
 
 -- $setup
@@ -21,6 +27,18 @@ import Data.Semigroup (Dual (Dual), getDual, Endo (Endo), appEndo)
 -- >>> import Data.List.NonEmpty (NonEmpty ((:|)))
 -- >>> import Data.Monoid (Sum (Sum), getSum)
 -- >>> import Data.Semigroup (Last (Last), getLast, Max (Max), getMax)
+
+data Bicoyoneda :: ( Type -> Type -> Type ) -> Type -> Type -> Type where
+  Bicoyoneda :: ( s -> a ) -> ( t -> b ) -> f s t -> Bicoyoneda f a b
+
+instance Bifunctor ( Bicoyoneda f ) where
+  bimap f g ( Bicoyoneda f' g' x ) = Bicoyoneda ( f . f' ) ( g . g' ) x
+
+instance ( Bifoldable f ) => Bifoldable ( Bicoyoneda f ) where
+  bifoldMap f g ( Bicoyoneda f' g' x ) = bifoldMap ( f . f' ) ( g . g' ) x
+
+liftBicoyoneda :: f a b -> Bicoyoneda f a b
+liftBicoyoneda = Bicoyoneda id id
 
 newtype Joined a = Joined { runJoined :: a -> a }
 
