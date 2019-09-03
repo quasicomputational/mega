@@ -41,6 +41,7 @@ library:
     q4c12-foldable-utils:
     q4c12-hlist:
     q4c12-twofinger:
+    semialign:
     semigroupoids:
     template-haskell:
     temporary:

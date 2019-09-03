@@ -13,7 +13,6 @@ module Q4C12.XMLDesc.TH
 
 import qualified Control.Monad.Trans.Writer.CPS as Writer
 import qualified Data.DList as DList
-import qualified Data.List as List
 import Language.Haskell.TH (Q, Exp, Pat, Name)
 import qualified Language.Haskell.TH as TH
 
@@ -142,12 +141,12 @@ makeRPlus a = execWriterT a >>= \dl -> do
 
     collectCasePats :: [CasePat] -> Q (IsoConstruction (Q Pat) (Q Pat), Q Exp)
     collectCasePats ps = do
-      (isoConstructions, exps) <- List.unzip <$> traverse step ps
+      (isoConstructions, exps) <- unzip <$> traverse step ps
       n <- TH.newName "x"
       let --Prove to GHC that we've been exhaustive: after we check every Here, there's no There left except on the bottom.
           final = IsoConstruction [] []
             [(TH.varP n, [e| absurdHSum $(TH.varE n) |])]
-          isoConstructions' = List.zipWith first (iterate thereStep id) $
+          isoConstructions' = zipWith first (iterate thereStep id) $
             (first (\p -> [p| HSumHere $p |]) <$> isoConstructions) <> [final]
       pure ( fold isoConstructions'
            , foldr rplusStep [e| rempty |] exps

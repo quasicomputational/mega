@@ -84,7 +84,7 @@ import Data.Kind as Export
 import Data.List as Export
   (iterate, unfoldr)
 import Data.List.NonEmpty as Export
-  (NonEmpty ((:|)), unzip)
+  (NonEmpty ((:|)))
 import Data.Maybe as Export
   (Maybe (Just, Nothing), maybe, fromMaybe, isNothing, isJust)
 import Data.Monoid as Export
@@ -243,6 +243,14 @@ import Data.Profunctor as Export
 -- either imports for re-export
 import Data.Either.Validation as Export
   (Validation, validationToEither, eitherToValidation)
+
+-- semialign imports for re-export
+import Data.Semialign as Export
+  ( Semialign
+  , zipWith
+  , Unzip
+  , unzip
+  )
 
 -- template-haskell imports for re-export
 import Language.Haskell.TH.Syntax as Export

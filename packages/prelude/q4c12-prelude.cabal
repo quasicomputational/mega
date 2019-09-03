@@ -4,7 +4,7 @@ cabal-version: 2.2
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: dbf4a4d3b2719bbaaa7d6ff369713a92617cbe4f4c82fdac555c6fd5805358c4
+-- hash: 61705772f77deeae0ffa48502e3c8dc8bc47288c59ff48ffa56a5a38056af44c
 
 name:           q4c12-prelude
 version:        0
@@ -49,6 +49,7 @@ library
     , q4c12-foldable-utils
     , q4c12-hlist
     , q4c12-twofinger
+    , semialign
     , semigroupoids
     , template-haskell
     , temporary
