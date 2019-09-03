@@ -291,7 +291,7 @@ applyConstraints frozen gpd =
       relevant = frozen
         & Map.lookup ( pn, qual )
         & fold
-        & Map.filterWithKey ( \ systemEnv _ -> matchesCondition systemEnv cond )
+        & ifilter ( \ systemEnv _ -> matchesCondition systemEnv cond )
     if null relevant
       then if isInternal pn
         then pure dep

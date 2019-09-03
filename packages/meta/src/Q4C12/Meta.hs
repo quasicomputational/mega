@@ -675,7 +675,7 @@ envsForPackage packageData pn =
       STIO.putStrLn err
       exitFailure
     Right builds ->
-      fmap toList $ flip Map.traverseMaybeWithKey builds $ \ buildName build -> runMaybeT $ do
+      fmap toList $ flip iwither builds $ \ buildName build -> runMaybeT $ do
         let
           ghc = buildGHCVersion build
         guard $ isRegular ghc
