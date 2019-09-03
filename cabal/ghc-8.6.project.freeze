@@ -298,5 +298,5 @@ constraints:
   wcwidth == 0.0.2,
   wcwidth -cli,
   wcwidth +split-base,
-  witherable == 0.3.2,
+  witherable == 0.3.3,
   writer-cps-transformers == 0.5.6.1

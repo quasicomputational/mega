@@ -318,6 +318,8 @@ import Data.Witherable as Export
   , mapMaybe
   , catMaybes
   , filter
+  , ifilter
+  , iwither
   )
 
 -- Q4C12 packages for re-export
