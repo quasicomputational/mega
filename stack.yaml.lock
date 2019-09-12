@@ -19,36 +19,15 @@ packages:
   original:
     hackage: cabal-plan-0.5.0.0@rev:1
 - completed:
-    cabal-file:
-      size: 1573
-      sha256: 2a9d524b9593fc5054c0bcfda9aeaffd4203f3663b77fab57db35ddd48ce6ad3
-    name: cabal-doctest
-    version: 1.0.7
-    git: https://github.com/phadej/cabal-doctest
+    hackage: lens-4.18@sha256:58c9736c65ab75aa1833098b0cac72d483aee9d953d2a83061ac8e0b555d0f96,15446
     pantry-tree:
-      size: 1586
-      sha256: 7dbada87cc98c5e04e464246cb290cdc04ac3eb81de59fc3d9430aab9dae2b7f
-    commit: ded69a7eac4b3aa526ee913d090f6802fdf72211
+      size: 8253
+      sha256: 4873d933bf39b75191f8b0b61cf76c27e12742499314d56cc38a7051718bed21
   original:
-    git: https://github.com/phadej/cabal-doctest
-    commit: ded69a7eac4b3aa526ee913d090f6802fdf72211
-- completed:
-    cabal-file:
-      size: 15396
-      sha256: b0f6cc2e18536b682be6ec5590688bd54fb49f84ad6e3a6556f54649c7a328fc
-    name: lens
-    version: '4.18'
-    git: https://github.com/ekmett/lens
-    pantry-tree:
-      size: 9223
-      sha256: 375d9548744a0b77abaaa78ca1fa42c1793d22fea1a1b73c129a9a42a1d3be1f
-    commit: 3a20847964967a64a11d01aa202ea177eb8c33fb
-  original:
-    git: https://github.com/ekmett/lens
-    commit: 3a20847964967a64a11d01aa202ea177eb8c33fb
+    hackage: lens-4.18@rev:0
 snapshots:
 - completed:
-    size: 525797
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2019/8/23.yaml
-    sha256: 26d2a242af344d93d584c83ad59f72bede192baf84c668ba58b0070bbcbe3743
-  original: nightly-2019-08-23
+    size: 529316
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2019/9/12.yaml
+    sha256: 33fc8421a7b0af228e818f84c0a227bc2083ce25740d9083273065acf7e7159f
+  original: nightly-2019-09-12
