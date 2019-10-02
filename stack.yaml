@@ -15,6 +15,7 @@ packages:
   - ./packages/aeson-cabal
   - ./packages/dhondt
   - ./packages/freeze-plan
+  - ./packages/compose-key
 extra-deps:
   # TODO: https://github.com/commercialhaskell/stackage/issues/4761
   - Cabal-3.0.0.0@rev:0

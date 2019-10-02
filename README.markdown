@@ -3,6 +3,8 @@ Mega-repo for my public Haskell projects.
 Data structures & related utilities
 ===================================
 
+* [q4c12-compose-key](packages/compose-key) is a nifty little isomorphism, `Iso' (Map a (NonEmptyMap b c)) (Map (a, b) c)`.
+
 * [q4c12-foldable-utils](packages/foldable-utils) are some utility functions I can't live without.
 
 * [q4c12-hlist](packages/hlist) has heterogeneous lists and sums.

@@ -4,11 +4,11 @@ cabal-version: 2.2
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: c884e5e74afb5af8fb91fe2363ba436d4a58078b7b9ce33f02ed29247d86dc46
+-- hash: b2e37856b21686c789dbedf961a1f316c48ab86604165092f6197158626d3793
 
-name:           q4c12-freeze-plan
+name:           q4c12-compose-key
 version:        0
-homepage:       https://github.com/quasicomputational/mega/tree/master/packages/freeze-plan
+homepage:       https://github.com/quasicomputational/mega/tree/master/packages/compose-key
 bug-reports:    https://github.com/quasicomputational/mega/issues
 author:         quasicomputational <quasicomputational@gmail.com>
 maintainer:     quasicomputational <quasicomputational@gmail.com>
@@ -23,23 +23,28 @@ source-repository head
 
 library
   exposed-modules:
-      Q4C12.FreezePlan
+      Q4C12.ComposeKey
   hs-source-dirs:
       src
   default-extensions: BinaryLiterals DataKinds DeriveDataTypeable DeriveGeneric DeriveLift DeriveTraversable DerivingStrategies EmptyCase EmptyDataDecls EmptyDataDeriving HexFloatLiterals LambdaCase KindSignatures MonoLocalBinds NegativeLiterals NumDecimals OverloadedStrings PatternGuards PostfixOperators StandaloneDeriving TypeOperators ViewPatterns
   ghc-options: -Weverything -Wno-implicit-prelude -Wno-unsafe -Wno-safe -Wno-missed-specialisations -Wno-all-missed-specialisations -Wno-missing-exported-signatures
   build-depends:
-      Cabal
-    , base
-    , cabal-plan
+      base
     , containers
+  default-language: Haskell2010
+
+test-suite properties
+  type: exitcode-stdio-1.0
+  main-is: test/Properties.hs
+  default-extensions: BinaryLiterals DataKinds DeriveDataTypeable DeriveGeneric DeriveLift DeriveTraversable DerivingStrategies EmptyCase EmptyDataDecls EmptyDataDeriving HexFloatLiterals LambdaCase KindSignatures MonoLocalBinds NegativeLiterals NumDecimals OverloadedStrings PatternGuards PostfixOperators StandaloneDeriving TypeOperators ViewPatterns
+  ghc-options: -Weverything -Wno-implicit-prelude -Wno-unsafe -Wno-safe -Wno-missed-specialisations -Wno-all-missed-specialisations -Wno-missing-exported-signatures
+  build-depends:
+      QuickCheck
+    , base
+    , containers
+    , lens
+    , lens-properties
     , q4c12-compose-key
-    , q4c12-prelude
-    , q4c12-project-file
-    , text
-    , transformers
-    , writer-cps-transformers
-  mixins:
-      base hiding (Prelude)
-    , transformers hiding (Control.Monad.Trans.RWS, Control.Monad.Trans.Writer)
+    , tasty
+    , tasty-quickcheck
   default-language: Haskell2010
