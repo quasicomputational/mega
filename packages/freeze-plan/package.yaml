@@ -26,6 +26,7 @@ library:
     cabal-plan:
     # TODO: we're depending on an internal API, so we should keep a tight bound.
     containers:
+    q4c12-compose-key:
     q4c12-prelude:
     q4c12-project-file:
     text:

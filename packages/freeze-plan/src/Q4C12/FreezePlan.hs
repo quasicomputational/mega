@@ -9,7 +9,6 @@ module Q4C12.FreezePlan
 import qualified Cabal.Plan as Plan
 import qualified Control.Monad.Trans.Writer.CPS as Writer
 import qualified Data.Map as Map
-import qualified Data.Map.Internal as Map.Internal
 import qualified Data.Map.Merge.Lazy as Merge
 import qualified Data.Sequence as Seq
 import qualified Data.Set as Set
@@ -19,19 +18,10 @@ import qualified Distribution.Compat.Graph as Graph
 import qualified Distribution.Types.GenericPackageDescription as GPD
 import qualified Distribution.Package as Package
 import qualified Distribution.Version as Version
+import Q4C12.ComposeKey
+  ( mapOfSetsToSet
+  )
 import qualified Q4C12.ProjectFile as PF
-
-mapOfSetsToSet :: Map k ( Set a ) -> Set ( k, a )
-mapOfSetsToSet = Map.keysSet . assocMaps . fmap ( Map.fromSet ( const () ) )
-
--- TODO: upstream?
-assocMaps :: Map a ( Map b c ) -> Map ( a, b ) c
-assocMaps = \case
-  Map.Internal.Tip -> Map.Internal.Tip
-  Map.Internal.Bin _ k v l r
-    -> Map.Internal.link2 ( assocMaps l )
-     $ Map.Internal.link2 ( Map.mapKeysMonotonic ( (,) k ) v )
-     $ assocMaps r
 
 isLocal :: Plan.Unit -> Bool
 isLocal unit = case Plan.uType unit of

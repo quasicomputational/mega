@@ -1,0 +1,37 @@
+spec-version: "0.31"
+name: q4c12-compose-key
+version: "0"
+homepage: https://github.com/quasicomputational/mega/tree/master/packages/compose-key
+github: quasicomputational/mega
+author: quasicomputational <quasicomputational@gmail.com>
+license: Apache-2.0 OR LGPL-2.1-or-later
+license-file:
+  - LICENSE.APACHE-2.0
+  - LICENSE.LGPL-2.1
+defaults:
+  local: ../../hpack-defaults.yaml
+
+library:
+  source-dirs:
+    - src
+  exposed-modules:
+    - Q4C12.ComposeKey
+  # Suppress Paths_*
+  other-modules: []
+  dependencies:
+    base:
+    containers:
+
+tests:
+  properties:
+    main: test/Properties.hs
+    other-modules: []
+    dependencies:
+      q4c12-compose-key:
+      base:
+      containers:
+      lens:
+      lens-properties:
+      QuickCheck:
+      tasty:
+      tasty-quickcheck:
